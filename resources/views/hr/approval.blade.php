@@ -1,0 +1,181 @@
+<x-layout>
+    <x-slot:title>Verifikasi & Approval - MVPWarehouse</x-slot:title>
+    <x-slot:headerTitle>Meja Verifikasi Permintaan Barang</x-slot:headerTitle>
+
+    <div class="space-y-6">
+
+        @if(session('success'))
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold px-4 py-3 rounded-lg">
+            {{ session('success') }}
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="bg-red-50 border border-red-200 text-red-800 text-sm font-semibold px-4 py-3 rounded-lg">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+        @endif
+
+        <!-- ================= 1. SEARCH BAR & QUICK FILTER TAB ================= -->
+        <form method="GET" action="/hr/approval" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="relative flex-1 max-w-md">
+                <input type="text" name="search" value="{{ request('search') }}" class="w-full pl-4 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-blue-600 focus:bg-white transition-all" placeholder="Cari nama barang...">
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 shrink-0">
+                <a href="/hr/approval/export/pdf{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-h-[44px] inline-flex items-center">PDF</a>
+                <a href="/hr/approval/export/excel{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-h-[44px] inline-flex items-center">Excel</a>
+                <select name="status" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 min-h-[44px]">
+                    <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua</option>
+                    <option value="Menunggu Review" {{ request('status') === 'Menunggu Review' ? 'selected' : '' }}>Menunggu Review</option>
+                </select>
+                <button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white min-h-[44px]">Filter</button>
+            </div>
+        </form>
+
+        <!-- ================= 2. KARTU NOTA (DIGABUNG PER TANGGAL) ================= -->
+        @forelse($notas as $date => $notaItems)
+        @php($first = $notaItems->first())
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all duration-300">
+
+            <!-- HEADER NOTA + AKSI BULK -->
+            <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                        {{ \Carbon\Carbon::parse($date)->format('d') }}
+                    </div>
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-slate-900 text-sm">#NOTA-{{ str_replace('-', '', $date) }}</span>
+                            <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-semibold">{{ $notaItems->count() }} item</span>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-0.5">
+                            {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }} • Pemohon: {{ $first->user?->name ?? 'Gudang' }}
+                        </p>
+                    </div>
+                </div>
+
+                <!-- AKSI BULK SELURUH NOTA -->
+                <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
+                    <form action="/hr/nota/{{ $date }}/approve-all" method="POST" class="inline">
+                        @csrf
+                        <button type="submit" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                            ✓ Terima Semua
+                        </button>
+                    </form>
+                    <button type="button" data-action="/hr/nota/{{ $date }}/reject-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->format('d F Y') }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                        ✗ Tolak Semua
+                    </button>
+                </div>
+            </div>
+
+            <!-- TABEL ITEM DALAM NOTA -->
+            <div class="overflow-x-auto bg-white">
+                <table class="w-full text-left border-collapse text-xs">
+                    <thead>
+                        <tr class="bg-slate-50/50 text-slate-400 font-bold border-b border-slate-100 uppercase tracking-wider text-[10px]">
+                            <th class="py-3 px-6">Barang</th>
+                            <th class="py-3 px-6">Rak</th>
+                            <th class="py-3 px-6">Jumlah</th>
+                            <th class="py-3 px-6">Alasan</th>
+                            <th class="py-3 px-6 text-center">Status</th>
+                            <th class="py-3 px-6 text-center">Aksi Individual</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
+                        @foreach($notaItems as $request)
+                        <tr class="hover:bg-slate-50/30 transition-colors duration-200">
+                            <td class="py-4 px-6 font-bold text-slate-900 text-sm">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }} @if($request->attachment_path)<span title="Ada lampiran/foto" class="ml-1">📎</span>@endif</td>
+                            <td class="py-4 px-6"><span class="text-slate-600 font-bold block">{{ $request->item?->rack_location ?? '-' }}</span></td>
+                            <td class="py-4 px-6 text-sm font-bold text-slate-900">{{ $request->quantity }} <span class="text-xs text-slate-400 font-medium">{{ $request->unit }}</span></td>
+                            <td class="py-4 px-6 text-slate-500 max-w-xs leading-relaxed">{{ $request->reason ?? '-' }}</td>
+                            <td class="py-4 px-6 text-center">
+                                <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded font-semibold text-[10px]">{{ $request->status }}</span>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="flex items-center justify-center gap-1.5 flex-wrap">
+                                    <a href="/hr/requests/{{ $request->id }}" title="Lihat detail & lampiran" class="px-2.5 py-2 bg-slate-50 text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px] inline-flex items-center">Detail</a>
+                                    <form action="/hr/requests/{{ $request->id }}/approve" method="POST" class="inline">
+                                        @csrf
+                                        <button type="submit" title="Terima item ini" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Terima</button>
+                                    </form>
+                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" title="Tolak item ini" class="px-2.5 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Tolak</button>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        @empty
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-10 text-center text-slate-500">
+            Tidak ada permintaan yang menunggu review.
+        </div>
+        @endforelse
+
+        <!-- ================= 3. RINGKASAN ANTREAN ================= -->
+        <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
+            <span>Menampilkan {{ $notas->count() }} nota dari antrean aktif</span>
+        </div>
+
+        <!-- ================= MODAL ALASAN PENOLAKAN (PER-ITEM & BULK) ================= -->
+        <div id="rejectModal" class="modal-overlay fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center hidden z-50 p-4">
+            <div class="modal-panel bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md h-auto flex flex-col overflow-hidden max-h-[90vh]">
+
+                <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Konfirmasi Penolakan</h3>
+                        <p id="rejectModalTarget" class="text-xs text-red-600 mt-0.5 font-semibold"></p>
+                    </div>
+                    <button onclick="closeRejectModal()" type="button" class="text-slate-400 hover:text-slate-600 p-2 text-2xl font-light leading-none cursor-pointer transition-colors" aria-label="Tutup">&times;</button>
+                </div>
+
+                <form id="rejectForm" method="POST">
+                    @csrf
+                    <div class="p-5 space-y-4 bg-white flex-1 overflow-y-auto">
+                        <div>
+                            <label for="rejectReasonText" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan Penolakan (Wajib Diisi)</label>
+                            <textarea id="rejectReasonText" name="note" rows="3" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-red-600 focus:bg-white transition-all text-slate-900 resize-none" placeholder="Tuliskan alasan penolakan secara jelas agar dibaca oleh staf Gudang..."></textarea>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2">
+                        <button onclick="closeRejectModal()" type="button" class="px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs min-h-[44px]">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">
+                            Tolak
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function modalLabel(button) {
+            const label = button.getAttribute('data-label');
+            if (label) return label;
+            return button.getAttribute('data-name') ?? 'Barang';
+        }
+
+        function openRejectModal(button) {
+            document.getElementById('rejectForm').action = button.getAttribute('data-action');
+            document.getElementById('rejectModalTarget').innerText = 'Mencoret: ' + modalLabel(button);
+            document.getElementById('rejectReasonText').value = '';
+            document.getElementById('rejectModal').classList.remove('hidden');
+            document.getElementById('rejectReasonText').focus();
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+            document.getElementById('rejectReasonText').value = '';
+        }
+    </script>
+</x-layout>
