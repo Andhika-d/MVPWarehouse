@@ -28,17 +28,36 @@ class DashboardController extends Controller
             ->count();
         $urgentRequests = StockRequest::where('user_id', Auth::id())
             ->where('priority', 'Mendesak')
+            ->whereIn('status', StockRequest::ACTIONABLE_STATUSES)
+            ->count();
+        $waitingReceipt = StockRequest::where('user_id', Auth::id())
+            ->whereIn('status', ['Disetujui', 'Sebagian Diterima'])
+            ->whereColumn('received_quantity', '<', 'quantity')
             ->count();
 
-        return view('gudang.dashboard', compact('requests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'urgentRequests'));
+        return view('gudang.dashboard', compact('requests', 'totalRequests', 'pendingRequests', 'approvedRequests', 'rejectedRequests', 'urgentRequests', 'waitingReceipt'));
     }
 
     public function gudangStock()
     {
-        $items = Item::all();
         $racks = ['A', 'B', 'C', 'D', 'E'];
 
-        return view('gudang.stock', compact('items', 'racks'));
+        $rackData = collect($racks)->map(function ($rack) {
+            $items = Item::where('rack_location', $rack)->get();
+            return [
+                'rack' => $rack,
+                'items' => $items,
+                'totalItems' => $items->count(),
+                'totalStock' => $items->sum('stock'),
+            ];
+        });
+
+        $activeRack = request('rack');
+        $items = $activeRack
+            ? Item::where('rack_location', $activeRack)->get()
+            : collect();
+
+        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'items'));
     }
 
     public function hrDashboard()

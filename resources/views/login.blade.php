@@ -33,7 +33,7 @@
         </div>
 
         {{-- ===== Login card ===== --}}
-        <div class="login-card w-full max-w-4xl overflow-hidden rounded-2xl shadow-2xl lg:grid lg:grid-cols-[1.3fr_0.7fr]">
+        <div class="login-card w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl lg:grid lg:grid-cols-[1.1fr_0.9fr]">
 
             {{-- ===== LEFT PANEL: BRANDING (hidden on mobile) ===== --}}
             <div class="hidden lg:flex relative bg-corpblue-600 px-10 py-12 text-white flex-col items-center justify-center text-center overflow-hidden">
@@ -75,16 +75,16 @@
                     <div class="w-10 h-px bg-white/20 mx-auto my-7"></div>
 
                     {{-- Capability points --}}
-                    <div class="space-y-2.5 text-[14px] text-white/90">
-                        <div class="flex items-center gap-3 justify-center">
+                    <div class="flex flex-col gap-2.5 text-[14px] text-white/90 items-start mx-auto">
+                        <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
                             <span>Request &amp; Approval</span>
                         </div>
-                        <div class="flex items-center gap-3 justify-center">
+                        <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
                             <span>Stock Monitoring</span>
                         </div>
-                        <div class="flex items-center gap-3 justify-center">
+                        <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
                             <span>Warehouse History</span>
                         </div>
@@ -99,7 +99,7 @@
                     <p class="mt-1.5 text-sm text-slate-500">Gunakan akun yang sudah terdaftar.</p>
                 </div>
 
-                <form action="{{ route('login') }}" method="POST" class="mt-8 max-w-xs mx-auto w-full space-y-3">
+                <form action="{{ route('login') }}" method="POST" class="mt-8 max-w-sm mx-auto w-full space-y-3">
                     @csrf
 
                     @if($errors->any())
