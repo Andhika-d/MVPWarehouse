@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Dashboard Utama - CorpLogistics</x-slot:title>
+    <x-slot:title>Dashboard — MVPWarehouse</x-slot:title>
     <x-slot:headerTitle>Ringkasan Aktivitas</x-slot:headerTitle>
 
     <div class="space-y-4 md:space-y-8">
@@ -10,7 +10,7 @@
             
             <!-- Kartu 1: Total Request -->
             <div class="bg-white p-4 md:p-6 rounded-xl border border-slate-200 shadow-sm flex items-center space-x-3 md:space-x-4">
-                <div class="p-2.5 md:p-3 bg-blue-50 text-blue-600 rounded-lg shrink-0">
+                <div class="p-2.5 md:p-3 bg-corpblue-50 text-corpblue-500 rounded-lg shrink-0">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                 </div>
                 <div>
@@ -59,14 +59,14 @@
             <p class="mt-2 text-sm text-slate-500">Anda memiliki {{ $urgentRequests }} permintaan prioritas mendesak.</p>
         </div>
 
-        <!-- 2. BLOK SEAMLESS UNTUK PANDUAN / AKSI CEPAT -->
-        <div class="bg-gradient-to-r from-blue-600 to-indigo-700 rounded-xl p-5 md:p-8 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
+        <!-- 2. BLOK AKSI CEPAT -->
+        <div class="bg-corpblue-500 rounded-xl p-5 md:p-6 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-4 md:gap-6">
             <div>
-                <h2 class="text-xl font-bold mb-2">Butuh fasilitas atau barang baru untuk bekerja?</h2>
-                <p class="text-blue-100 text-sm max-w-xl">Kamu bisa mengajukan permintaan barang operasional dengan mudah di sini.</p>
+                <h2 class="text-lg font-bold">Butuh fasilitas atau barang baru?</h2>
+                <p class="text-corpblue-100 text-sm mt-1 max-w-xl">Ajukan permintaan barang operasional dengan mudah.</p>
             </div>
-            <a href="/gudang/request-barang" class="bg-white text-blue-600 hover:bg-blue-50 px-5 py-3 rounded-lg font-semibold text-sm transition-all shadow-sm shrink-0">
-                Buat Request Sekarang &rarr;
+            <a href="/gudang/request-barang" class="bg-white text-corpblue-600 hover:bg-corpblue-50 px-5 py-2.5 rounded-lg font-semibold text-sm transition-all shadow-sm shrink-0">
+                Buat Pengajuan &rarr;
             </a>
         </div>
 
@@ -74,7 +74,7 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <div class="flex items-center justify-between mb-4">
                 <h3 class="text-base font-semibold text-slate-900">Aktivitas Terakhir Anda</h3>
-                <a href="/gudang/history" class="text-sm font-medium text-blue-600 hover:underline">Lihat Semua History</a>
+                <a href="/gudang/history" class="text-sm font-medium text-corpblue-500 hover:underline">Lihat Semua History</a>
             </div>
             @if($requests->isEmpty())
                 <p class="text-sm text-slate-400 py-8 text-center border border-dashed border-slate-100 rounded-lg">

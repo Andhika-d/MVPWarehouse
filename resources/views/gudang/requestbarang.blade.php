@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Buat Permintaan - CorpLogistics</x-slot:title>
+    <x-slot:title>Buat Permintaan — MVPWarehouse</x-slot:title>
     <x-slot:headerTitle>Formulir Request Barang</x-slot:headerTitle>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 items-start">
@@ -7,10 +7,10 @@
         <!-- KOLOM KIRI (2/3): FORMULIR -->
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="bg-slate-50 p-4 border-b border-slate-100 flex items-start space-x-3 text-xs text-slate-600">
-                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-blue-600 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24" class="text-corpblue-500 shrink-0 mt-0.5"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <div>
                     <span class="font-semibold text-slate-900 block mb-0.5">Informasi Sistem:</span>
-                    <p>Sistem otomatis mencatat Pemohon sebagai <strong class="text-blue-600">{{ auth()->user()->name }}</strong> dan menyematkan waktu saat dikirim.</p>
+                    <p>Sistem otomatis mencatat Pemohon sebagai <strong class="text-corpblue-500">{{ auth()->user()->name }}</strong> dan menyematkan waktu saat dikirim.</p>
                 </div>
             </div>
 
@@ -25,11 +25,11 @@
                     @if($items->isNotEmpty())
                     <div class="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="input_mode" value="search" checked onchange="switchMode('search')" class="w-4 h-4 text-blue-600">
+                            <input type="radio" name="input_mode" value="search" checked onchange="switchMode('search')" class="w-4 h-4 text-corpblue-500">
                             <span class="text-sm font-medium text-slate-700">Pilih dari Inventaris</span>
                         </label>
                         <label class="flex items-center space-x-2 cursor-pointer">
-                            <input type="radio" name="input_mode" value="manual" onchange="switchMode('manual')" class="w-4 h-4 text-blue-600">
+                            <input type="radio" name="input_mode" value="manual" onchange="switchMode('manual')" class="w-4 h-4 text-corpblue-500">
                             <span class="text-sm font-medium text-slate-700">Ketik Manual</span>
                         </label>
                     </div>
@@ -45,7 +45,7 @@
                                 placeholder="Ketik untuk mencari barang..."
                                 oninput="filterItems()"
                                 onfocus="openItemList()"
-                                class="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-slate-800 font-medium"
+                                class="w-full pl-3 pr-10 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all text-slate-800 font-medium"
                             >
                             <button type="button" id="itemClear" onclick="clearItemSelection()" title="Bersihkan" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -62,7 +62,7 @@
                             name="item_name"
                             id="item_name_manual"
                             placeholder="Contoh: Spidol Whiteboard, Tinta Stempel, dll."
-                            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-slate-800 font-medium"
+                            class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all text-slate-800 font-medium"
                         >
                         <p class="mt-1 text-[11px] text-slate-500">Ketik nama barang sesuai yang Anda butuhkan.</p>
                     </div>
@@ -72,11 +72,11 @@
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Jumlah Permintaan</label>
-                        <input type="number" name="quantity" min="1" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-slate-900" placeholder="Masukkan angka kuantitas...">
+                        <input type="number" name="quantity" min="1" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all text-slate-900" placeholder="Masukkan angka kuantitas...">
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Satuan Ukuran</label>
-                        <input id="unit-field" type="text" name="unit" value="" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-slate-900" placeholder="Contoh: Pcs, Box, Rim, Roll...">
+                        <input id="unit-field" type="text" name="unit" value="" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all text-slate-900" placeholder="Contoh: Pcs, Box, Rim, Roll...">
                         <p class="mt-1 text-[11px] text-slate-500" id="unit-hint">Isi satuan barang (otomatis jika dari inventaris).</p>
                     </div>
                 </div>
@@ -90,14 +90,14 @@
                                 <span class="w-2.5 h-2.5 bg-slate-400 rounded-full"></span>
                                 <span class="text-sm font-semibold text-slate-700">Kebutuhan Biasa (Rutin)</span>
                             </div>
-                            <input type="radio" name="priority" value="Biasa" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                            <input type="radio" name="priority" value="Biasa" checked class="w-4 h-4 text-corpblue-500 focus:ring-corpblue-500 cursor-pointer">
                         </label>
                         <label class="flex items-center justify-between p-3.5 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-50 hover:border-slate-300 transition-all">
                             <div class="flex items-center space-x-2.5">
                                 <span class="w-2.5 h-2.5 bg-red-500 rounded-full animate-pulse"></span>
                                 <span class="text-sm font-semibold text-slate-700">Mendesak (Urgent)</span>
                             </div>
-                            <input type="radio" name="priority" value="Mendesak" class="w-4 h-4 text-blue-600 focus:ring-blue-500 cursor-pointer">
+                            <input type="radio" name="priority" value="Mendesak" class="w-4 h-4 text-corpblue-500 focus:ring-corpblue-500 cursor-pointer">
                         </label>
                     </div>
                 </div>
@@ -105,20 +105,20 @@
                 <!-- 4. ALASAN -->
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Alasan Permintaan Barang</label>
-                    <textarea name="reason" rows="3" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-blue-600 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400" placeholder="Tuliskan alasan mengapa barang ini segera dibutuhkan..."></textarea>
+                    <textarea name="reason" rows="3" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all text-slate-900 placeholder:text-slate-400" placeholder="Tuliskan alasan mengapa barang ini segera dibutuhkan..."></textarea>
                 </div>
 
                 <!-- 5. LAMPIRAN -->
                 <div>
                     <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Lampiran Dokumen / Bukti Kebutuhan</label>
-                    <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.xls" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                    <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.xls" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700">
                     <p class="mt-1 text-[11px] text-slate-500">Format: PDF, JPG, PNG, DOC, DOCX, XLSX, XLS. Maks 2 MB.</p>
                 </div>
 
                 <!-- FOOTER -->
                 <div class="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-3">
                     <a href="/gudang/dashboard" class="px-5 py-3 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all cursor-pointer text-center">Batalkan</a>
-                    <button type="submit" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg text-sm shadow-sm hover:bg-blue-700 transition-all cursor-pointer min-h-[44px]">Kirim Pengajuan</button>
+                    <button type="submit" class="px-6 py-3 bg-corpblue-500 text-white font-semibold rounded-lg text-sm shadow-sm hover:bg-corpblue-600 transition-all cursor-pointer min-h-[44px]">Kirim Pengajuan</button>
                 </div>
             </form>
         </div>
@@ -136,7 +136,7 @@
                 <!-- Timeline Alur Kerja Sederhana -->
                 <ol class="relative border-l border-slate-200 pl-4 space-y-4 text-xs">
                     <li class="relative">
-                        <span class="absolute -left-[22px] mt-0.5 w-3 h-3 bg-blue-600 rounded-full ring-4 ring-white"></span>
+                        <span class="absolute -left-[22px] mt-0.5 w-3 h-3 bg-corpblue-500 rounded-full ring-4 ring-white"></span>
                         <h4 class="font-bold text-slate-900 mb-0.5">Tahap 1: Pengajuan</h4>
                         <p class="text-slate-500 leading-relaxed">Staf gudang mengisi formulir dengan data yang valid dan alasan yang jelas.</p>
                     </li>
@@ -215,10 +215,10 @@
     let activeButtons = [];
 
     function setActiveIndex(index) {
-        activeButtons.forEach((btn) => btn.classList.remove('bg-blue-50', 'text-blue-700'));
+        activeButtons.forEach((btn) => btn.classList.remove('bg-corpblue-50', 'text-corpblue-700'));
         activeIndex = index;
         if (activeButtons[activeIndex]) {
-            activeButtons[activeIndex].classList.add('bg-blue-50', 'text-blue-700');
+            activeButtons[activeIndex].classList.add('bg-corpblue-50', 'text-corpblue-700');
             activeButtons[activeIndex].scrollIntoView({ block: 'nearest' });
         }
     }
@@ -237,7 +237,7 @@
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.dataset.id = item.id;
-            btn.className = 'w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 font-medium transition-all';
+            btn.className = 'w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-corpblue-50 hover:text-corpblue-700 font-medium transition-all';
             btn.textContent = item.label;
             btn.addEventListener('click', () => selectItem(item));
             activeButtons.push(btn);

@@ -1,5 +1,29 @@
 @import 'tailwindcss';
 
+/* =============================================
+   DESIGN TOKENS — Corporate Identity
+   ============================================= */
+@theme {
+  --font-sans: 'Instrument Sans', system-ui, sans-serif;
+
+  /*
+   * Corporate Blue — #0057B8 (source of truth)
+   * Shade 500 = exact #0057B8
+   * Other shades derived from HSL(211, 100%, L) adjustments
+   */
+  --color-corpblue-50:  #e8f1fb;
+  --color-corpblue-100: #d1e3f7;
+  --color-corpblue-200: #a3c7ef;
+  --color-corpblue-300: #75abe7;
+  --color-corpblue-400: #478fdf;
+  --color-corpblue-500: #0057B8;
+  --color-corpblue-600: #004a9e;
+  --color-corpblue-700: #003c81;
+  --color-corpblue-800: #002e64;
+  --color-corpblue-900: #002047;
+  --color-corpblue-950: #001029;
+}
+
 /* ---- Transisi masuk halaman (ganti menu) ---- */
 @keyframes fadeSlideUp {
     from {
@@ -61,12 +85,29 @@ main {
     animation: modalZoomIn 0.22s ease-out both;
 }
 
+/* ---- Animasi login card ---- */
+@keyframes loginCardIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.login-card {
+    animation: loginCardIn 0.6s ease-out both;
+}
+
 /* ---- Hormati preferensi gerakan berkurang (aksesibilitas) ---- */
 @media (prefers-reduced-motion: reduce) {
     main,
     #itemList,
     .modal-overlay,
-    .modal-panel {
+    .modal-panel,
+    .login-card {
         animation: none !important;
     }
 }

@@ -20,7 +20,7 @@
             }
             .print-card {
                 border: none !important;
-                shadow: none !important;
+                box-shadow: none !important;
                 padding: 0 !important;
             }
         }
@@ -54,8 +54,10 @@
         <aside id="sidebar" class="fixed inset-y-0 left-0 z-50 w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out">
             <div>
                 <!-- Brand / Logo Perusahaan -->
-                <div class="h-16 flex items-center px-6 border-b border-slate-100">
-                    <span class="text-lg font-bold tracking-tight text-slate-900">MVP<span class="text-blue-600">WAREHOUSE</span></span>
+                <div class="h-16 flex flex-col justify-center px-6 border-b border-slate-100 leading-tight">
+                    <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider leading-none">PT Taehang Indonesia</span>
+                    <span class="text-[10px] font-medium text-slate-500 leading-none mt-0.5">Plan 2</span>
+                    <span class="text-[10px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1">MVPWarehouse</span>
                 </div>
 
                 <nav class="p-4 space-y-1">
@@ -65,7 +67,7 @@
                         <div class="px-4 py-2 text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pusat Kendali Admin</div>
                         
                         <!-- TAMBAHKAN ID PADA SETIAP BARIS SEPERTI DI BAWAH INI -->
-                        <a href="#" id="menu-tab-master" onclick="switchTab('tab-master')" class="flex items-center space-x-3 px-4 py-2.5 bg-blue-50 text-blue-600 font-bold rounded-lg text-sm transition-all">
+                        <a href="#" id="menu-tab-master" onclick="switchTab('tab-master')" class="flex items-center space-x-3 px-4 py-2.5 bg-corpblue-50 text-corpblue-600 font-bold rounded-lg text-sm transition-all">
                             <span>🗄️</span> <span>Data Master</span>
                         </a>
 
@@ -89,42 +91,42 @@
                         <!-- ================= MENU UNTUK HRD ================= -->
                         
                         <!-- Menu HR: Dashboard -->
-                        <a href="/hr/dashboard" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/dashboard') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/hr/dashboard" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"></path></svg>
                             <span>Dashboard Permintaan</span>
                         </a>
 
                         <!-- Menu HR: Verifikasi & Approval -->
-                        <a href="/hr/approval" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/approval*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/hr/approval" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/approval*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>Verifikasi & Approval</span>
                         </a>
 
                         <!-- Menu HR: Daftar Belanja Driver -->
-                        <a href="/hr/daftar-belanja" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/daftar-belanja*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/hr/daftar-belanja" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/daftar-belanja*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path></svg>
                             <span>Daftar Belanja Driver</span>
                         </a>
 
                         <!-- Menu HR: History -->
-                        <a href="/hr/history" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/history*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/hr/history" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('hr/history*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>History Pengadaan Barang</span>
                         </a>
                     @elseif(request()->is('gudang*'))
                         <!-- ================= MENU UNTUK GUDANG ================= -->
 
-                        <a href="/gudang/dashboard" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/dashboard') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/gudang/dashboard" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path></svg>
                             <span>Dashboard</span>
                         </a>
 
-                        <a href="/gudang/request-barang" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/request-barang*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/gudang/request-barang" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/request-barang*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                             <span>Request Barang</span>
                         </a>
 
-                        <a href="/gudang/history" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/history*') ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
+                        <a href="/gudang/history" class="flex items-center space-x-3 px-4 py-2.5 {{ request()->is('gudang/history*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-600 hover:bg-slate-50' }} rounded-lg text-sm transition-all">
                             <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             <span>History Permintaan</span>
                         </a>
@@ -172,7 +174,7 @@
                                     {{ request()->is('admin*') ? 'Super User' : (request()->is('hr*') ? 'HR Taehang' : 'PIC Gudang') }}
                                 </p>
                             </div>
-                            <div class="w-9 h-9 rounded-full {{ request()->is('admin*') ? 'bg-slate-800' : (request()->is('hr*') ? 'bg-indigo-600' : 'bg-blue-600') }} text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm shrink-0">
+                            <div class="w-9 h-9 rounded-full {{ request()->is('admin*') ? 'bg-slate-800' : (request()->is('hr*') ? 'bg-indigo-600' : 'bg-corpblue-500') }} text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm shrink-0">
                                 {{ request()->is('admin*') ? 'AD' : (request()->is('hr*') ? 'HR' : 'GD') }}
                             </div>
                         </div>
