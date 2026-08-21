@@ -10,6 +10,15 @@
         </div>
         @endif
 
+        {{-- Filter --}}
+        <form method="GET" action="/hr/daftar-belanja" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
+            <input type="month" name="month" value="{{ request('month') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
+            <button type="submit" class="bg-corpblue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-corpblue-600 transition-all">Filter</button>
+            @if(request()->has('month'))
+                <a href="/hr/daftar-belanja" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
+            @endif
+        </form>
+
         <!-- ================= PANEL AKSI EKSPOR (NO-PRINT AREA) ================= -->
         <div class="no-print bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
@@ -19,13 +28,13 @@
 
             <div class="flex flex-col sm:flex-row flex-wrap gap-2 text-xs font-semibold">
                 <button onclick="sendToWhatsApp()" class="inline-flex items-center px-4 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-lg transition-all shadow-2xs cursor-pointer min-h-[44px]">
-                    <span class="mr-1.5">💬</span> Kirim ke Driver (WA)
+                    <span class="mr-1.5">Kirim ke Driver (WA)</span>
                 </button>
                 <button onclick="window.print()" class="inline-flex items-center px-4 py-2.5 bg-blue-50 text-blue-700 hover:bg-blue-600 hover:text-white border border-blue-200 rounded-lg transition-all shadow-2xs cursor-pointer min-h-[44px]">
-                    <span class="mr-1.5">📄</span> Cetak PDF / Kertas
+                    <span class="mr-1.5">Cetak PDF / Kertas</span>
                 </button>
-                <a href="/hr/daftar-belanja/export/excel" class="inline-flex items-center px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-700 hover:text-white border border-slate-200 rounded-lg transition-all shadow-2xs cursor-pointer min-h-[44px]">
-                    <span class="mr-1.5">📊</span> Unduh Excel
+                <a href="/hr/daftar-belanja/export/excel{{ request()->has('month') ? '?month=' . request('month') : '' }}" class="inline-flex items-center px-4 py-2.5 bg-slate-50 text-slate-700 hover:bg-slate-700 hover:text-white border border-slate-200 rounded-lg transition-all shadow-2xs cursor-pointer min-h-[44px]">
+                    <span class="mr-1.5">Unduh Excel</span>
                 </a>
             </div>
         </div>
@@ -50,10 +59,11 @@
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                             <th class="py-4 px-6 w-12 text-center">No</th>
                             <th class="py-4 px-6">Nama Barang / Logistik</th>
-                            <th class="py-4 px-6">Jumlah Belanja</th>
+                            <th class="py-4 px-6">Jumlah Disetujui</th>
+                            <th class="py-4 px-6">Diterima</th>
                             <th class="py-4 px-6">Satuan</th>
-                            <th class="py-4 px-6">Rencana Lokasi Rak Asal</th>
-                            <th class="py-4 px-6 text-center no-print">Konfirmasi Item</th>
+                            <th class="py-4 px-6">Rak</th>
+                            <th class="py-4 px-6 text-center">Status</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
@@ -68,46 +78,51 @@
                                 @endif
                             </td>
                             <td class="py-4 px-6 text-base font-bold text-blue-600">{{ $request->quantity }}</td>
+                            <td class="py-4 px-6 text-sm font-semibold text-slate-700">{{ $request->received_quantity }}</td>
                             <td class="py-4 px-6 font-semibold text-slate-500">{{ $request->unit }}</td>
                             <td class="py-4 px-6 text-xs text-slate-600 font-semibold">{{ $request->item?->rack_location ?? '-' }}</td>
-                            <td class="py-4 px-6 text-center no-print">
-                                <form action="/hr/daftar-belanja/{{ $request->id }}/complete" method="POST" class="inline">
-                                    @csrf
-                                    <button type="submit" title="Tandai item ini selesai dibelanjakan" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Selesai</button>
-                                </form>
+                            <td class="py-4 px-6 text-center">
+                                @if($request->status === 'Disetujui')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-700 rounded-full text-[11px] font-semibold">
+                                        <span class="w-1.5 h-1.5 bg-blue-500 rounded-full"></span> Menunggu Penerimaan
+                                    </span>
+                                @elseif($request->status === 'Sebagian Diterima')
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-semibold">
+                                        <span class="w-1.5 h-1.5 bg-amber-500 rounded-full"></span> {{ $request->received_quantity }}/{{ $request->quantity }} {{ $request->unit }}
+                                    </span>
+                                @else
+                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-semibold">
+                                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> {{ $request->status }}
+                                    </span>
+                                @endif
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-4 px-6 text-center text-slate-500">Belum ada permintaan yang disetujui.</td>
+                            <td colspan="7" class="py-4 px-6 text-center text-slate-500">Belum ada permintaan yang disetujui.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
+            @if($requests->hasPages())
+            <div class="no-print px-5 py-3 border-t border-slate-100 bg-slate-50/50">
+                {{ $requests->links() }}
+            </div>
+            @endif
+
             <div class="no-print p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/30 text-xs text-slate-500">
-                <span>Menampilkan {{ $requests->count() }} item belanja aktif untuk Driver</span>
+                <span>Menampilkan {{ $requests->firstItem() ?? 0 }} - {{ $requests->lastItem() ?? 0 }} dari {{ $requests->total() }} item</span>
             </div>
         </div>
 
-        <!-- ================= KONFIRMASI SELESAI BELANJA (BULK) ================= -->
-        @if($requests->count() > 0)
-        <div class="no-print flex items-center justify-end pt-2">
-            <form action="/hr/daftar-belanja/complete" method="POST" onsubmit="return confirm('Apakah Driver sudah kembali membawa barang fisik dan menyerahkannya ke Gudang?');">
-                @csrf
-                <button type="submit" class="px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-md transition-all flex items-center space-x-2 cursor-pointer min-h-[44px]">
-                    <span>&check; Konfirmasi Selesai Dibelanjakan</span>
-                </button>
-            </form>
-        </div>
-        @endif
 
     </div>
 
     <script>
         @php
-            $waItems = $requests->map(fn ($r) => [
+            $waItems = $requests->getCollection()->map(fn ($r) => [
                 'name' => $r->item?->name ?? $r->item_name ?? 'Barang',
                 'quantity' => $r->quantity,
                 'unit' => $r->unit,
@@ -126,7 +141,7 @@
             text += '\n_Silakan beli sesuai jumlah di atas dan serahkan ke Gudang saat tiba._';
 
             navigator.clipboard.writeText(text).then(() => {
-                alert('💬 Format teks WhatsApp berhasil disalin ke clipboard!\n\nBuka WA Driver dan lakukan paste (Ctrl+V).');
+                alert('Format teks WhatsApp berhasil disalin ke clipboard!\n\nBuka WA Driver dan lakukan paste (Ctrl+V).');
             }).catch(() => {
                 alert('Gagal menyalin ke clipboard. Silakan salin manual.');
             });

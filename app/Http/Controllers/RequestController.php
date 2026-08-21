@@ -14,6 +14,7 @@ use App\Notifications\RequestCompletedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -109,7 +110,13 @@ class RequestController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $requests = $query->latest()->get();
+        if ($request->filled('month')) {
+            $date = Carbon::parse($request->input('month'));
+            $query->whereYear('created_at', $date->year)
+                  ->whereMonth('created_at', $date->month);
+        }
+
+        $requests = $query->latest()->paginate(20)->withQueryString();
 
         return view('gudang.history', compact('requests'));
     }
@@ -143,14 +150,14 @@ class RequestController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $requests = $query->latest()->get();
+        $requests = $query->latest()->paginate(20)->withQueryString();
 
-        $notas = $requests
+        $notas = $requests->getCollection()
             ->sortBy('created_at')
             ->groupBy(fn ($stockRequest) => $stockRequest->created_at->format('Y-m-d'))
             ->sortKeysDesc();
 
-        return view('hr.approval', compact('notas'));
+        return view('hr.approval', compact('notas', 'requests'));
     }
 
     public function approvalDetail(StockRequest $request)
@@ -162,13 +169,19 @@ class RequestController extends Controller
         return view('hr.approval-detail', compact('request'));
     }
 
-    public function shoppingList()
+    public function shoppingList(Request $request)
     {
-        $requests = StockRequest::with('item')
+        $query = StockRequest::with('item')
             ->where('status', 'Disetujui')
-            ->whereNull('completed_at')
-            ->latest()
-            ->get();
+            ->whereNull('completed_at');
+
+        if ($request->filled('month')) {
+            $date = Carbon::parse($request->input('month'));
+            $query->whereYear('created_at', $date->year)
+                  ->whereMonth('created_at', $date->month);
+        }
+
+        $requests = $query->latest()->paginate(20)->withQueryString();
 
         return view('hr.daftar-belanja', compact('requests'));
     }

@@ -120,7 +120,8 @@
 
         <!-- ================= 3. RINGKASAN ANTREAN ================= -->
         <div class="p-4 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500 font-medium">
-            <span>Menampilkan {{ $notas->count() }} nota dari antrean aktif</span>
+            <span>Menampilkan {{ $requests->firstItem() ?? 0 }} - {{ $requests->lastItem() ?? 0 }} dari {{ $requests->total() }} permintaan</span>
+            {{ $requests->links() }}
         </div>
 
         <!-- ================= MODAL ALASAN PENOLAKAN (PER-ITEM & BULK) ================= -->

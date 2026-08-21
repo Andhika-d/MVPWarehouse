@@ -3,6 +3,7 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GudangController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RequestController;
 use Illuminate\Support\Facades\Route;
@@ -27,6 +28,14 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:gudang')->group(function () {
         Route::get('/gudang/dashboard', [DashboardController::class, 'gudangDashboard']);
         Route::get('/gudang/stock', [DashboardController::class, 'gudangStock']);
+
+        Route::get('/gudang/penerimaan', [GudangController::class, 'penerimaanIndex']);
+        Route::post('/gudang/penerimaan', [GudangController::class, 'penerimaanStore'])->middleware('throttle:20,1');
+
+        Route::get('/gudang/barang-keluar', [GudangController::class, 'barangKeluarIndex']);
+        Route::post('/gudang/barang-keluar', [GudangController::class, 'barangKeluarStore'])->middleware('throttle:20,1');
+
+        Route::get('/gudang/movements', [GudangController::class, 'movementsIndex']);
 
         Route::get('/gudang/request-barang', [RequestController::class, 'create']);
         Route::post('/gudang/request-barang', [RequestController::class, 'store'])->middleware('throttle:20,1');

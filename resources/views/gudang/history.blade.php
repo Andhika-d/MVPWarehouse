@@ -1,105 +1,110 @@
 <x-layout>
     <x-slot:title>Riwayat Permintaan — MVPWarehouse</x-slot:title>
-    <x-slot:headerTitle>Riwayat Permintaan Barang</x-slot:headerTitle>
+    <x-slot:headerTitle>Riwayat Permintaan</x-slot:headerTitle>
 
-    <div class="space-y-6">
-        
-        <!-- ================= QoL: SEARCH & FILTER ================= -->
-        <form method="GET" action="/gudang/history" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="relative flex-1 max-w-md">
+    <div class="space-y-4">
+
+        {{-- Search & Filter --}}
+        <form method="GET" action="/gudang/history" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="relative flex-1 max-w-sm">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </span>
-                <input type="text" name="search" value="{{ request('search') }}" class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all" placeholder="Cari nama barang...">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama barang..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
             </div>
-
-            <div class="flex flex-wrap items-center gap-2 shrink-0">
-                <a href="/gudang/history/export/pdf{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-h-[44px] inline-flex items-center">PDF</a>
-                <a href="/gudang/history/export/excel{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-h-[44px] inline-flex items-center">Excel</a>
-                <select name="status" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 min-h-[44px] focus:outline-none focus:border-corpblue-500">
-                    <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua</option>
+            <div class="flex items-center gap-2 flex-wrap">
+                <input type="month" name="month" value="{{ request('month') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
+                <select name="status" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
+                    <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
                     <option value="Menunggu Review" {{ request('status') === 'Menunggu Review' ? 'selected' : '' }}>Menunggu Review</option>
                     <option value="Disetujui" {{ request('status') === 'Disetujui' ? 'selected' : '' }}>Disetujui</option>
                     <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
-                <button type="submit" class="rounded-lg bg-corpblue-500 px-4 py-2 text-sm font-semibold text-white min-h-[44px]">Filter</button>
+                <button type="submit" class="bg-corpblue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-corpblue-600 transition-all">Filter</button>
+                @if(request()->hasAny(['search', 'status', 'month']))
+                    <a href="/gudang/history" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
+                @endif
+                <a href="/gudang/history/export/pdf{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">PDF</a>
+                <a href="/gudang/history/export/excel{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">Excel</a>
             </div>
         </form>
 
-        <!-- ================= TABEL DATA BARANG ================= -->
-                <!-- TABEL UTAMA (KRONOLOGIS RINGKAS) -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        {{-- Desktop Table --}}
+        <div class="hidden md:block bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                            <th class="py-4 px-6">Tanggal Permintaan</th>
-                            <th class="py-4 px-6">Nama Barang</th>
-                            <th class="py-4 px-6">Jumlah</th>
-                            <th class="py-4 px-6">Prioritas</th>
-                            <th class="py-4 px-6">Status</th>
-                            <th class="py-4 px-6 text-right">Aksi</th>
+                            <th class="py-3 px-5">Tanggal</th>
+                            <th class="py-3 px-5">Barang</th>
+                            <th class="py-3 px-5">Jumlah</th>
+                            <th class="py-3 px-5">Prioritas</th>
+                            <th class="py-3 px-5">Status</th>
+                            <th class="py-3 px-5 text-right">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @forelse($requests as $request)
                         <tr class="hover:bg-slate-50/70 transition-all">
-                            <td class="py-4 px-6 text-slate-500 font-medium">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</td>
-                            <td class="py-4 px-6 font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</td>
-                            <td class="py-4 px-6">{{ $request->quantity }} <span class="text-xs text-slate-500">{{ $request->unit }}</span></td>
-                            <td class="py-4 px-6">
+                            <td class="py-3 px-5 text-slate-500 font-medium whitespace-nowrap">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="py-3 px-5 font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</td>
+                            <td class="py-3 px-5">{{ $request->quantity }} <span class="text-xs text-slate-500">{{ $request->unit }}</span></td>
+                            <td class="py-3 px-5">
                                 <span class="px-2 py-0.5 {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }} rounded-full text-xs font-semibold">{{ $request->priority }}</span>
                             </td>
-                            <td class="py-4 px-6">
-                                <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }} rounded-full text-xs font-semibold">
+                            <td class="py-3 px-5">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }} rounded-full text-xs font-semibold">
                                     <span class="w-1.5 h-1.5 {{ $request->status === 'Disetujui' ? 'bg-emerald-500' : ($request->status === 'Ditolak' ? 'bg-red-500' : 'bg-amber-500') }} rounded-full"></span>
-                                    <span>{{ $request->status }}</span>
+                                    {{ $request->status }}
                                 </span>
                             </td>
-                            <td class="py-4 px-6 text-right">
-                                <a href="/gudang/history/{{ $request->id }}" class="text-corpblue-500 hover:text-corpblue-700 font-medium text-xs bg-corpblue-50 hover:bg-corpblue-100 px-3 py-2 rounded-lg transition-all cursor-pointer inline-block min-h-[44px] leading-[36px]">Lihat Detail</a>
+                            <td class="py-3 px-5 text-right">
+                                <a href="/gudang/history/{{ $request->id }}" class="text-corpblue-500 hover:text-corpblue-700 font-medium text-xs bg-corpblue-50 hover:bg-corpblue-100 px-3 py-2 rounded-lg transition-all">Detail</a>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-8 px-6 text-center text-slate-500">Belum ada riwayat permintaan.</td>
+                            <td colspan="6" class="py-10 text-center text-slate-400">Belum ada riwayat permintaan.</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
-
-            <!-- ================= KONTROL TABLE LIMIT SISI GUDANG ================= -->
-            <div class="p-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/30 text-xs text-slate-500 font-medium">
-                <!-- Sisi Kiri: Dropdown Jumlah Baris -->
-                <div class="flex items-center space-x-2">
-                    <span>Tampilkan</span>
-                    <select class="px-2 py-1 bg-white border border-slate-200 rounded-md focus:outline-none focus:border-corpblue-500 cursor-pointer text-slate-700 font-semibold">
-                        <option value="10">10 Baris</option>
-                        <option value="25">25 Baris</option>
-                        <option value="50">50 Baris</option>
-                    </select>
-                    <span>dari total 12 riwayat pengajuan</span>
-                </div>
-
-                <!-- Sisi Kanan: Status Halaman & Tombol Navigasi -->
-                <div class="flex items-center space-x-3">
-                    <span>Halaman <b>1</b> dari <b>2</b></span>
-                    <div class="inline-flex space-x-1">
-                        <!-- Tombol Mundur (Disabled) -->
-                        <button class="p-1.5 bg-slate-100 border border-slate-200 text-slate-400 rounded-lg cursor-not-allowed" disabled>
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-                        </button>
-                        <!-- Tombol Maju (Aktif karena total data ada 12, berasumsi limit halaman adalah 10) -->
-                        <button class="p-1.5 bg-white border border-slate-200 text-slate-600 hover:bg-slate-50 rounded-lg cursor-pointer transition-colors">
-                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        </button>
-                    </div>
-                </div>
+            @if($requests->hasPages())
+            <div class="px-5 py-3 border-t border-slate-100 bg-slate-50/50">
+                {{ $requests->links() }}
             </div>
+            @endif
+        </div>
 
+        {{-- Mobile Cards --}}
+        <div class="md:hidden space-y-2">
+            @forelse($requests as $request)
+            <a href="/gudang/history/{{ $request->id }}" class="block bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:bg-slate-50 transition-all">
+                <div class="flex items-start justify-between">
+                    <div class="min-w-0">
+                        <p class="font-semibold text-slate-900 text-sm truncate">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</p>
+                        <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
+                    </div>
+                    <span class="shrink-0 ml-3 px-2 py-0.5 rounded-full text-[11px] font-semibold
+                        {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
+                        {{ $request->status }}
+                    </span>
+                </div>
+                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
+                    <span class="px-1.5 py-0.5 {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }} rounded text-[10px] font-semibold">{{ $request->priority }}</span>
+                    <span class="text-[11px] text-slate-400">{{ $request->created_at->translatedFormat('d M Y') }}</span>
+                </div>
+            </a>
+            @empty
+            <div class="bg-white rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">
+                Belum ada riwayat permintaan.
+            </div>
+            @endforelse
+            @if($requests->hasPages())
+            <div class="pt-2">{{ $requests->links() }}</div>
+            @endif
         </div>
 
     </div>
-
 </x-layout>

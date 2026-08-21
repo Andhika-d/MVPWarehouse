@@ -7,12 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class StockRequest extends Model
 {
     public const ACTIONABLE_STATUSES = ['Menunggu Review', 'Pending'];
+    public const RECEIVABLE_STATUSES = ['Disetujui', 'Sebagian Diterima'];
 
     protected $fillable = [
         'user_id',
         'item_id',
         'item_name',
         'quantity',
+        'received_quantity',
         'unit',
         'priority',
         'reason',
@@ -39,13 +41,24 @@ class StockRequest extends Model
         return $this->hasMany(RequestHistory::class);
     }
 
+    public function stockMovements()
+    {
+        return $this->hasMany(StockMovement::class);
+    }
+
     public function isActionable(): bool
     {
         return in_array($this->status, self::ACTIONABLE_STATUSES, true);
     }
 
-    public function canComplete(): bool
+    public function canReceive(): bool
     {
-        return $this->status === 'Disetujui' && $this->completed_at === null;
+        return in_array($this->status, self::RECEIVABLE_STATUSES, true)
+            && $this->received_quantity < $this->quantity;
+    }
+
+    public function remainingQuantity(): int
+    {
+        return $this->quantity - $this->received_quantity;
     }
 }
