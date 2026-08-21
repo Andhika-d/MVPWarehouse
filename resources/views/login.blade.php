@@ -95,7 +95,7 @@
             {{-- ===== RIGHT PANEL: FORM ===== --}}
             <div class="bg-white border border-slate-200 p-6 sm:p-8 lg:p-8 flex flex-col justify-center">
                 <div class="text-center">
-                    <h2 class="text-lg font-semibold text-slate-900">Masuk</h2>
+                    <h2 class="text-lg font-semibold text-slate-900">Login</h2>
                     <p class="mt-1.5 text-sm text-slate-500">Gunakan akun yang sudah terdaftar.</p>
                 </div>
 
@@ -154,7 +154,7 @@
                         type="submit"
                         class="w-full rounded-lg bg-corpblue-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-corpblue-600 min-h-[44px]"
                     >
-                        Masuk
+                        Login
                     </button>
                 </form>
             </div>
