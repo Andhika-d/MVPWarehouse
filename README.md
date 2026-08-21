@@ -9,7 +9,7 @@
 
 ## CorpLogistics — Catatan Keamanan & Operasional
 
-Aplikasi internal CorpLogistics (Laravel 12 + SQLite) untuk workflow permintaan barang (gudang → HR → belanja). Catatan berikut penting untuk deployment yang aman.
+Aplikasi internal MVPWarehouse (Laravel 12 + SQLite) untuk workflow permintaan barang (gudang → HR → belanja). Catatan berikut penting untuk deployment yang aman.
 
 ### Konfigurasi produksi
 - Pastikan `APP_DEBUG=false` di lingkungan produksi. `APP_DEBUG=true` (default lokal) akan menampilkan stack trace dan detail sensitif bila terjadi error.
