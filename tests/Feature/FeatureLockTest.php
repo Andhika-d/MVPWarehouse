@@ -22,13 +22,26 @@ class FeatureLockTest extends TestCase
         ]);
     }
 
-    public function test_gudang_stock_page_is_locked_for_v11(): void
+    public function test_gudang_stock_page_shows_rack_cards(): void
     {
+        Item::create([
+            'name' => 'Kertas HVS A4',
+            'rack_location' => 'B',
+            'stock' => 5,
+            'unit' => 'Rim',
+        ]);
+
         $this->actingAs($this->makeUser('gudang'))
             ->get('/gudang/stock')
             ->assertOk()
-            ->assertSee('v1.1')
-            ->assertSee('Monitoring Stok Barang');
+            ->assertSee('Lihat Barang')
+            ->assertSee('Rak B')
+            ->assertDontSee('Kertas HVS A4');
+
+        $this->actingAs($this->makeUser('gudang'))
+            ->get('/gudang/stock?rack=B')
+            ->assertOk()
+            ->assertSee('Kertas HVS A4');
     }
 
     public function test_hr_dashboard_shows_statistik_locked_card(): void
