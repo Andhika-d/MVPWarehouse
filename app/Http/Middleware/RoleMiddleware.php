@@ -11,7 +11,7 @@ class RoleMiddleware
 {
     public function handle(Request $request, Closure $next, string $role): mixed
     {
-        $isDevMode = Auth::check() && ! app()->isProduction() && Setting::enabled('dev_mode');
+        $isDevMode = Auth::check() && app()->environment('local', 'testing') && Setting::enabled('dev_mode');
 
         if (! Auth::check() || (Auth::user()->role !== $role && ! $isDevMode)) {
             abort(403);

@@ -26,6 +26,8 @@ class Setting extends Model
 
     public static function enabled(string $key): bool
     {
-        return (bool) static::get($key, false);
+        $value = static::get($key, '0');
+
+        return $value === '1' || $value === 'true' || $value === true;
     }
 }
