@@ -7,7 +7,6 @@ use App\Models\StockRequest;
 use App\Models\User;
 use App\Notifications\NewRequestNotification;
 use App\Notifications\RequestApprovedNotification;
-use App\Notifications\RequestCompletedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -112,18 +111,6 @@ class NotificationTest extends TestCase
         $this->actingAs($hr)->post('/hr/requests/' . $request->id . '/delay', ['note' => 'Tunggu anggaran']);
 
         $this->assertTrue($gudang->notifications()->where('type', RequestDelayedNotification::class)->exists());
-    }
-
-    public function test_completing_shopping_notifies_requester(): void
-    {
-        $gudang = $this->makeUser('gudang');
-        $hr = $this->makeUser('hr');
-        $item = $this->makeItem();
-        $request = $this->makeRequest($gudang, $item, ['status' => 'Disetujui']);
-
-        $this->actingAs($hr)->post('/hr/daftar-belanja/' . $request->id . '/complete');
-
-        $this->assertTrue($gudang->notifications()->where('type', RequestCompletedNotification::class)->exists());
     }
 
     public function test_approve_all_notifies_requester_per_item(): void

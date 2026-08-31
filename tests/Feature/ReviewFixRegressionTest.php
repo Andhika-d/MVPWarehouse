@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\StockRequest;
+use App\Models\StorageLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -25,11 +26,25 @@ class ReviewFixRegressionTest extends TestCase
         ]);
     }
 
+    protected function makeLocation(string $rack = 'A', int $number = 1): StorageLocation
+    {
+        $prefix = StorageLocation::getPrefixForRack($rack);
+
+        return StorageLocation::create([
+            'code' => $prefix . '-' . str_pad($number, 3, '0', STR_PAD_LEFT),
+            'rack' => $rack,
+            'number' => $number,
+            'status' => StorageLocation::STATUS_EMPTY,
+        ]);
+    }
+
     protected function makeItem(int $stock = 10): Item
     {
+        $location = $this->makeLocation();
+
         return Item::create([
             'name' => 'Barang Regresi '.uniqid(),
-            'rack_location' => 'A',
+            'storage_location_id' => $location->id,
             'stock' => $stock,
             'unit' => 'Pcs',
         ]);
@@ -101,7 +116,7 @@ class ReviewFixRegressionTest extends TestCase
             'email' => 'sementara-'.uniqid().'@example.com',
             'password' => '',
             'role' => 'gudang',
-        ])->assertRedirect('/admin/dashboard');
+        ])->assertRedirect(route('admin.users.index'));
 
         $user = User::where('email', 'like', 'sementara-%')->latest()->first();
 
@@ -188,6 +203,53 @@ class ReviewFixRegressionTest extends TestCase
         ]);
     }
 
+    public function test_login_as_gudang_then_stop_then_login_as_hr(): void
+    {
+        $admin = $this->makeUser('admin');
+        $gudang = $this->makeUser('gudang');
+        $hr = $this->makeUser('hr');
+
+        $this->actingAs($admin)->post('/admin/users/'.$gudang->id.'/login-as')
+            ->assertRedirect('/gudang/dashboard');
+
+        $this->assertSame($gudang->id, auth()->id());
+        $this->assertSame($admin->id, session('impersonate_by'));
+
+        $this->post('/admin/impersonation/stop')
+            ->assertRedirect('/admin/dashboard');
+
+        $this->assertSame($admin->id, auth()->id());
+        $this->assertNull(session('impersonate_by'));
+
+        $this->actingAs($admin->refresh())->post('/admin/users/'.$hr->id.'/login-as')
+            ->assertRedirect('/hr/dashboard');
+
+        $this->assertSame($hr->id, auth()->id());
+        $this->assertSame($admin->id, session('impersonate_by'));
+    }
+
+    public function test_stop_impersonation_clears_session_completely(): void
+    {
+        $admin = $this->makeUser('admin');
+        $gudang = $this->makeUser('gudang');
+
+        $this->actingAs($admin)->post('/admin/users/'.$gudang->id.'/login-as');
+
+        $this->assertSame($gudang->id, auth()->id());
+        $this->assertNotNull(session('impersonate_by'));
+
+        $this->post('/admin/impersonation/stop');
+
+        $this->assertSame($admin->id, auth()->id());
+        $this->assertNull(session('impersonate_by'));
+
+        $this->get('/admin/users')
+            ->assertOk();
+
+        $this->get('/gudang/dashboard')
+            ->assertForbidden();
+    }
+
     public function test_security_headers_are_present(): void
     {
         $this->get('/login')
@@ -218,7 +280,7 @@ class ReviewFixRegressionTest extends TestCase
         file_put_contents($corrupt, 'bukan zip');
 
         $this->actingAs($admin)->post('/admin/backups/'.basename($corrupt).'/restore')
-            ->assertRedirect('/admin/dashboard');
+            ->assertRedirect(route('admin.backups.index'));
 
         $this->assertDatabaseHas('users', ['id' => $admin->id]);
         @unlink($corrupt);

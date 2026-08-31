@@ -77,11 +77,11 @@ main {
     }
 }
 
-.modal-overlay {
+#modalRoot > div:not(.hidden) {
     animation: modalFadeIn 0.2s ease-out both;
 }
 
-.modal-panel {
+#modalRoot > div:not(.hidden) > div:last-child {
     animation: modalZoomIn 0.22s ease-out both;
 }
 
@@ -105,8 +105,8 @@ main {
 @media (prefers-reduced-motion: reduce) {
     main,
     #itemList,
-    .modal-overlay,
-    .modal-panel,
+    #modalRoot > div,
+    #modalRoot > div > div:last-child,
     .login-card,
     .typing-text {
         animation: none !important;

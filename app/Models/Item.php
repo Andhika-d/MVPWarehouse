@@ -14,9 +14,13 @@ class Item extends Model
     protected $fillable = [
         'name',
         'size',
-        'rack_location',
+        'storage_location_id',
         'stock',
         'unit',
+    ];
+
+    protected $casts = [
+        'storage_location_id' => 'integer',
     ];
 
     public function stockRequests()
@@ -24,10 +28,20 @@ class Item extends Model
         return $this->hasMany(StockRequest::class);
     }
 
+    public function storageLocation()
+    {
+        return $this->belongsTo(StorageLocation::class);
+    }
+
     public function getDisplayNameAttribute(): string
     {
         $name = trim($this->name);
 
         return $this->size ? $name . ' (' . trim($this->size) . ')' : $name;
+    }
+
+    public function getLocationCodeAttribute(): ?string
+    {
+        return $this->storageLocation?->code;
     }
 }

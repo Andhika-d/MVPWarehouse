@@ -17,7 +17,12 @@
                 <select name="status" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
                     <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
                     <option value="Menunggu Review" {{ request('status') === 'Menunggu Review' ? 'selected' : '' }}>Menunggu Review</option>
+                    <option value="Pending" {{ request('status') === 'Pending' ? 'selected' : '' }}>Pending</option>
                     <option value="Disetujui" {{ request('status') === 'Disetujui' ? 'selected' : '' }}>Disetujui</option>
+                    <option value="Sebagian Diterima" {{ request('status') === 'Sebagian Diterima' ? 'selected' : '' }}>Sebagian Diterima</option>
+                    <option value="Diterima Penuh" {{ request('status') === 'Diterima Penuh' ? 'selected' : '' }}>Diterima Penuh</option>
+                    <option value="Ditutup Sebagian" {{ request('status') === 'Ditutup Sebagian' ? 'selected' : '' }}>Ditutup Sebagian</option>
+                    <option value="Dibatalkan" {{ request('status') === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
                     <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
                 <button type="submit" class="bg-corpblue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-corpblue-600 transition-all">Filter</button>
@@ -53,8 +58,21 @@
                                 <span class="px-2 py-0.5 {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }} rounded-full text-xs font-semibold">{{ $request->priority }}</span>
                             </td>
                             <td class="py-3 px-5">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }} rounded-full text-xs font-semibold">
-                                    <span class="w-1.5 h-1.5 {{ $request->status === 'Disetujui' ? 'bg-emerald-500' : ($request->status === 'Ditolak' ? 'bg-red-500' : 'bg-amber-500') }} rounded-full"></span>
+                                @php
+                                    $statusColors = [
+                                        'Disetujui' => ['bg' => 'bg-emerald-50 text-emerald-700', 'dot' => 'bg-emerald-500'],
+                                        'Ditolak' => ['bg' => 'bg-red-50 text-red-700', 'dot' => 'bg-red-500'],
+                                        'Diterima Penuh' => ['bg' => 'bg-emerald-50 text-emerald-700', 'dot' => 'bg-emerald-500'],
+                                        'Sebagian Diterima' => ['bg' => 'bg-indigo-50 text-indigo-700', 'dot' => 'bg-indigo-500'],
+                                        'Menunggu Review' => ['bg' => 'bg-amber-50 text-amber-700', 'dot' => 'bg-amber-500'],
+                                        'Pending' => ['bg' => 'bg-amber-50 text-amber-700', 'dot' => 'bg-amber-500'],
+                                        'Ditutup Sebagian' => ['bg' => 'bg-slate-100 text-slate-700', 'dot' => 'bg-slate-500'],
+                                        'Dibatalkan' => ['bg' => 'bg-stone-100 text-stone-700', 'dot' => 'bg-stone-500'],
+                                    ];
+                                    $sc = $statusColors[$request->status] ?? ['bg' => 'bg-slate-100 text-slate-600', 'dot' => 'bg-slate-400'];
+                                @endphp
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $sc['bg'] }} rounded-full text-xs font-semibold">
+                                    <span class="w-1.5 h-1.5 {{ $sc['dot'] }} rounded-full"></span>
                                     {{ $request->status }}
                                 </span>
                             </td>
@@ -86,8 +104,7 @@
                         <p class="font-semibold text-slate-900 text-sm truncate">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</p>
                         <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
                     </div>
-                    <span class="shrink-0 ml-3 px-2 py-0.5 rounded-full text-[11px] font-semibold
-                        {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
+                    <span class="shrink-0 ml-3 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $statusColors[$request->status]['bg'] ?? 'bg-slate-100 text-slate-600' }}">
                         {{ $request->status }}
                     </span>
                 </div>

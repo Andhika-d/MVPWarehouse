@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Item;
+use App\Models\StorageLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -22,6 +23,19 @@ class ItemImportTest extends TestCase
             'password' => Hash::make('password'),
             'role' => $role,
         ]);
+    }
+
+    private function makeLocations(string $rack, int $count): void
+    {
+        $prefix = StorageLocation::getPrefixForRack($rack);
+        for ($i = 1; $i <= $count; $i++) {
+            StorageLocation::create([
+                'code' => $prefix . '-' . str_pad($i, 3, '0', STR_PAD_LEFT),
+                'rack' => $rack,
+                'number' => $i,
+                'status' => StorageLocation::STATUS_EMPTY,
+            ]);
+        }
     }
 
     private function uploadFile(string $name, string $content, string $mime): UploadedFile
@@ -84,6 +98,8 @@ class ItemImportTest extends TestCase
 
     public function test_import_creates_items_with_size_and_parsed_unit(): void
     {
+        $this->makeLocations('B', 10);
+
         $file = $this->uploadFile('stok.xlsx', $this->makeXlsx([
             ['Nama Barang', 'Size', 'Qty'],
             ['Waterpas Magnet', '44 Cm', '4 pcs'],
@@ -91,10 +107,25 @@ class ItemImportTest extends TestCase
             ['Karpet', '', '10'],
         ]), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        $this->actingAs($this->makeUser('admin'))
-            ->post('/admin/items/import', ['file' => $file, 'rack_location' => 'B'])
-            ->assertRedirect('/admin/dashboard')
-            ->assertSessionHas('success', '3 item berhasil diimpor ke Rak B.');
+        $admin = $this->makeUser('admin');
+
+        $preview = $this->actingAs($admin)->post('/admin/import/preview', [
+            'file' => $file,
+            'rack_location' => 'B',
+        ]);
+
+        $preview->assertOk();
+        $preview->assertSee('Waterpas Magnet');
+        $preview->assertSee('RB-001');
+
+        $this->actingAs($admin)->post('/admin/import/execute', [
+            'rack_location' => 'B',
+            'items' => [
+                ['name' => 'Waterpas Magnet', 'size' => '44 Cm', 'stock' => 4, 'unit' => 'Pcs'],
+                ['name' => 'Waterpas Magnet', 'size' => '99 Cm', 'stock' => 2, 'unit' => 'Roll'],
+                ['name' => 'Karpet', 'size' => null, 'stock' => 10, 'unit' => 'Pcs'],
+            ],
+        ])->assertRedirect(route('admin.items.index'));
 
         $this->assertSame(3, Item::count());
 
@@ -102,7 +133,7 @@ class ItemImportTest extends TestCase
         $this->assertNotNull($waterpas44);
         $this->assertSame(4, $waterpas44->stock);
         $this->assertSame('Pcs', $waterpas44->unit);
-        $this->assertSame('B', $waterpas44->rack_location);
+        $this->assertSame('RB-001', $waterpas44->storageLocation->code);
 
         $waterpas99 = Item::where('name', 'Waterpas Magnet')->where('size', '99 Cm')->first();
         $this->assertNotNull($waterpas99);
@@ -118,17 +149,24 @@ class ItemImportTest extends TestCase
 
     public function test_import_skips_rows_with_empty_name(): void
     {
+        $this->makeLocations('A', 10);
+
         $file = $this->uploadFile('stok.xlsx', $this->makeXlsx([
             ['Nama Barang', 'Size', 'Qty'],
             ['Lakban Bening', '2 Inch', '4 pcs'],
             ['', 'X', '5'],
         ]), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
-        $this->actingAs($this->makeUser('admin'))
-            ->post('/admin/items/import', ['file' => $file, 'rack_location' => 'A'])
-            ->assertSessionHas('success', '1 item berhasil diimpor ke Rak A. 1 baris dilewati (nama barang kosong).');
+        $admin = $this->makeUser('admin');
 
-        $this->assertSame(1, Item::count());
+        $preview = $this->actingAs($admin)->post('/admin/import/preview', [
+            'file' => $file,
+            'rack_location' => 'A',
+        ]);
+
+        $preview->assertOk();
+        $preview->assertSee('Lakban Bening');
+        $preview->assertSee('1 baris dilewati');
     }
 
     public function test_import_rejects_non_xlsx_file(): void
@@ -136,10 +174,8 @@ class ItemImportTest extends TestCase
         $file = UploadedFile::fake()->createWithContent('data.txt', 'hello');
 
         $this->actingAs($this->makeUser('admin'))
-            ->post('/admin/items/import', ['file' => $file, 'rack_location' => 'A'])
+            ->post('/admin/import/preview', ['file' => $file, 'rack_location' => 'A'])
             ->assertSessionHasErrors('file');
-
-        $this->assertSame(0, Item::count());
     }
 
     public function test_import_requires_admin_role(): void
@@ -150,54 +186,62 @@ class ItemImportTest extends TestCase
         ]), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $this->actingAs($this->makeUser('gudang'))
-            ->post('/admin/items/import', ['file' => $file, 'rack_location' => 'A'])
+            ->post('/admin/import/preview', ['file' => $file, 'rack_location' => 'A'])
             ->assertForbidden();
     }
 
     public function test_import_rejects_missing_name_header(): void
     {
+        $this->makeLocations('A', 10);
+
         $file = $this->uploadFile('stok.xlsx', $this->makeXlsx([
             ['Size', 'Qty'],
             ['44 Cm', '4 pcs'],
         ]), 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 
         $this->actingAs($this->makeUser('admin'))
-            ->post('/admin/items/import', ['file' => $file, 'rack_location' => 'A'])
+            ->post('/admin/import/preview', ['file' => $file, 'rack_location' => 'A'])
             ->assertSessionHas('error', 'Kolom "Nama Barang" tidak ditemukan di file Excel.');
-
-        $this->assertSame(0, Item::count());
     }
 
     public function test_store_item_validates_standard_unit_and_size(): void
     {
+        $this->makeLocations('C', 10);
+
+        $locC1 = StorageLocation::where('rack', 'C')->where('number', 1)->first();
+
         $this->actingAs($this->makeUser('admin'))
             ->post('/admin/items', [
                 'name' => 'Obeng',
                 'size' => '10 Inch',
-                'rack_location' => 'C',
+                'storage_location_id' => $locC1->id,
                 'stock' => 5,
                 'unit' => 'Pcs',
-            ])
-            ->assertRedirect('/admin/dashboard');
+            ])->assertRedirect(route('admin.items.index'));
 
         $obeng = Item::where('name', 'Obeng')->first();
         $this->assertNotNull($obeng);
         $this->assertSame('10 Inch', $obeng->size);
 
+        $locC2 = StorageLocation::where('rack', 'C')->where('number', 2)->first();
+
         $this->actingAs($this->makeUser('admin'))
             ->post('/admin/items', [
                 'name' => 'Barang Aneh',
-                'rack_location' => 'C',
+                'storage_location_id' => $locC2->id,
                 'stock' => 1,
                 'unit' => 'Biji',
-            ])
-            ->assertSessionHasErrors('unit');
+            ])->assertSessionHasErrors('unit');
     }
 
     public function test_request_barang_dropdown_shows_combined_name_and_size(): void
     {
-        Item::create(['name' => 'Waterpas Magnet', 'size' => '44 Cm', 'rack_location' => 'A', 'stock' => 4, 'unit' => 'Pcs']);
-        Item::create(['name' => 'Karpet', 'size' => null, 'rack_location' => 'A', 'stock' => 10, 'unit' => 'Pcs']);
+        $this->makeLocations('A', 10);
+        $loc1 = StorageLocation::where('rack', 'A')->where('number', 1)->first();
+        $loc2 = StorageLocation::where('rack', 'A')->where('number', 2)->first();
+
+        Item::create(['name' => 'Waterpas Magnet', 'size' => '44 Cm', 'storage_location_id' => $loc1->id, 'stock' => 4, 'unit' => 'Pcs']);
+        Item::create(['name' => 'Karpet', 'size' => null, 'storage_location_id' => $loc2->id, 'stock' => 10, 'unit' => 'Pcs']);
 
         $this->actingAs($this->makeUser('gudang'))
             ->get('/gudang/request-barang')
@@ -208,8 +252,12 @@ class ItemImportTest extends TestCase
 
     public function test_display_name_formats_with_size(): void
     {
-        $withSize = Item::create(['name' => 'Waterpas Magnet', 'size' => '88cm', 'rack_location' => 'A', 'stock' => 1, 'unit' => 'Pcs']);
-        $withoutSize = Item::create(['name' => 'Karpet', 'size' => null, 'rack_location' => 'A', 'stock' => 1, 'unit' => 'Pcs']);
+        $this->makeLocations('A', 10);
+        $loc1 = StorageLocation::where('rack', 'A')->where('number', 1)->first();
+        $loc2 = StorageLocation::where('rack', 'A')->where('number', 2)->first();
+
+        $withSize = Item::create(['name' => 'Waterpas Magnet', 'size' => '88cm', 'storage_location_id' => $loc1->id, 'stock' => 1, 'unit' => 'Pcs']);
+        $withoutSize = Item::create(['name' => 'Karpet', 'size' => null, 'storage_location_id' => $loc2->id, 'stock' => 1, 'unit' => 'Pcs']);
 
         $this->assertSame('Waterpas Magnet (88cm)', $withSize->display_name);
         $this->assertSame('Karpet', $withoutSize->display_name);

@@ -11,7 +11,7 @@ class NotificationController extends Controller
     {
         $user = Auth::user();
         $unreadCount = $user->unreadNotifications()->count();
-        $notifications = $user->notifications()->limit(10)->get()->map(function ($n) {
+        $notifications = $user->notifications()->latest()->limit(10)->get()->map(function ($n) {
             return [
                 'id' => $n->id,
                 'data' => $n->data,

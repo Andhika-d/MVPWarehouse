@@ -18,6 +18,7 @@ class StockMovement extends Model
         'reason',
         'stock_request_id',
         'user_id',
+        'balance_before',
         'balance_after',
         'note',
         'occurred_at',
@@ -25,6 +26,9 @@ class StockMovement extends Model
 
     protected $casts = [
         'occurred_at' => 'datetime',
+        'created_at' => 'datetime',
+        'balance_before' => 'integer',
+        'balance_after' => 'integer',
     ];
 
     public function item()

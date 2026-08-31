@@ -70,7 +70,7 @@ class BackupsTest extends TestCase
 
     protected function latestBackupName(): ?string
     {
-        $files = glob(storage_path('app/backups/backup_corplogistics_*.zip')) ?: [];
+        $files = glob(storage_path('app/backups/backup_mvpwarehouse_*.zip')) ?: [];
 
         return $files === [] ? null : basename($files[0]);
     }
@@ -93,7 +93,8 @@ class BackupsTest extends TestCase
     {
         $admin = $this->makeAdmin();
 
-        $this->actingAs($admin)->post('/admin/backups')->assertRedirect('/admin/dashboard');
+        $this->actingAs($admin)->post('/admin/backups')
+            ->assertRedirect(route('admin.backups.index'));
 
         $backup = $this->latestBackupName();
         $this->assertNotNull($backup);
@@ -108,12 +109,14 @@ class BackupsTest extends TestCase
     {
         $admin = $this->makeAdmin();
 
-        $this->actingAs($admin)->post('/admin/backups')->assertRedirect('/admin/dashboard');
+        $this->actingAs($admin)->post('/admin/backups')
+            ->assertRedirect(route('admin.backups.index'));
 
         $backup = $this->latestBackupName();
         $this->assertNotNull($backup);
 
-        $this->actingAs($admin)->delete('/admin/backups/'.$backup)->assertRedirect('/admin/dashboard');
+        $this->actingAs($admin)->delete('/admin/backups/'.$backup)
+            ->assertRedirect(route('admin.backups.index'));
 
         $this->assertFileDoesNotExist(storage_path('app/backups/'.$backup));
     }
@@ -130,7 +133,8 @@ class BackupsTest extends TestCase
         ]);
         $this->assertDatabaseHas('users', ['email' => 'akan-dihapus@example.com']);
 
-        $this->actingAs($admin)->post('/admin/backups')->assertRedirect('/admin/dashboard');
+        $this->actingAs($admin)->post('/admin/backups')
+            ->assertRedirect(route('admin.backups.index'));
 
         $backup = $this->latestBackupName();
         $this->assertNotNull($backup);
@@ -139,7 +143,7 @@ class BackupsTest extends TestCase
         $this->assertDatabaseMissing('users', ['email' => 'akan-dihapus@example.com']);
 
         $this->actingAs($admin)->post('/admin/backups/'.$backup.'/restore')
-            ->assertRedirect('/admin/dashboard');
+            ->assertRedirect(route('admin.backups.index'));
 
         $this->assertDatabaseHas('users', ['email' => 'akan-dihapus@example.com']);
     }
@@ -151,13 +155,13 @@ class BackupsTest extends TestCase
         $this->assertTrue(is_dir($dir) || mkdir($dir, 0755, true));
 
         foreach (range(1, 13) as $i) {
-            $file = $dir.'/backup_corplogistics_2020010'.$i.'000000.zip';
+            $file = $dir.'/backup_mvpwarehouse_2020010'.$i.'000000.zip';
             file_put_contents($file, 'dummy');
         }
 
         $this->actingAs($admin)->post('/admin/backups');
 
-        $backups = glob($dir.'/backup_corplogistics_*.zip') ?: [];
+        $backups = glob($dir.'/backup_mvpwarehouse_*.zip') ?: [];
 
         $this->assertCount(10, $backups);
     }
@@ -167,7 +171,9 @@ class BackupsTest extends TestCase
         $admin = $this->makeAdmin();
 
         $this->actingAs($admin)->get('/admin/backups/tidak-ada.zip/download')->assertStatus(404);
-        $this->actingAs($admin)->delete('/admin/backups/tidak-ada.zip')->assertRedirect('/admin/dashboard');
-        $this->actingAs($admin)->post('/admin/backups/tidak-ada.zip/restore')->assertRedirect('/admin/dashboard');
+        $this->actingAs($admin)->delete('/admin/backups/tidak-ada.zip')
+            ->assertRedirect(route('admin.backups.index'));
+        $this->actingAs($admin)->post('/admin/backups/tidak-ada.zip/restore')
+            ->assertRedirect(route('admin.backups.index'));
     }
 }

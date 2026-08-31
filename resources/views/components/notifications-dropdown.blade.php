@@ -1,6 +1,6 @@
 @php
     $initialUnread = auth()->user()->unreadNotifications()->count();
-    $initialNotifications = auth()->user()->notifications()->limit(10)->get();
+    $initialNotifications = auth()->user()->notifications()->latest()->limit(10)->get();
 @endphp
 
 <div class="relative py-2">
@@ -81,18 +81,24 @@
         return days + ' hari yang lalu';
     }
 
+    function escapeHtml(text) {
+        var el = document.createElement('span');
+        el.textContent = text || '';
+        return el.innerHTML;
+    }
+
     function renderNotification(n) {
         const type = (n.data && n.data.type) || 'info';
         const s = TYPE_STYLES[type] || DEFAULT_STYLE;
         const unread = !n.read_at;
         return '<form method="POST" action="/notifications/' + n.id + '/read" class="' + (unread ? 'bg-blue-50/30' : '') + ' hover:bg-slate-50 transition-all">' +
             '<input type="hidden" name="_token" value="' + CSRF_TOKEN + '">' +
-            '<button type="button" data-notif-id="' + n.id + '" data-url="' + (n.data.url || '') + '" class="notif-item w-full text-left p-4 cursor-pointer">' +
+            '<button type="button" data-notif-id="' + n.id + '" data-url="' + escapeHtml(n.data.url) + '" class="notif-item w-full text-left p-4 cursor-pointer">' +
                 '<div class="flex items-start space-x-3">' +
                     '<div class="w-2 h-2 mt-1.5 ' + s.dot + ' rounded-full shrink-0 ' + (unread ? 'animate-pulse' : '') + '"></div>' +
                     '<div class="flex-1 min-w-0">' +
-                        '<p class="text-xs font-semibold ' + s.badge + ' px-2 py-0.5 rounded w-max mb-1">' + (n.data.title || 'Notifikasi') + '</p>' +
-                        '<p class="text-xs text-slate-600 leading-normal">' + (n.data.message || '') + '</p>' +
+                        '<p class="text-xs font-semibold ' + s.badge + ' px-2 py-0.5 rounded w-max mb-1">' + escapeHtml(n.data.title || 'Notifikasi') + '</p>' +
+                        '<p class="text-xs text-slate-600 leading-normal">' + escapeHtml(n.data.message || '') + '</p>' +
                         '<span class="text-[10px] text-slate-400 block mt-1">' + timeAgo(n.created_at) + '</span>' +
                     '</div>' +
                 '</div>' +
@@ -172,7 +178,18 @@
 
     toggle.addEventListener('click', function (e) {
         e.stopPropagation();
-        panel.classList.toggle('hidden');
+        if (panel.classList.contains('hidden')) {
+            panel.classList.remove('hidden');
+            panel.classList.remove('anim-dropdown-out');
+            panel.classList.add('anim-dropdown-in');
+        } else {
+            panel.classList.remove('anim-dropdown-in');
+            panel.classList.add('anim-dropdown-out');
+            setTimeout(function() {
+                panel.classList.add('hidden');
+                panel.classList.remove('anim-dropdown-out');
+            }, 130);
+        }
         if (!panel.classList.contains('hidden') && (Date.now() - lastPoll > 5000)) {
             poll();
         }
@@ -181,7 +198,12 @@
     document.addEventListener('click', function (e) {
         if (panel.classList.contains('hidden')) return;
         if (panel.contains(e.target) || toggle.contains(e.target)) return;
-        panel.classList.add('hidden');
+        panel.classList.remove('anim-dropdown-in');
+        panel.classList.add('anim-dropdown-out');
+        setTimeout(function() {
+            panel.classList.add('hidden');
+            panel.classList.remove('anim-dropdown-out');
+        }, 130);
     });
 
     markAllBtn.addEventListener('click', function () { markAllAsRead(); });

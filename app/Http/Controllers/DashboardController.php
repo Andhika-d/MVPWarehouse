@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Item;
 use App\Models\StockRequest;
+use App\Models\StorageLocation;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -43,43 +45,167 @@ class DashboardController extends Controller
         $racks = ['A', 'B', 'C', 'D', 'E'];
 
         $rackData = collect($racks)->map(function ($rack) {
-            $items = Item::where('rack_location', $rack)->get();
+            $total = StorageLocation::where('rack', $rack)->count();
+            $occupied = StorageLocation::where('rack', $rack)
+                ->where('status', StorageLocation::STATUS_OCCUPIED)->count();
+            $totalStock = (int) DB::table('storage_locations')
+                ->join('items', 'items.storage_location_id', '=', 'storage_locations.id')
+                ->where('storage_locations.rack', $rack)
+                ->where('storage_locations.status', StorageLocation::STATUS_OCCUPIED)
+                ->sum('items.stock');
+
             return [
                 'rack' => $rack,
-                'items' => $items,
-                'totalItems' => $items->count(),
-                'totalStock' => $items->sum('stock'),
+                'total' => $total,
+                'totalItems' => $occupied,
+                'totalStock' => $totalStock,
             ];
         });
 
         $activeRack = request('rack');
-        $items = $activeRack
-            ? Item::where('rack_location', $activeRack)->get()
-            : collect();
+        $search = request('search');
+        $status = request('status');
 
-        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'items'));
+        $query = StorageLocation::with('items');
+
+        if ($activeRack) {
+            $query->where('rack', $activeRack);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('sub_location', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%")
+                            ->orWhere('size', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($status === 'occupied') {
+            $query->where('status', StorageLocation::STATUS_OCCUPIED);
+        } elseif ($status === 'empty') {
+            $query->where('status', StorageLocation::STATUS_EMPTY);
+        } elseif ($status === 'item_empty') {
+            $query->whereHas('items', function ($itemQuery) {
+                $itemQuery->where('stock', 0);
+            });
+        }
+
+        $locations = $query->orderBy('sub_location', 'asc')
+            ->orderBy('number', 'asc')
+            ->paginate(20)
+            ->appends(request()->query());
+
+        $basePath = '/gudang/stock';
+
+        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status'));
+    }
+
+    public function hrStock()
+    {
+        $racks = ['A', 'B', 'C', 'D', 'E'];
+
+        $rackData = collect($racks)->map(function ($rack) {
+            $total = StorageLocation::where('rack', $rack)->count();
+            $occupied = StorageLocation::where('rack', $rack)
+                ->where('status', StorageLocation::STATUS_OCCUPIED)->count();
+            $totalStock = (int) DB::table('storage_locations')
+                ->join('items', 'items.storage_location_id', '=', 'storage_locations.id')
+                ->where('storage_locations.rack', $rack)
+                ->where('storage_locations.status', StorageLocation::STATUS_OCCUPIED)
+                ->sum('items.stock');
+
+            return [
+                'rack' => $rack,
+                'total' => $total,
+                'totalItems' => $occupied,
+                'totalStock' => $totalStock,
+            ];
+        });
+
+        $activeRack = request('rack');
+        $search = request('search');
+        $status = request('status');
+
+        $query = StorageLocation::with('items');
+
+        if ($activeRack) {
+            $query->where('rack', $activeRack);
+        }
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('code', 'like', "%{$search}%")
+                    ->orWhere('sub_location', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%")
+                            ->orWhere('size', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($status === 'occupied') {
+            $query->where('status', StorageLocation::STATUS_OCCUPIED);
+        } elseif ($status === 'empty') {
+            $query->where('status', StorageLocation::STATUS_EMPTY);
+        } elseif ($status === 'item_empty') {
+            $query->whereHas('items', function ($itemQuery) {
+                $itemQuery->where('stock', 0);
+            });
+        }
+
+        $locations = $query->orderBy('sub_location', 'asc')
+            ->orderBy('number', 'asc')
+            ->paginate(20)
+            ->appends(request()->query());
+
+        $basePath = '/hr/stock';
+
+        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status'));
     }
 
     public function hrDashboard()
     {
-        $requests = StockRequest::with(['item', 'user'])
+        $actionableRequests = StockRequest::with(['item', 'user'])
+            ->whereIn('status', ['Menunggu Review', 'Pending'])
+            ->orderByRaw("CASE WHEN priority = 'Mendesak' THEN 0 ELSE 1 END")
             ->latest()
-            ->take(5)
             ->get();
 
         $pendingRequests = StockRequest::whereIn('status', ['Menunggu Review', 'Pending'])->count();
         $urgentRequests = StockRequest::where('priority', 'Mendesak')
             ->whereIn('status', ['Menunggu Review', 'Pending'])
             ->count();
-        $approvedRequests = StockRequest::where('status', 'Disetujui')
-            ->whereNull('completed_at')
-            ->count();
+        $approvedRequests = StockRequest::where('status', 'Disetujui')->count();
         $rejectedRequests = StockRequest::where('status', 'Ditolak')->count();
-        $monthlyRequests = StockRequest::selectRaw('COUNT(*) as total, strftime("%m", created_at) as month')
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
+        $waitingReceipt = StockRequest::whereIn('status', ['Disetujui', 'Sebagian Diterima'])
+            ->whereColumn('received_quantity', '<', 'quantity')
+            ->count();
+        $completedRequests = StockRequest::where('status', 'Diterima Penuh')->count();
 
-        return view('hr.dashboard', compact('requests', 'pendingRequests', 'urgentRequests', 'approvedRequests', 'rejectedRequests', 'monthlyRequests'));
+        $now = now();
+        $monthlyTotal = StockRequest::whereYear('created_at', $now->year)
+            ->whereMonth('created_at', $now->month)
+            ->count();
+
+        $statusDistribution = StockRequest::whereYear('created_at', $now->year)
+            ->whereMonth('created_at', $now->month)
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
+        return view('hr.dashboard', compact(
+            'actionableRequests',
+            'pendingRequests',
+            'urgentRequests',
+            'approvedRequests',
+            'rejectedRequests',
+            'waitingReceipt',
+            'completedRequests',
+            'monthlyTotal',
+            'statusDistribution',
+        ));
     }
 }

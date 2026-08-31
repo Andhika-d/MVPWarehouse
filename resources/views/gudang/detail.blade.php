@@ -18,7 +18,7 @@
                     <p class="text-sm text-slate-500 mt-0.5">{{ $request->user?->name ?? 'Gudang' }} &middot; {{ $request->created_at->translatedFormat('d M Y, H:i') }}</p>
                 </div>
                 <span class="shrink-0 px-3 py-1 rounded-full text-xs font-semibold
-                    {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
+                    {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : ($request->status === 'Diterima Penuh' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Sebagian Diterima' ? 'bg-indigo-50 text-indigo-700' : ($request->status === 'Ditutup Sebagian' ? 'bg-slate-100 text-slate-700' : ($request->status === 'Dibatalkan' ? 'bg-stone-100 text-stone-700' : 'bg-amber-50 text-amber-700'))))) }}">
                     {{ $request->status }}
                 </span>
             </div>
@@ -34,14 +34,45 @@
                     <p class="font-semibold text-slate-900 mt-0.5">{{ $request->priority }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-slate-500">Lokasi Rak</p>
-                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->item?->rack_location ?? '—' }}</p>
+                    <p class="text-xs text-slate-500">Kode Tag</p>
+                    <p class="font-semibold text-slate-900 mt-0.5 font-mono text-xs whitespace-nowrap">{{ $request->item?->storageLocation?->code ?? '—' }}</p>
                 </div>
                 <div>
+                    <p class="text-xs text-slate-500">Lokasi Rak</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->item?->storageLocation?->rack ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Sub Lokasi</p>
+                    <p class="font-semibold text-slate-900 mt-0.5 font-mono text-xs">{{ $request->item?->storageLocation?->sub_location ?? '—' }}</p>
+                </div>
+                <div class>
                     <p class="text-xs text-slate-500">Catatan Review</p>
                     <p class="font-semibold text-slate-900 mt-0.5">{{ $request->review_note ?: '—' }}</p>
                 </div>
+                <div>
+                    <p class="text-xs text-slate-500">Diterima</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->received_quantity }} {{ $request->unit }}</p>
+                </div>
             </div>
+
+            @if($request->isClosed() && $request->closed_at)
+            <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-sm">
+                <div>
+                    <p class="text-xs text-slate-500">Ditutup oleh</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->closedBy?->name ?? '—' }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">Waktu Penutupan</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->closed_at->translatedFormat('d M Y, H:i') }}</p>
+                </div>
+            </div>
+            @if($request->close_note)
+            <div class="mt-4 pt-4 border-t border-slate-100">
+                <p class="text-xs text-slate-500">Alasan Penutupan</p>
+                <p class="text-sm text-slate-700 mt-0.5">{{ $request->close_note }}</p>
+            </div>
+            @endif
+            @endif
 
             @if($request->reason)
             <div class="mt-4 pt-4 border-t border-slate-100">

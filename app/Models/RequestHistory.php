@@ -13,6 +13,10 @@ class RequestHistory extends Model
         'note',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+    ];
+
     public function stockRequest()
     {
         return $this->belongsTo(StockRequest::class);

@@ -52,6 +52,10 @@ class AuthController extends Controller
                 return redirect()->intended('/admin/dashboard');
             }
 
+            if ($user->role === 'director') {
+                return redirect()->intended('/director/dashboard');
+            }
+
             return redirect()->intended('/gudang/dashboard');
         }
 
@@ -117,6 +121,7 @@ class AuthController extends Controller
         return match ($role) {
             'hr' => '/hr/dashboard',
             'admin' => '/admin/dashboard',
+            'director' => '/director/dashboard',
             default => '/gudang/dashboard',
         };
     }
