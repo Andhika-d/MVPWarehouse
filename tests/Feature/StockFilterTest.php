@@ -37,8 +37,9 @@ class StockFilterTest extends TestCase
     public function test_barang_kosong_filter_is_different_from_empty_location_filter(): void
     {
         $user = $this->user('gudang');
-        $emptyLocation = $this->location('B-001', 'B', 1, StorageLocation::STATUS_EMPTY);
-        $zeroStockLocation = $this->location('B-002', 'B', 2, StorageLocation::STATUS_OCCUPIED);
+        $prefix = StorageLocation::getPrefixForRack('B');
+        $emptyLocation = $this->location($prefix.'-001', 'B', 1, StorageLocation::STATUS_EMPTY);
+        $zeroStockLocation = $this->location($prefix.'-002', 'B', 2, StorageLocation::STATUS_OCCUPIED);
 
         Item::create([
             'name' => 'Lakban Besar',
@@ -50,12 +51,12 @@ class StockFilterTest extends TestCase
         $itemEmptyResponse = $this->actingAs($user)->get('/gudang/stock?status=item_empty');
         $itemEmptyResponse->assertOk();
         $itemEmptyResponse->assertSee('Lakban Besar');
-        $itemEmptyResponse->assertSee('B-002');
-        $itemEmptyResponse->assertDontSee('B-001');
+        $itemEmptyResponse->assertSee($prefix.'-002');
+        $itemEmptyResponse->assertDontSee($prefix.'-001');
 
         $emptyResponse = $this->actingAs($user)->get('/gudang/stock?status=empty');
         $emptyResponse->assertOk();
-        $emptyResponse->assertSee('B-001');
+        $emptyResponse->assertSee($prefix.'-001');
         $emptyResponse->assertDontSee('Lakban Besar');
     }
 }
