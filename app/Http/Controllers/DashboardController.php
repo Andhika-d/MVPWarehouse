@@ -100,7 +100,9 @@ class DashboardController extends Controller
 
         $basePath = '/gudang/stock';
 
-        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status'));
+        $summary = $this->stockSummary();
+
+        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status', 'summary'));
     }
 
     public function hrStock()
@@ -163,7 +165,19 @@ class DashboardController extends Controller
 
         $basePath = '/hr/stock';
 
-        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status'));
+        $summary = $this->stockSummary();
+
+        return view('gudang.stock', compact('rackData', 'racks', 'activeRack', 'locations', 'basePath', 'search', 'status', 'summary'));
+    }
+
+    private function stockSummary(): array
+    {
+        return [
+            'total_items' => StorageLocation::count(),
+            'total_stock' => (int) Item::sum('stock'),
+            'low_stock' => Item::where('stock', '>', 0)->where('stock', '<=', 5)->count(),
+            'out_of_stock' => Item::where('stock', 0)->count(),
+        ];
     }
 
     public function hrDashboard()

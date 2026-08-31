@@ -189,7 +189,7 @@ class StockPaginationTest extends TestCase
         $response->assertDontSee('Kertas HVS');
     }
 
-    public function test_stock_without_rack_selected_shows_rack_cards(): void
+    public function test_stock_without_rack_selected_shows_monitoring_table(): void
     {
         $gudang = $this->makeUser('gudang');
 
@@ -197,8 +197,8 @@ class StockPaginationTest extends TestCase
 
         $response = $this->actingAs($gudang)->get('/gudang/stock');
         $response->assertOk();
-        $response->assertSee('Lihat Barang');
-        $response->assertDontSee('Buku');
+        $response->assertSee('Monitoring Stok');
+        $response->assertSee('Buku');
     }
 
     public function test_stock_page_search_preserves_across_pagination(): void
@@ -220,6 +220,6 @@ class StockPaginationTest extends TestCase
 
         $response = $this->actingAs($gudang)->get('/gudang/stock?rack=A');
         $response->assertOk();
-        $response->assertSee('Tidak ada data ditemukan');
+        $response->assertSee('Tidak ada data lokasi.');
     }
 }
