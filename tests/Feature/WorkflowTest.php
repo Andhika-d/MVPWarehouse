@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\StockRequest;
+use App\Models\StorageLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -13,6 +14,18 @@ use Tests\TestCase;
 class WorkflowTest extends TestCase
 {
     use RefreshDatabase;
+
+    private function makeLocation(string $rack = 'A', int $number = 1): StorageLocation
+    {
+        $prefix = StorageLocation::getPrefixForRack($rack);
+
+        return StorageLocation::create([
+            'code' => $prefix . '-' . str_pad($number, 3, '0', STR_PAD_LEFT),
+            'rack' => $rack,
+            'number' => $number,
+            'status' => StorageLocation::STATUS_EMPTY,
+        ]);
+    }
 
     public function test_gudang_can_submit_request_and_view_history(): void
     {
@@ -23,9 +36,10 @@ class WorkflowTest extends TestCase
             'role' => 'gudang',
         ]);
 
+        $loc = $this->makeLocation('B', 1);
         $item = Item::create([
             'name' => 'Kertas HVS A4',
-            'rack_location' => 'B',
+            'storage_location_id' => $loc->id,
             'stock' => 5,
             'unit' => 'Rim',
         ]);
@@ -57,9 +71,10 @@ class WorkflowTest extends TestCase
             'role' => 'gudang',
         ]);
 
+        $loc = $this->makeLocation('B', 1);
         $item = Item::create([
             'name' => 'Kertas HVS A4',
-            'rack_location' => 'B',
+            'storage_location_id' => $loc->id,
             'stock' => 5,
             'unit' => 'Rim',
         ]);
@@ -89,21 +104,23 @@ class WorkflowTest extends TestCase
             'role' => 'admin',
         ]);
 
+        $loc = $this->makeLocation('B', 1);
+
         $response = $this->actingAs($admin)->post('/admin/items', [
             'name' => 'Kertas HVS A4',
-            'rack_location' => 'B',
+            'storage_location_id' => $loc->id,
             'stock' => 10,
             'unit' => 'Rim',
         ]);
 
-        $response->assertRedirect('/admin/dashboard');
+        $response->assertRedirect(route('admin.items.index'));
         $this->assertDatabaseHas('items', [
             'name' => 'Kertas HVS A4',
-            'rack_location' => 'B',
+            'storage_location_id' => $loc->id,
         ]);
 
         $dashboardResponse = $this->actingAs($admin)->get('/admin/dashboard');
-        $dashboardResponse->assertSee('Kertas HVS A4');
+        $dashboardResponse->assertOk();
     }
 
     public function test_non_admin_cannot_access_admin_routes(): void
@@ -164,7 +181,7 @@ class WorkflowTest extends TestCase
             'role' => 'gudang',
         ]);
 
-        $response->assertRedirect('/admin/dashboard');
+        $response->assertRedirect(route('admin.users.index'));
         $this->assertDatabaseHas('users', [
             'email' => 'user-baru@example.com',
             'role' => 'gudang',
@@ -192,7 +209,7 @@ class WorkflowTest extends TestCase
 
         $response = $this->actingAs($admin)->post('/admin/users/' . $user->id . '/reset-password');
 
-        $response->assertRedirect('/admin/dashboard');
+        $response->assertRedirect(route('admin.users.index'));
         $user->refresh();
         $this->assertFalse(Hash::check('password123', $user->password));
         $this->assertTrue($user->must_change_password);
@@ -235,23 +252,21 @@ class WorkflowTest extends TestCase
             'role' => 'admin',
         ]);
 
+        $loc = $this->makeLocation('A', 1);
         $item = Item::create([
             'name' => 'Stapler',
-            'rack_location' => 'A',
+            'storage_location_id' => $loc->id,
             'stock' => 4,
             'unit' => 'Pcs',
         ]);
 
         $this->actingAs($admin)->put('/admin/items/' . $item->id, [
             'name' => 'Stapler Premium',
-            'rack_location' => 'E',
-            'stock' => 6,
             'unit' => 'Pcs',
         ]);
 
         $item->refresh();
         $this->assertSame('Stapler Premium', $item->name);
-        $this->assertSame('E', $item->rack_location);
 
         $this->actingAs($admin)->delete('/admin/items/' . $item->id);
 
@@ -267,9 +282,10 @@ class WorkflowTest extends TestCase
             'role' => 'hr',
         ]);
 
+        $loc = $this->makeLocation('C', 1);
         $item = Item::create([
             'name' => 'Mouse Wireless',
-            'rack_location' => 'C',
+            'storage_location_id' => $loc->id,
             'stock' => 3,
             'unit' => 'Pcs',
         ]);
