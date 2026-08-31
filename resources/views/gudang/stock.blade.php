@@ -155,7 +155,7 @@
             {{-- LIST --}}
             <div id="layout-list-items" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse text-sm">
+                <table data-stock-item-results class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
                             <th class="py-3 px-5 whitespace-nowrap">Kode Tag</th>

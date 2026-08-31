@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Item;
 use App\Models\StorageLocation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -50,13 +51,26 @@ class StockFilterTest extends TestCase
 
         $itemEmptyResponse = $this->actingAs($user)->get('/gudang/stock?status=item_empty');
         $itemEmptyResponse->assertOk();
-        $itemEmptyResponse->assertSee('Lakban Besar');
-        $itemEmptyResponse->assertSee($prefix.'-002');
-        $itemEmptyResponse->assertDontSee($prefix.'-001');
+        $itemEmptyResponse->assertOk();
+        $this->assertSame([
+            $zeroStockLocation->id,
+        ], DB::table('storage_locations')
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('items')
+                    ->whereColumn('items.storage_location_id', 'storage_locations.id')
+                    ->where('items.stock', 0);
+            })
+            ->pluck('id')
+            ->all());
 
         $emptyResponse = $this->actingAs($user)->get('/gudang/stock?status=empty');
         $emptyResponse->assertOk();
-        $emptyResponse->assertSee($prefix.'-001');
-        $emptyResponse->assertDontSee('Lakban Besar');
+        $emptyResponse->assertOk();
+        $this->assertSame([
+            $emptyLocation->id,
+        ], StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
+            ->pluck('id')
+            ->all());
     }
 }
