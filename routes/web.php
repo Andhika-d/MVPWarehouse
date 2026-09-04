@@ -17,6 +17,7 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
+//middleware group for authenticated users
 Route::middleware('auth')->group(function () {
     Route::get('/ubah-password', [AuthController::class, 'showChangePassword'])->name('password.change');
     Route::post('/ubah-password', [AuthController::class, 'changePassword']);

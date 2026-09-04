@@ -27,6 +27,7 @@ class AccountStatusTest extends TestCase
         ]);
 
         $response->assertSessionHasErrors('email');
+        $response->assertSessionHasErrors(['email' => 'Email atau password yang Anda masukkan tidak sesuai. Jika membutuhkan bantuan, hubungi administrator.']);
         $this->assertGuest();
     }
 }

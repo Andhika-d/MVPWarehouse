@@ -27,7 +27,7 @@ class AuthController extends Controller
 
             if (! $user->is_active) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Akun ini sedang nonaktif. Hubungi administrator.']);
+                return back()->withErrors(['email' => 'Email atau password yang Anda masukkan tidak sesuai. Jika membutuhkan bantuan, hubungi administrator.']);
             }
 
             $request->session()->regenerate();
@@ -59,7 +59,7 @@ class AuthController extends Controller
             return redirect()->intended('/gudang/dashboard');
         }
 
-        return back()->withErrors(['email' => 'Kredensial tidak valid.']);
+        return back()->withErrors(['email' => 'Email atau password yang Anda masukkan tidak sesuai. Pastikan data sudah benar.']);
     }
 
     public function logout(Request $request)

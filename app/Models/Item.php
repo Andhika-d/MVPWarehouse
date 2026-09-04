@@ -9,7 +9,7 @@ class Item extends Model
 {
     use SoftDeletes;
 
-    public const UNITS = ['Pcs', 'Pck', 'Box', 'Kg', 'Roll', 'Rim'];
+    public const UNITS = ['Pcs', 'Pck', 'Box', 'Kg', 'Roll', 'Rim', 'Set'];
 
     protected $fillable = [
         'name',
