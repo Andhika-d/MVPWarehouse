@@ -225,6 +225,12 @@
                             <span>Maintenance Data</span>
                         </a>
 
+                        <a href="{{ route('admin.help-guides.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.help-guides.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('admin.help-guides.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <span class="flex h-[18px] w-[18px] items-center justify-center rounded-full border text-[11px] font-bold {{ request()->routeIs('admin.help-guides.*') ? 'border-corpblue-500 text-corpblue-500' : 'border-slate-400 text-slate-400 group-hover:border-slate-600 group-hover:text-slate-600' }}">?</span>
+                            <span>Kelola Bantuan</span>
+                        </a>
+
                         @elseif(request()->is('hr*'))
                         <!-- ================= MENU UNTUK HRD ================= -->
 
@@ -430,6 +436,7 @@
                     
                     <!-- Area Kanan Header (Notifikasi Dinamis & Profil Peran) -->
                     <div class="flex items-center space-x-3 md:space-x-6">
+                        <a href="{{ route('help.index') }}" aria-label="Bantuan" title="Bantuan" class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600 cursor-pointer">?</a>
                         
                         <!-- NOTIFIKASI DROPDOWN -->
                         <x-notifications-dropdown />

@@ -5,6 +5,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectorController;
 use App\Http\Controllers\GudangController;
+use App\Http\Controllers\HelpGuideController;
+use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\RequestController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +25,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/ubah-password', [AuthController::class, 'changePassword']);
 
     Route::get('/notifications/poll', [NotificationController::class, 'poll']);
+    Route::get('/bantuan', [HelpGuideController::class, 'index'])->name('help.index');
+    Route::get('/bantuan/{guide:slug}', [HelpGuideController::class, 'show'])->name('help.show');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/admin/impersonation/stop', [AdminController::class, 'stopImpersonation']);
@@ -80,6 +84,14 @@ Route::middleware('auth')->group(function () {
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/help-guides', [AdminHelpGuideController::class, 'index'])->name('help-guides.index');
+        Route::get('/help-guides/create', [AdminHelpGuideController::class, 'create'])->name('help-guides.create');
+        Route::post('/help-guides', [AdminHelpGuideController::class, 'store'])->name('help-guides.store');
+        Route::get('/help-guides/{helpGuide}/edit', [AdminHelpGuideController::class, 'edit'])->name('help-guides.edit');
+        Route::put('/help-guides/{helpGuide}', [AdminHelpGuideController::class, 'update'])->name('help-guides.update');
+        Route::post('/help-guides/{helpGuide}/publish', [AdminHelpGuideController::class, 'publish'])->name('help-guides.publish');
+        Route::post('/help-guides/{helpGuide}/archive', [AdminHelpGuideController::class, 'archive'])->name('help-guides.archive');
+        Route::delete('/help-guides/{helpGuide}', [AdminHelpGuideController::class, 'destroy'])->name('help-guides.destroy');
         // Dashboard
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 

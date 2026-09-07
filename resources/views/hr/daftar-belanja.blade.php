@@ -150,12 +150,7 @@
                 });
 
                 text += '\n_Silakan beli sesuai jumlah di atas dan serahkan ke Gudang saat tiba._';
-
-                navigator.clipboard.writeText(text).then(() => {
-                    alert('Format teks WhatsApp berhasil disalin ke clipboard!\n\nBuka WA Driver dan lakukan paste (Ctrl+V).');
-                }).catch(() => {
-                    alert('Gagal menyalin ke clipboard. Silakan salin manual.');
-                });
+                window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener,noreferrer');
             }
         </script>
 

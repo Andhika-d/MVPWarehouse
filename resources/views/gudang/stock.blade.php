@@ -41,7 +41,7 @@
                 <select name="status" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none cursor-pointer">
                     <option value="" {{ ($status ?? '') === '' ? 'selected' : '' }}>Semua Status</option>
                     <option value="occupied" {{ ($status ?? '') === 'occupied' ? 'selected' : '' }}>Terisi</option>
-                    <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>Kosong</option>
+                    <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>Lokasi Kosong</option>
                     <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>Barang Kosong</option>
                 </select>
                 <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
