@@ -13,7 +13,7 @@
 
         {{-- Form --}}
         <div class="bg-white rounded-xl border border-slate-200 p-6 md:p-8">
-            <form method="POST" action="/gudang/location-change" data-confirm="Ajukan pengajuan pemindahan lokasi ini?" data-confirm-title="Pengajuan Lokasi" data-confirm-tone="info" data-confirm-button="Ajukan" class="space-y-5">
+            <form id="locationChangeForm" method="POST" action="/gudang/location-change" data-confirm="Ajukan pengajuan pemindahan lokasi ini?" data-confirm-title="Pengajuan Lokasi" data-confirm-tone="info" data-confirm-button="Ajukan" class="space-y-5">
                 @csrf
 
                 <div class="grid gap-5 lg:grid-cols-[1fr_auto_1fr] lg:items-stretch">
@@ -284,7 +284,7 @@
                 }
             });
 
-            document.querySelector('form').addEventListener('submit', function (e) {
+            document.getElementById('locationChangeForm').addEventListener('submit', function (e) {
                 if (!targetId.value) {
                     e.preventDefault();
                     alert('Pilih slot tujuan dari hasil pencarian terlebih dahulu.');
