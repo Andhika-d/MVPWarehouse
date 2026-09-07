@@ -35,7 +35,7 @@ class FeatureLockTest extends TestCase
         ]);
     }
 
-    public function test_gudang_stock_page_shows_rack_cards(): void
+    public function test_gudang_stock_page_shows_monitoring_table(): void
     {
         $loc = $this->makeLocation('B', 1);
         Item::create([
@@ -48,9 +48,10 @@ class FeatureLockTest extends TestCase
         $this->actingAs($this->makeUser('gudang'))
             ->get('/gudang/stock')
             ->assertOk()
-            ->assertSee('Lihat Barang')
-            ->assertSee('Rak B')
-            ->assertDontSee('Kertas HVS A4');
+            ->assertSee('Total Lokasi')
+            ->assertSee('Rak')
+            ->assertSee('Nama Barang')
+            ->assertSee('Kertas HVS A4');
 
         $this->actingAs($this->makeUser('gudang'))
             ->get('/gudang/stock?rack=B')

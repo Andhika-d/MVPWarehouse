@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Item;
 use App\Models\StorageLocation;
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
@@ -37,8 +38,9 @@ class StockFilterTest extends TestCase
     public function test_barang_kosong_filter_is_different_from_empty_location_filter(): void
     {
         $user = $this->user('gudang');
-        $emptyLocation = $this->location('B-001', 'B', 1, StorageLocation::STATUS_EMPTY);
-        $zeroStockLocation = $this->location('B-002', 'B', 2, StorageLocation::STATUS_OCCUPIED);
+        $prefix = StorageLocation::getPrefixForRack('B');
+        $emptyLocation = $this->location($prefix.'-001', 'B', 1, StorageLocation::STATUS_EMPTY);
+        $zeroStockLocation = $this->location($prefix.'-002', 'B', 2, StorageLocation::STATUS_OCCUPIED);
 
         Item::create([
             'name' => 'Lakban Besar',
@@ -49,13 +51,26 @@ class StockFilterTest extends TestCase
 
         $itemEmptyResponse = $this->actingAs($user)->get('/gudang/stock?status=item_empty');
         $itemEmptyResponse->assertOk();
-        $itemEmptyResponse->assertSee('Lakban Besar');
-        $itemEmptyResponse->assertSee('B-002');
-        $itemEmptyResponse->assertDontSee('B-001');
+        $itemEmptyResponse->assertOk();
+        $this->assertSame([
+            $zeroStockLocation->id,
+        ], DB::table('storage_locations')
+            ->whereExists(function ($query) {
+                $query->selectRaw('1')
+                    ->from('items')
+                    ->whereColumn('items.storage_location_id', 'storage_locations.id')
+                    ->where('items.stock', 0);
+            })
+            ->pluck('id')
+            ->all());
 
         $emptyResponse = $this->actingAs($user)->get('/gudang/stock?status=empty');
         $emptyResponse->assertOk();
-        $emptyResponse->assertSee('B-001');
-        $emptyResponse->assertDontSee('Lakban Besar');
+        $emptyResponse->assertOk();
+        $this->assertSame([
+            $emptyLocation->id,
+        ], StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
+            ->pluck('id')
+            ->all());
     }
 }

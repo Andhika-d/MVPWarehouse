@@ -272,7 +272,7 @@ class HrWorkflowTest extends TestCase
         $response = $this->actingAs($hr)->get('/hr/stock');
         $response->assertOk();
         $response->assertSee('Stok Barang');
-        $response->assertSee('Rak A');
+        $response->assertSee('Monitoring Stok Barang');
     }
 
     public function test_hr_stock_page_uses_hr_base_path(): void

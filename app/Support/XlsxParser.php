@@ -15,6 +15,8 @@ class XlsxParser
         'kg' => 'Kg',
         'roll' => 'Roll',
         'rim' => 'Rim',
+        'set' => 'Set',
+        'sets' => 'Set',
     ];
 
     /**
