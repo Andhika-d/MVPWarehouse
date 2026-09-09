@@ -33,34 +33,66 @@ class DirectorController extends Controller
             'total_locations' => StorageLocation::count(),
         ];
 
-        // === Overdue: request > 3 hari belum selesai ===
-        $overdueThreshold = $now->copy()->subDays(3);
-        $overdueRequests = StockRequest::with('item', 'user')
+        $stageLabels = [
+            'request_to_approval' => 'Request → Approval',
+            'approval_to_receipt' => 'Approval → Penerimaan Awal',
+            'receipt_to_complete' => 'Penerimaan Awal → Selesai',
+        ];
+        $delayThresholdSeconds = 3 * 86400;
+        $activeStageCounts = array_fill_keys(array_keys($stageLabels), 0);
+
+        $activeBottlenecks = StockRequest::with(['item', 'user', 'requestHistories', 'stockMovements'])
             ->whereIn('status', ['Menunggu Review', 'Pending', 'Disetujui', 'Sebagian Diterima'])
-            ->where('created_at', '<', $overdueThreshold)
-            ->orderByRaw("CASE WHEN priority = 'Mendesak' THEN 0 ELSE 1 END")
-            ->orderBy('created_at')
-            ->take(8)
             ->get()
-            ->map(function ($r) use ($now) {
-                $days = $r->created_at->diffInDays($now);
+            ->map(function ($stockRequest) use ($now, $delayThresholdSeconds, $stageLabels) {
+                $approvalAt = $stockRequest->approved_at
+                    ?? $stockRequest->requestHistories->where('status', 'Disetujui')->sortBy('created_at')->first()?->created_at;
+                $firstReceiptMovement = $stockRequest->stockMovements
+                    ->where('type', StockMovement::TYPE_IN)
+                    ->sortBy(fn ($movement) => $movement->occurred_at ?? $movement->created_at)
+                    ->first();
+                $firstReceiptAt = $firstReceiptMovement?->occurred_at
+                    ?? $firstReceiptMovement?->created_at
+                    ?? $stockRequest->requestHistories->where('status', 'Sebagian Diterima')->sortBy('created_at')->first()?->created_at;
+
+                if (in_array($stockRequest->status, ['Menunggu Review', 'Pending'], true)) {
+                    $stage = 'request_to_approval';
+                    $stageStartedAt = $stockRequest->created_at;
+                } elseif ($stockRequest->status === 'Disetujui') {
+                    $stage = 'approval_to_receipt';
+                    $stageStartedAt = $approvalAt ?? $stockRequest->created_at;
+                } else {
+                    $stage = 'receipt_to_complete';
+                    $stageStartedAt = $firstReceiptAt ?? $approvalAt ?? $stockRequest->created_at;
+                }
+
+                $elapsedSeconds = $stageStartedAt->diffInSeconds($now);
+                if ($elapsedSeconds <= $delayThresholdSeconds) {
+                    return null;
+                }
+
                 return [
-                    'request' => $r,
-                    'days_open' => $days,
-                    'is_urgent' => $r->priority === 'Mendesak',
+                    'request' => $stockRequest,
+                    'stage' => $stage,
+                    'stage_label' => $stageLabels[$stage],
+                    'days_open' => (int) floor($elapsedSeconds / 86400),
+                    'is_urgent' => $stockRequest->priority === 'Mendesak',
                 ];
-            });
+            })
+            ->filter()
+            ->sortByDesc(fn ($item) => ($item['is_urgent'] ? 100000 : 0) + $item['days_open'])
+            ->values();
 
-        $overdueCount = StockRequest::whereIn('status', ['Menunggu Review', 'Pending', 'Disetujui', 'Sebagian Diterima'])
-            ->where('created_at', '<', $overdueThreshold)
-            ->count();
+        foreach ($activeBottlenecks as $item) {
+            $activeStageCounts[$item['stage']]++;
+        }
+        $overdueCount = $activeBottlenecks->count();
 
-        // === Average processing time (completed requests) ===
+        // === Average and historical processing time (last 30 days) ===
         $completedRequests = StockRequest::with('requestHistories', 'stockMovements')
             ->where('status', 'Diterima Penuh')
             ->whereNotNull('completed_at')
-            ->latest('completed_at')
-            ->take(50)
+            ->where('completed_at', '>=', $now->copy()->subDays(30))
             ->get();
 
         $avgDays = null;
@@ -71,32 +103,43 @@ class DirectorController extends Controller
             $avgDays = round($totalDays / $completedRequests->count(), 1);
         }
 
-        // === Process bottleneck analysis ===
-        $recentCompleted = StockRequest::with('requestHistories', 'stockMovements')
-            ->where('status', 'Diterima Penuh')
-            ->where('completed_at', '>=', $now->copy()->subDays(30))
-            ->get();
+        $historicalStageCounts = array_fill_keys(array_keys($stageLabels), 0);
+        $historicalDelayedRequests = 0;
+        foreach ($completedRequests as $stockRequest) {
+            $approvalAt = $stockRequest->approved_at
+                ?? $stockRequest->requestHistories->where('status', 'Disetujui')->sortBy('created_at')->first()?->created_at;
+            $firstReceiptMovement = $stockRequest->stockMovements
+                ->where('type', StockMovement::TYPE_IN)
+                ->sortBy(fn ($movement) => $movement->occurred_at ?? $movement->created_at)
+                ->first();
+            $firstReceiptAt = $firstReceiptMovement?->occurred_at ?? $firstReceiptMovement?->created_at;
+            $hasDelay = false;
 
-        $stageDelays = [
-            'request_to_approval' => 0,
-            'approval_to_receipt' => 0,
-        ];
-        foreach ($recentCompleted as $r) {
-            $approval = $r->requestHistories->where('status', 'Disetujui')->sortBy('created_at')->first();
-            $firstReceipt = $r->stockMovements->where('type', 'IN')->sortBy('occurred_at')->first();
-            if ($approval && $firstReceipt) {
-                $approvalToReceipt = $approval->created_at->diffInDays($firstReceipt->occurred_at ?? $firstReceipt->created_at);
-                if ($approvalToReceipt >= 2) {
-                    $stageDelays['approval_to_receipt']++;
-                }
+            if ($approvalAt && $stockRequest->created_at->diffInSeconds($approvalAt) > $delayThresholdSeconds) {
+                $historicalStageCounts['request_to_approval']++;
+                $hasDelay = true;
             }
-            $requestToApproval = $approval
-                ? $r->created_at->diffInDays($approval->created_at)
-                : null;
-            if ($requestToApproval !== null && $requestToApproval >= 2) {
-                $stageDelays['request_to_approval']++;
+            if ($approvalAt && $firstReceiptAt && $approvalAt->diffInSeconds($firstReceiptAt) > $delayThresholdSeconds) {
+                $historicalStageCounts['approval_to_receipt']++;
+                $hasDelay = true;
+            }
+            if ($firstReceiptAt && $firstReceiptAt->diffInSeconds($stockRequest->completed_at) > $delayThresholdSeconds) {
+                $historicalStageCounts['receipt_to_complete']++;
+                $hasDelay = true;
+            }
+            if ($hasDelay) {
+                $historicalDelayedRequests++;
             }
         }
+
+        $processBottlenecks = [
+            'labels' => $stageLabels,
+            'active_counts' => $activeStageCounts,
+            'active_items' => $activeBottlenecks,
+            'historical_counts' => $historicalStageCounts,
+            'historical_delayed_requests' => $historicalDelayedRequests,
+            'historical_total' => $completedRequests->count(),
+        ];
 
         // === Recent critical events (last 7 days) ===
         $weekAgo = $now->copy()->subDays(7);
@@ -124,8 +167,7 @@ class DirectorController extends Controller
 
         return view('director.dashboard', compact(
             'pendingCount', 'urgentPendingCount', 'waitingReceiptCount',
-            'overdueRequests', 'overdueCount', 'avgDays',
-            'stageDelays',
+            'overdueCount', 'avgDays', 'processBottlenecks',
             'recentMovements', 'recentLocationChanges',
             'warehouseSummary',
         ));
@@ -169,7 +211,10 @@ class DirectorController extends Controller
 
         $histories = $request->requestHistories->sortBy('created_at');
 
-        $movements = $request->stockMovements->sortBy('occurred_at');
+        $allMovements = $request->stockMovements
+            ->sortBy(fn ($movement) => $movement->occurred_at ?? $movement->created_at)
+            ->values();
+        $movements = $allMovements;
 
         $timeline = collect();
 
@@ -301,17 +346,25 @@ class DirectorController extends Controller
         $timeline = $timeline->sortByDesc('time')->values();
 
         $createdAt = $request->created_at;
-        $firstApproval = $histories->where('status', 'Disetujui')->first()?->created_at;
-        $firstReceipt = $movements->where('type', 'IN')->sortBy('occurred_at')->first()?->occurred_at;
+        $firstApproval = $histories->where('status', 'Disetujui')->first()?->created_at ?? $request->approved_at;
+        $receiptMovements = $allMovements->where('type', StockMovement::TYPE_IN)->values();
+        $firstReceiptMovement = $receiptMovements->first();
+        $firstReceipt = $firstReceiptMovement?->occurred_at ?? $firstReceiptMovement?->created_at;
         $completedAt = $request->completed_at;
 
         $durations = [
             'request_to_approval' => null,
             'approval_to_first_receipt' => null,
             'request_to_first_receipt' => null,
+            'fulfillment_duration' => null,
+            'fulfillment_state' => 'not_started',
             'request_to_complete' => null,
             'request_to_close' => null,
             'total_calendar_days' => null,
+            'receipt_count' => $receiptMovements->count(),
+            'received_quantity' => (int) $request->received_quantity,
+            'requested_quantity' => (int) $request->quantity,
+            'unit' => $request->unit,
         ];
 
         if ($firstApproval) {
@@ -322,6 +375,22 @@ class DirectorController extends Controller
         }
         if ($firstReceipt) {
             $durations['request_to_first_receipt'] = $createdAt->diffForHumans($firstReceipt, true);
+
+            if ($completedAt && $receiptMovements->count() === 1) {
+                $durations['fulfillment_duration'] = 'Langsung penuh';
+                $durations['fulfillment_state'] = 'completed';
+            } elseif ($completedAt) {
+                $durations['fulfillment_duration'] = $firstReceipt->diffForHumans($completedAt, true);
+                $durations['fulfillment_state'] = 'completed';
+            } elseif ($request->closed_at) {
+                $durations['fulfillment_duration'] = $request->status === 'Ditutup Sebagian'
+                    ? 'Ditutup setelah '.$firstReceipt->diffForHumans($request->closed_at, true)
+                    : 'Dibatalkan';
+                $durations['fulfillment_state'] = 'closed';
+            } else {
+                $durations['fulfillment_duration'] = $firstReceipt->diffForHumans(now(), true).' berjalan';
+                $durations['fulfillment_state'] = 'ongoing';
+            }
         }
         if ($completedAt) {
             $durations['request_to_complete'] = $createdAt->diffForHumans($completedAt, true);

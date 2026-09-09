@@ -2,7 +2,7 @@
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari barang atau keterangan..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 <select name="type" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Tipe</option>
@@ -10,7 +10,9 @@
                     <option value="OUT" {{ ($type ?? '') === 'OUT' ? 'selected' : '' }}>Barang Keluar</option>
                     <option value="ADJUSTMENT" {{ ($type ?? '') === 'ADJUSTMENT' ? 'selected' : '' }}>Penyesuaian</option>
                 </select>
-                <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
+                @if(request()->filled('search') || (request()->filled('type') && request('type') !== 'all'))
+                <a href="/director/movements" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                @endif
             </form>
         </div>
 
@@ -46,9 +48,9 @@
                             <td class="px-5 py-3 text-slate-600 font-medium">
                                 <span>{{ $mov->balance_after ?? '—' }} {{ $mov->unit }}</span>
                                 @if($mov->balance_before !== null)
-                                <span class="relative inline-flex group ml-1 align-middle">
-                                    <button type="button" aria-label="Lihat detail saldo" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
-                                    <span class="pointer-events-none absolute z-20 left-1/2 top-full mt-2 hidden w-44 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-normal leading-relaxed text-white shadow-lg group-hover:block">
+                                <span class="relative inline-flex ml-1 align-middle">
+                                    <button type="button" data-balance-tooltip aria-label="Lihat detail saldo" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
+                                    <span class="balance-tooltip-content hidden">
                                         Stok sebelum: <strong>{{ $mov->balance_before }} {{ $mov->unit }}</strong><br>
                                         Perubahan: <strong>{{ $mov->type === 'OUT' ? '-' : '+' }}{{ $mov->quantity }} {{ $mov->unit }}</strong><br>
                                         Stok setelah: <strong>{{ $mov->balance_after }} {{ $mov->unit }}</strong>
