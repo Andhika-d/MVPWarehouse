@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Export Permintaan</title>
+    <title>{{ $title ?? 'Export Permintaan' }}</title>
     <style>
         body { font-family: Arial, sans-serif; font-size: 12px; color: #111827; }
         table { width: 100%; border-collapse: collapse; margin-top: 12px; }
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <h2>Daftar Permintaan Barang</h2>
+    <h2>{{ $title ?? 'Daftar Permintaan Barang' }}</h2>
     <table>
         <thead>
             <tr>

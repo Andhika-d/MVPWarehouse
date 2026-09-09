@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Exports\StockRequestExport;
 use App\Models\AuditLog;
 use App\Models\Item;
+use App\Models\ProcurementNote;
 use App\Models\RequestHistory;
 use App\Models\StockRequest;
 use App\Models\User;
@@ -31,6 +32,21 @@ class RequestController extends Controller
 
         try {
             return Carbon::parse($value);
+        } catch (\Exception) {
+            return null;
+        }
+    }
+
+    private function safeDate(?string $value): ?Carbon
+    {
+        if ($value === null || ! preg_match('/^\d{4}-\d{2}-\d{2}$/', $value)) {
+            return null;
+        }
+
+        try {
+            $date = Carbon::createFromFormat('Y-m-d', $value);
+
+            return $date->format('Y-m-d') === $value ? $date : null;
         } catch (\Exception) {
             return null;
         }
@@ -151,23 +167,7 @@ class RequestController extends Controller
 
     public function approvalIndex(Request $request)
     {
-        $query = StockRequest::with(['item.storageLocation', 'user', 'requestHistories.user'])
-            ->where(function ($query) {
-                $query->where('status', 'Menunggu Review')->orWhere('status', 'Pending');
-            });
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('item', function ($itemQuery) use ($search) {
-                    $itemQuery->where('name', 'like', "%{$search}%");
-                })->orWhere('item_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status') && $request->input('status') !== 'all') {
-            $query->where('status', $request->input('status'));
-        }
+        $query = $this->buildExportQuery($request, 'approval')->with('requestHistories.user');
 
         $requests = $query->latest()->paginate(20)->withQueryString();
 
@@ -190,38 +190,65 @@ class RequestController extends Controller
 
     public function shoppingList(Request $request)
     {
-        $query = StockRequest::with('item.storageLocation')
-            ->where('status', 'Disetujui');
+        $queueQuery = StockRequest::with(['item.storageLocation', 'user'])
+            ->where('status', 'Disetujui')
+            ->whereNull('procurement_note_id');
+        $notesQuery = ProcurementNote::with('creator')->withCount('items');
 
-        if ($request->filled('month')) {
-            $date = $this->safeMonth($request->input('month'));
-            if ($date) {
-                $query->whereYear('created_at', $date->year)
-                      ->whereMonth('created_at', $date->month);
-            }
+        $exactDate = $this->safeDate($request->input('date'));
+        if ($exactDate) {
+            $queueQuery->where(function ($query) use ($exactDate) {
+                $query->where(function ($approved) use ($exactDate) {
+                    $approved->whereNotNull('approved_at')->whereDate('approved_at', $exactDate->toDateString());
+                })->orWhere(function ($created) use ($exactDate) {
+                    $created->whereNull('approved_at')->whereDate('created_at', $exactDate->toDateString());
+                });
+            });
+            $notesQuery->where(function ($query) use ($exactDate) {
+                $query->where(function ($issued) use ($exactDate) {
+                    $issued->whereNotNull('issued_at')->whereDate('issued_at', $exactDate->toDateString());
+                })->orWhere(function ($created) use ($exactDate) {
+                    $created->whereNull('issued_at')->whereDate('created_at', $exactDate->toDateString());
+                });
+            });
         }
 
-        $requests = $query->latest()->paginate(20)->withQueryString();
+        $requests = $queueQuery->latest('approved_at')->latest()->get();
+        $notes = $notesQuery->latest()->paginate(20)->withQueryString();
 
-        return view('hr.daftar-belanja', compact('requests'));
+        return view('hr.daftar-belanja', compact('requests', 'notes'));
     }
 
     public function exportShoppingListExcel(Request $request)
     {
-        $query = StockRequest::with('item.storageLocation')
-            ->where('status', 'Disetujui');
+        $rows = $this->buildShoppingListExportRows($request);
+        $export = new StockRequestExport(array_map('array_values', $rows));
 
-        if ($request->filled('month')) {
-            $date = $this->safeMonth($request->input('month'));
-            if ($date) {
-                $query->whereYear('created_at', $date->year)
-                      ->whereMonth('created_at', $date->month);
-            }
+        return response($export->toXlsx(), 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="daftar-belanja-driver.xlsx"');
+    }
+
+    protected function buildShoppingListExportRows(Request $request): array
+    {
+        $query = StockRequest::with('item.storageLocation')
+            ->where('status', 'Disetujui')
+            ->whereNull('procurement_note_id');
+
+        $exactDate = $this->safeDate($request->input('date'));
+        if ($exactDate) {
+            $query->where(function ($filter) use ($exactDate) {
+                $filter->where(function ($approved) use ($exactDate) {
+                    $approved->whereNotNull('approved_at')->whereDate('approved_at', $exactDate->toDateString());
+                })->orWhere(function ($created) use ($exactDate) {
+                    $created->whereNull('approved_at')->whereDate('created_at', $exactDate->toDateString());
+                });
+            });
         }
 
         $requests = $query->latest()->get();
 
-        $rows = $requests->map(function ($stockRequest) {
+        return $requests->map(function ($stockRequest) {
             return [
                 $stockRequest->id,
                 $stockRequest->user?->name,
@@ -234,12 +261,27 @@ class RequestController extends Controller
                 $stockRequest->review_note,
             ];
         })->toArray();
+    }
 
-        $export = new StockRequestExport($rows);
+    public function previewHistoryExport(Request $request)
+    {
+        return $this->previewRequestExport($request, 'gudang', 'Riwayat Permintaan', '/gudang/history');
+    }
 
-        return response($export->toXlsx(), 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="daftar-belanja-driver.xlsx"');
+    public function previewApprovalExport(Request $request)
+    {
+        $date = $this->safeDate($request->input('date'));
+        $title = $date ? 'Approval Nota #NOTA-'.$date->format('Ymd') : 'Approval Permintaan';
+
+        return $this->previewRequestExport($request, 'approval', $title, '/hr/approval');
+    }
+
+    public function previewHrHistoryExport(Request $request)
+    {
+        $date = $this->safeDate($request->input('date'));
+        $title = $date ? 'Nota Pengadaan #NOTA-'.$date->format('Ymd') : 'Riwayat Permintaan HR';
+
+        return $this->previewRequestExport($request, 'hr', $title, '/hr/history');
     }
 
     public function exportHistoryPdf(Request $request)
@@ -262,16 +304,21 @@ class RequestController extends Controller
     {
         $requests = $this->buildExportQuery($request, 'approval')->latest()->get();
         $rows = $this->buildExportRows($requests);
+        $date = $this->safeDate($request->input('date'));
+        $filename = $date ? 'approval-nota-'.$date->format('Ymd').'.pdf' : 'approval-permintaan.pdf';
+        $title = $date ? 'Approval Nota #NOTA-'.$date->format('Ymd') : 'Daftar Permintaan Barang';
 
-        return $this->downloadPdf('approval-permintaan.pdf', $rows);
+        return $this->downloadPdf($filename, $rows, $title);
     }
 
     public function exportApprovalExcel(Request $request)
     {
         $requests = $this->buildExportQuery($request, 'approval')->latest()->get();
         $rows = array_map('array_values', $this->buildExportRows($requests));
+        $date = $this->safeDate($request->input('date'));
+        $filename = $date ? 'approval-nota-'.$date->format('Ymd').'.xlsx' : 'approval-permintaan.xlsx';
 
-        return $this->downloadXlsx('approval-permintaan.xlsx', $rows);
+        return $this->downloadXlsx($filename, $rows);
     }
 
     public function hrHistory(Request $request)
@@ -287,16 +334,21 @@ class RequestController extends Controller
     {
         $requests = $this->buildExportQuery($request, 'hr')->latest()->get();
         $rows = $this->buildExportRows($requests);
+        $date = $this->safeDate($request->input('date'));
+        $filename = $date ? 'nota-pengadaan-'.$date->format('Ymd').'.pdf' : 'riwayat-hr.pdf';
+        $title = $date ? 'Nota Pengadaan #NOTA-'.$date->format('Ymd') : 'Daftar Permintaan Barang';
 
-        return $this->downloadPdf('riwayat-hr.pdf', $rows);
+        return $this->downloadPdf($filename, $rows, $title);
     }
 
     public function exportHrHistoryExcel(Request $request)
     {
         $requests = $this->buildExportQuery($request, 'hr')->latest()->get();
         $rows = array_map('array_values', $this->buildExportRows($requests));
+        $date = $this->safeDate($request->input('date'));
+        $filename = $date ? 'nota-pengadaan-'.$date->format('Ymd').'.xlsx' : 'riwayat-hr.xlsx';
 
-        return $this->downloadXlsx('riwayat-hr.xlsx', $rows);
+        return $this->downloadXlsx($filename, $rows);
     }
 
     public function hrCloseSisa(StockRequest $request, Request $httpRequest)
@@ -345,12 +397,16 @@ class RequestController extends Controller
             $query->where('status', $request->input('status'));
         }
 
+        if (in_array($scope, ['approval', 'hr'], true) && ($date = $this->safeDate($request->input('date')))) {
+            $query->whereDate('created_at', $date->format('Y-m-d'));
+        }
+
         return $query;
     }
 
-    protected function downloadPdf(string $filename, array $rows)
+    protected function downloadPdf(string $filename, array $rows, string $title = 'Daftar Permintaan Barang')
     {
-        $pdf = Pdf::loadView('exports.stock-requests', ['rows' => $rows]);
+        $pdf = Pdf::loadView('exports.stock-requests', ['rows' => $rows, 'title' => $title]);
 
         return $pdf->download($filename);
     }
@@ -379,6 +435,36 @@ class RequestController extends Controller
                 'catatan' => $stockRequest->review_note,
             ];
         })->toArray();
+    }
+
+    protected function previewRequestExport(Request $request, string $scope, string $title, string $basePath)
+    {
+        $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        return $this->exportPreview(
+            $title,
+            $this->stockRequestExportColumns(),
+            $rows,
+            $this->exportUrl($basePath, $request),
+            [
+                ['format' => 'PDF', 'url' => $this->exportUrl($basePath.'/export/pdf', $request)],
+                ['format' => 'Excel', 'url' => $this->exportUrl($basePath.'/export/excel', $request)],
+            ]
+        );
+    }
+
+    protected function stockRequestExportColumns(): array
+    {
+        return ['ID', 'Pemohon', 'Barang', 'Jumlah', 'Satuan', 'Prioritas', 'Status', 'Tanggal', 'Catatan Review'];
+    }
+
+    protected function exportUrl(string $path, Request $request): string
+    {
+        return url($path).($request->getQueryString() ? '?'.$request->getQueryString() : '');
     }
 
     public function approve(StockRequest $request, Request $httpRequest)

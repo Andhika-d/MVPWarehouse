@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ProcurementNote;
 use App\Exports\LocationChangeExport;
 use App\Exports\StockMovementExport;
 use App\Models\Item;
@@ -91,6 +92,8 @@ class GudangController extends Controller
             } else {
                 $stockRequest->update(['status' => 'Sebagian Diterima']);
             }
+
+            ProcurementNote::syncFromRequest($stockRequest->fresh());
 
             $balanceBefore = $item->stock;
             $item->increment('stock', $receiveQty);
@@ -384,6 +387,38 @@ class GudangController extends Controller
 
     public function exportMovementExcel(Request $request)
     {
+        [, $rows, $filename] = $this->movementExportData($request);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        $export = new StockMovementExport($rows);
+
+        return response($export->toXlsx(), 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    public function previewMovementExport(Request $request)
+    {
+        [, $rows] = $this->movementExportData($request);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        return $this->exportPreview(
+            'Perubahan Stok',
+            ['Tanggal', 'Barang', 'Tipe', 'Jumlah', 'Satuan', 'Stok Sebelum', 'Stok Setelah', 'Keterangan', 'User'],
+            $rows,
+            $this->exportUrl('/gudang/movements', $request, ['export_type']),
+            [['format' => 'Excel', 'url' => $this->exportUrl('/gudang/movements/export/excel', $request)]]
+        );
+    }
+
+    protected function movementExportData(Request $request): array
+    {
         $validated = $request->validate([
             'export_type' => ['required', 'in:in,out,in_out,adjustment,all'],
             'item_id' => ['nullable', 'exists:items,id'],
@@ -440,12 +475,6 @@ class GudangController extends Controller
             }
         });
 
-        if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
-        }
-
-        $export = new StockMovementExport($rows);
-
         $filenames = [
             'in' => 'barang-masuk.xlsx',
             'out' => 'barang-keluar.xlsx',
@@ -456,9 +485,27 @@ class GudangController extends Controller
 
         $filename = $filenames[$validated['export_type']] ?? 'perubahan-stok.xlsx';
 
-        return response($export->toXlsx(), 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+        return [$validated, $rows, $filename];
+    }
+
+    public function previewLocationChangesExport(Request $request)
+    {
+        $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'gudang')->get());
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        return $this->exportPreview(
+            'Riwayat Pengajuan Lokasi',
+            ['ID', 'Barang', 'Kode Asal', 'Sub Asal', 'Kode Tujuan', 'Sub Tujuan', 'Pemohon', 'Status', 'Aksi', 'Diajukan', 'Diputuskan', 'Alasan', 'Catatan'],
+            $rows,
+            $this->exportUrl('/gudang/location-change', $request),
+            [
+                ['format' => 'PDF', 'url' => $this->exportUrl('/gudang/location-change/export/pdf', $request)],
+                ['format' => 'Excel', 'url' => $this->exportUrl('/gudang/location-change/export/excel', $request)],
+            ]
+        );
     }
 
     public function exportLocationChangesExcel(Request $request)
@@ -489,5 +536,12 @@ class GudangController extends Controller
         $pdf = Pdf::loadView('exports.location-changes', compact('rows'));
 
         return $pdf->download('riwayat-pengajuan-lokasi.pdf');
+    }
+
+    protected function exportUrl(string $path, Request $request, array $except = []): string
+    {
+        $query = $request->except($except);
+
+        return url($path).($query ? '?'.http_build_query($query) : '');
     }
 }

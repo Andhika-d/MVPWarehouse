@@ -29,6 +29,7 @@ class StockRequest extends Model
         'closed_at',
         'closed_by',
         'close_note',
+        'procurement_note_id',
     ];
 
     protected $casts = [
@@ -65,6 +66,11 @@ class StockRequest extends Model
     public function stockMovements()
     {
         return $this->hasMany(StockMovement::class);
+    }
+
+    public function procurementNote()
+    {
+        return $this->belongsTo(ProcurementNote::class);
     }
 
     public function isActionable(): bool
@@ -151,6 +157,8 @@ class StockRequest extends Model
                 'closed_by' => $closingUserId,
                 'close_note' => $note,
             ]);
+
+            ProcurementNote::syncFromRequest($locked->fresh());
 
             $locked->requestHistories()->create([
                 'user_id' => $closingUserId,

@@ -244,11 +244,11 @@ class HrWorkflowTest extends TestCase
             ->assertSessionHasErrors('note');
     }
 
-    public function test_export_daftar_belanja_respects_month_filter(): void
+    public function test_export_daftar_belanja_accepts_date_filter(): void
     {
         $hr = $this->makeUser('hr');
 
-        $response = $this->actingAs($hr)->get('/hr/daftar-belanja/export/excel?month=2026-08');
+        $response = $this->actingAs($hr)->get('/hr/daftar-belanja/export/excel?date=2026-08-07');
         $response->assertOk();
     }
 

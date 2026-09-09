@@ -3,17 +3,18 @@
 
         {{-- Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.location-changes.index') }}" class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" action="{{ route('admin.location-changes.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Status</option>
                     <option value="Menunggu Konfirmasi" {{ request('status') === 'Menunggu Konfirmasi' ? 'selected' : '' }}>Menunggu Konfirmasi</option>
                     <option value="Disetujui" {{ request('status') === 'Disetujui' ? 'selected' : '' }}>Disetujui</option>
                     <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
-                <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
+                @if(request()->filled('status') && request('status') !== 'all')
+                <a href="{{ route('admin.location-changes.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                @endif
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.location-changes.export-pdf', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">PDF</a>
-                    <a href="{{ route('admin.location-changes.export-excel', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">Excel</a>
+                    <a href="{{ route('admin.location-changes.export-preview', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">Preview Export</a>
                 </div>
             </form>
         </div>

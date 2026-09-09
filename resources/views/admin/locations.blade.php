@@ -45,7 +45,7 @@
 
         {{-- Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.locations.index') }}" class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" action="{{ route('admin.locations.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="hidden" name="rack" value="{{ $activeRack }}">
                 <div class="flex-1">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, sub lokasi, atau nama barang..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
@@ -55,7 +55,9 @@
                     <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>Terisi</option>
                     <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>Kosong</option>
                 </select>
-                <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
+                @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'all'))
+                <a href="{{ route('admin.locations.index', ['rack' => $activeRack]) }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                @endif
             </form>
         </div>
 

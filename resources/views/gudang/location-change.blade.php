@@ -90,8 +90,7 @@
             <div class="flex items-center justify-between gap-3 mb-3">
                 <h3 class="text-sm font-semibold text-slate-900">Riwayat Pengajuan Saya</h3>
                 <div class="flex items-center gap-2">
-                    <a href="/gudang/location-change/export/pdf{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">PDF</a>
-                    <a href="/gudang/location-change/export/excel{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">Excel</a>
+                    <a href="/gudang/location-change/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">Preview Export</a>
                 </div>
             </div>
             @forelse($myChanges as $change)

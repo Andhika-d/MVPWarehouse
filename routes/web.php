@@ -8,6 +8,7 @@ use App\Http\Controllers\GudangController;
 use App\Http\Controllers\HelpGuideController;
 use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProcurementNoteController;
 use App\Http\Controllers\RequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -43,16 +44,19 @@ Route::middleware('auth')->group(function () {
         Route::post('/gudang/barang-keluar', [GudangController::class, 'barangKeluarStore'])->middleware('throttle:20,1');
 
         Route::get('/gudang/movements', [GudangController::class, 'movementsIndex']);
+        Route::get('/gudang/movements/export/preview', [GudangController::class, 'previewMovementExport']);
         Route::get('/gudang/movements/export/excel', [GudangController::class, 'exportMovementExcel']);
 
         Route::get('/gudang/request-barang', [RequestController::class, 'create']);
         Route::post('/gudang/request-barang', [RequestController::class, 'store'])->middleware('throttle:20,1');
         Route::get('/gudang/history', [RequestController::class, 'history']);
+        Route::get('/gudang/history/export/preview', [RequestController::class, 'previewHistoryExport']);
         Route::get('/gudang/history/export/pdf', [RequestController::class, 'exportHistoryPdf']);
         Route::get('/gudang/history/export/excel', [RequestController::class, 'exportHistoryExcel']);
         Route::get('/gudang/history/{request}', [RequestController::class, 'detail']);
 
         Route::get('/gudang/location-change/search', [GudangController::class, 'locationSearch']);
+        Route::get('/gudang/location-change/export/preview', [GudangController::class, 'previewLocationChangesExport']);
         Route::get('/gudang/location-change/export/excel', [GudangController::class, 'exportLocationChangesExcel']);
         Route::get('/gudang/location-change/export/pdf', [GudangController::class, 'exportLocationChangesPdf']);
         Route::get('/gudang/location-change', [GudangController::class, 'locationChangeIndex']);
@@ -63,6 +67,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/hr/dashboard', [DashboardController::class, 'hrDashboard']);
         Route::get('/hr/stock', [DashboardController::class, 'hrStock']);
         Route::get('/hr/approval', [RequestController::class, 'approvalIndex']);
+        Route::get('/hr/approval/export/preview', [RequestController::class, 'previewApprovalExport']);
         Route::get('/hr/approval/export/pdf', [RequestController::class, 'exportApprovalPdf']);
         Route::get('/hr/approval/export/excel', [RequestController::class, 'exportApprovalExcel']);
         Route::get('/hr/requests/{request}', [RequestController::class, 'approvalDetail']);
@@ -77,8 +82,16 @@ Route::middleware('auth')->group(function () {
 
         Route::get('/hr/daftar-belanja', [RequestController::class, 'shoppingList']);
         Route::get('/hr/daftar-belanja/export/excel', [RequestController::class, 'exportShoppingListExcel']);
+        Route::post('/hr/nota-pengadaan', [ProcurementNoteController::class, 'store'])->name('hr.procurement-notes.store');
+        Route::get('/hr/nota-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'show'])->name('hr.procurement-notes.show');
+        Route::put('/hr/nota-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'update'])->name('hr.procurement-notes.update');
+        Route::post('/hr/nota-pengadaan/{procurementNote}/issue', [ProcurementNoteController::class, 'issue'])->name('hr.procurement-notes.issue');
+        Route::post('/hr/nota-pengadaan/{procurementNote}/cancel', [ProcurementNoteController::class, 'cancel'])->name('hr.procurement-notes.cancel');
+        Route::get('/hr/nota-pengadaan/{procurementNote}/print', [ProcurementNoteController::class, 'print'])->name('hr.procurement-notes.print');
+        Route::get('/hr/nota-pengadaan/{procurementNote}/excel', [ProcurementNoteController::class, 'excel'])->name('hr.procurement-notes.excel');
 
         Route::get('/hr/history', [RequestController::class, 'hrHistory']);
+        Route::get('/hr/history/export/preview', [RequestController::class, 'previewHrHistoryExport']);
         Route::get('/hr/history/export/pdf', [RequestController::class, 'exportHrHistoryPdf']);
         Route::get('/hr/history/export/excel', [RequestController::class, 'exportHrHistoryExcel']);
     });
@@ -112,6 +125,7 @@ Route::middleware('auth')->group(function () {
 
         // Location Change Requests
         Route::get('/location-changes', [AdminController::class, 'locationChangesIndex'])->name('location-changes.index');
+        Route::get('/location-changes/export/preview', [AdminController::class, 'previewLocationChangesExport'])->name('location-changes.export-preview');
         Route::get('/location-changes/export/excel', [AdminController::class, 'exportLocationChangesExcel'])->name('location-changes.export-excel');
         Route::get('/location-changes/export/pdf', [AdminController::class, 'exportLocationChangesPdf'])->name('location-changes.export-pdf');
         Route::post('/location-changes/{change}/approve', [AdminController::class, 'approveLocationChange'])->name('location-changes.approve');
@@ -128,6 +142,7 @@ Route::middleware('auth')->group(function () {
 
         // Audit Log
         Route::get('/audit', [AdminController::class, 'auditIndex'])->name('audit.index');
+        Route::get('/audit/export/preview', [AdminController::class, 'previewAuditExport'])->name('audit.export-preview');
         Route::get('/audit/export/excel', [AdminController::class, 'exportAuditExcel'])->name('audit.export-excel');
 
         // Developer Mode

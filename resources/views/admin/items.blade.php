@@ -34,7 +34,7 @@
 
         {{-- Toolbar --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.items.index') }}" class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" action="{{ route('admin.items.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, size, atau sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
@@ -59,7 +59,6 @@
                     <input type="checkbox" name="low_stock" value="1" {{ request('low_stock') ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
                     <span class="text-slate-600">Stok &le; 5</span>
                 </label>
-                <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
                 @if(request()->hasAny(['search', 'rack', 'status', 'unit', 'low_stock']))
                 <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif

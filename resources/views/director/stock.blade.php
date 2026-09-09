@@ -58,18 +58,20 @@
 
         {{-- Filters --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" class="flex flex-col sm:flex-row gap-3">
+            <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 @if($rack)<input type="hidden" name="rack" value="{{ $rack }}">@endif
                 <div class="flex-1">
                     <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari kode tag, nama barang, sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
-                <select name="status" onchange="this.form.submit()" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none cursor-pointer">
+                <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none cursor-pointer">
                     <option value="all" {{ ($status ?? '') === 'all' ? 'selected' : '' }}>Semua Status</option>
                     <option value="occupied" {{ ($status ?? '') === 'occupied' ? 'selected' : '' }}>Terisi</option>
                     <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>Lokasi Kosong</option>
                     <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>Barang Kosong</option>
                 </select>
-                <button type="submit" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors cursor-pointer">Filter</button>
+                @if(($search ?? '') !== '' || (($status ?? 'all') !== 'all'))
+                <a href="{{ $rack ? '/director/stock?rack='.urlencode($rack) : '/director/stock' }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                @endif
             </form>
         </div>
 

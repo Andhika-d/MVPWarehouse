@@ -512,6 +512,26 @@ class AdminController extends Controller
             ->header('Content-Disposition', 'attachment; filename="riwayat-pengajuan-lokasi.xlsx"');
     }
 
+    public function previewLocationChangesExport(Request $request)
+    {
+        $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'admin')->get());
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        return $this->exportPreview(
+            'Riwayat Pengajuan Lokasi',
+            ['ID', 'Barang', 'Kode Asal', 'Sub Asal', 'Kode Tujuan', 'Sub Tujuan', 'Pemohon', 'Status', 'Aksi', 'Diajukan', 'Diputuskan', 'Alasan', 'Catatan'],
+            $rows,
+            $this->exportUrl('/admin/location-changes', $request),
+            [
+                ['format' => 'PDF', 'url' => $this->exportUrl('/admin/location-changes/export/pdf', $request)],
+                ['format' => 'Excel', 'url' => $this->exportUrl('/admin/location-changes/export/excel', $request)],
+            ]
+        );
+    }
+
     public function exportLocationChangesPdf(Request $request)
     {
         $changes = LocationChangeExporter::query($request, 'admin')->get();
@@ -927,6 +947,38 @@ class AdminController extends Controller
 
     public function exportAuditExcel(Request $request)
     {
+        $rows = $this->buildAuditExportRows($request);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        $export = new AuditLogExport($rows);
+
+        return response($export->toXlsx(), 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="audit-log.xlsx"');
+    }
+
+    public function previewAuditExport(Request $request)
+    {
+        $rows = $this->buildAuditExportRows($request);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+        }
+
+        return $this->exportPreview(
+            'Audit Log',
+            ['Waktu', 'User', 'Aksi', 'Target', 'Detail'],
+            $rows,
+            $this->exportUrl('/admin/audit', $request),
+            [['format' => 'Excel', 'url' => $this->exportUrl('/admin/audit/export/excel', $request)]]
+        );
+    }
+
+    protected function buildAuditExportRows(Request $request): array
+    {
         $query = AuditLog::with('user');
 
         if ($request->filled('action')) {
@@ -944,7 +996,7 @@ class AdminController extends Controller
             });
         }
 
-        $rows = $query->latest()->get()->map(function (AuditLog $log) {
+        return $query->latest()->get()->map(function (AuditLog $log) {
             return [
                 'waktu' => $log->created_at?->format('d M Y, H:i') ?? '—',
                 'user' => $log->user?->name ?? 'System',
@@ -955,16 +1007,11 @@ class AdminController extends Controller
                 'detail' => $log->details ?? '—',
             ];
         })->all();
+    }
 
-        if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
-        }
-
-        $export = new AuditLogExport($rows);
-
-        return response($export->toXlsx(), 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="audit-log.xlsx"');
+    protected function exportUrl(string $path, Request $request): string
+    {
+        return url($path).($request->getQueryString() ? '?'.$request->getQueryString() : '');
     }
 
     // ── Developer Mode ─────────────────────────────────────────────

@@ -15,7 +15,7 @@
         @endif
 
         {{-- Filter --}}
-        <form method="GET" action="/gudang/movements" class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <form method="GET" action="/gudang/movements" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-wrap">
                 <select name="type" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
                     <option value="">Semua Tipe</option>
@@ -31,7 +31,6 @@
                 </select>
                 <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500" title="Dari tanggal">
                 <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500" title="Sampai tanggal">
-                <button type="submit" class="bg-corpblue-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-corpblue-600 transition-all">Filter</button>
                 @if(request()->hasAny(['type', 'item_id', 'date_from', 'date_to']))
                     <a href="/gudang/movements" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
                 @endif
@@ -80,9 +79,9 @@
                             <td class="py-3 px-5 font-semibold text-slate-900">
                                 <span>{{ $m->balance_after }} {{ $m->unit }}</span>
                                 @if($m->balance_before !== null)
-                        <span class="relative inline-flex group ml-1 align-middle">
-                            <button type="button" aria-label="Lihat detail saldo" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
-                            <span class="pointer-events-none absolute z-20 left-1/2 top-full mt-2 hidden w-44 -translate-x-1/2 rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-normal leading-relaxed text-white shadow-lg group-hover:block">
+                        <span class="relative inline-flex ml-1 align-middle">
+                            <button type="button" data-balance-tooltip aria-label="Lihat detail saldo" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
+                            <span class="balance-tooltip-content hidden">
                                         Stok sebelum: <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
                                         Perubahan: <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
                                         Stok setelah: <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
@@ -131,9 +130,9 @@
                     </div>
                     <span class="text-slate-500">Saldo: <strong class="text-slate-900">{{ $m->balance_after }} {{ $m->unit }}</strong>
                         @if($m->balance_before !== null)
-                        <span class="relative inline-flex group ml-1 align-middle">
-                            <button type="button" aria-label="Lihat detail saldo" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
-                            <span class="pointer-events-none absolute z-20 right-0 bottom-full mb-2 hidden w-44 rounded-lg bg-slate-900 px-3 py-2 text-left text-[11px] font-normal leading-relaxed text-white shadow-lg group-hover:block">
+                        <span class="relative inline-flex ml-1 align-middle">
+                            <button type="button" data-balance-tooltip aria-label="Lihat detail saldo" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
+                            <span class="balance-tooltip-content hidden">
                                 Stok sebelum: <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
                                 Perubahan: <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
                                 Stok setelah: <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
@@ -184,7 +183,7 @@
                     </div>
                 </div>
                 <div class="px-6 pb-5">
-                    <form id="exportForm" method="GET" action="/gudang/movements/export/excel" class="space-y-2">
+                    <form id="exportForm" method="GET" action="/gudang/movements/export/preview" class="space-y-2">
                         <input type="hidden" name="item_id" value="{{ request('item_id', '') }}">
                         <input type="hidden" name="date_from" value="{{ request('date_from', '') }}">
                         <input type="hidden" name="date_to" value="{{ request('date_to', '') }}">
