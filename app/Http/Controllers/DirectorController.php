@@ -351,9 +351,11 @@ class DirectorController extends Controller
         $firstReceiptMovement = $receiptMovements->first();
         $firstReceipt = $firstReceiptMovement?->occurred_at ?? $firstReceiptMovement?->created_at;
         $completedAt = $request->completed_at;
+        $formatDuration = fn ($start, $end) => $start->copy()->locale('id')->diffForHumans($end, true);
 
         $durations = [
             'request_to_approval' => null,
+            'request_to_approval_state' => 'not_started',
             'approval_to_first_receipt' => null,
             'request_to_first_receipt' => null,
             'fulfillment_duration' => null,
@@ -368,36 +370,40 @@ class DirectorController extends Controller
         ];
 
         if ($firstApproval) {
-            $durations['request_to_approval'] = $createdAt->diffForHumans($firstApproval, true);
+            $durations['request_to_approval'] = $formatDuration($createdAt, $firstApproval);
+            $durations['request_to_approval_state'] = 'completed';
+        } elseif ($request->isActionable()) {
+            $durations['request_to_approval'] = $formatDuration($createdAt, now()).' berjalan';
+            $durations['request_to_approval_state'] = 'ongoing';
         }
         if ($firstApproval && $firstReceipt) {
-            $durations['approval_to_first_receipt'] = $firstApproval->diffForHumans($firstReceipt, true);
+            $durations['approval_to_first_receipt'] = $formatDuration($firstApproval, $firstReceipt);
         }
         if ($firstReceipt) {
-            $durations['request_to_first_receipt'] = $createdAt->diffForHumans($firstReceipt, true);
+            $durations['request_to_first_receipt'] = $formatDuration($createdAt, $firstReceipt);
 
             if ($completedAt && $receiptMovements->count() === 1) {
                 $durations['fulfillment_duration'] = 'Langsung penuh';
                 $durations['fulfillment_state'] = 'completed';
             } elseif ($completedAt) {
-                $durations['fulfillment_duration'] = $firstReceipt->diffForHumans($completedAt, true);
+                $durations['fulfillment_duration'] = $formatDuration($firstReceipt, $completedAt);
                 $durations['fulfillment_state'] = 'completed';
             } elseif ($request->closed_at) {
                 $durations['fulfillment_duration'] = $request->status === 'Ditutup Sebagian'
-                    ? 'Ditutup setelah '.$firstReceipt->diffForHumans($request->closed_at, true)
+                    ? 'Ditutup setelah '.$formatDuration($firstReceipt, $request->closed_at)
                     : 'Dibatalkan';
                 $durations['fulfillment_state'] = 'closed';
             } else {
-                $durations['fulfillment_duration'] = $firstReceipt->diffForHumans(now(), true).' berjalan';
+                $durations['fulfillment_duration'] = $formatDuration($firstReceipt, now()).' berjalan';
                 $durations['fulfillment_state'] = 'ongoing';
             }
         }
         if ($completedAt) {
-            $durations['request_to_complete'] = $createdAt->diffForHumans($completedAt, true);
+            $durations['request_to_complete'] = $formatDuration($createdAt, $completedAt);
             $durations['total_calendar_days'] = (int) floor($createdAt->diffInSeconds($completedAt) / 86400);
         }
         if ($request->closed_at && ! $request->completed_at) {
-            $durations['request_to_close'] = $createdAt->diffForHumans($request->closed_at, true);
+            $durations['request_to_close'] = $formatDuration($createdAt, $request->closed_at);
             $durations['total_calendar_days'] = (int) floor($createdAt->diffInSeconds($request->closed_at) / 86400);
         }
 

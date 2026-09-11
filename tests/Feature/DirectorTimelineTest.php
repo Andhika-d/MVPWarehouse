@@ -422,6 +422,30 @@ class DirectorTimelineTest extends TestCase
             });
     }
 
+    public function test_duration_analysis_marks_review_stages_as_ongoing(): void
+    {
+        $this->travelTo(now()->startOfDay());
+
+        $director = $this->makeUser('director');
+        $gudang = $this->makeUser('gudang');
+        $item = $this->makeItem();
+
+        foreach (['Menunggu Review', 'Pending'] as $status) {
+            $request = $this->makeRequest($gudang, $item);
+            $request->forceFill([
+                'status' => $status,
+                'created_at' => now()->subDays(3),
+            ])->save();
+
+            $this->actingAs($director)
+                ->get(route('director.request-detail', $request))
+                ->assertOk()
+                ->assertSee('3 hari berjalan')
+                ->assertViewHas('durations', fn ($durations) => $durations['request_to_approval'] === '3 hari berjalan'
+                    && $durations['request_to_approval_state'] === 'ongoing');
+        }
+    }
+
     public function test_duration_analysis_marks_single_receipt_as_directly_full(): void
     {
         $director = $this->makeUser('director');
@@ -457,6 +481,7 @@ class DirectorTimelineTest extends TestCase
             ->assertSee('1 tahap penerimaan')
             ->assertSee('5/5 Pcs diterima')
             ->assertViewHas('durations', fn ($durations) => $durations['request_to_approval'] !== null
+                && $durations['request_to_approval_state'] === 'completed'
                 && $durations['approval_to_first_receipt'] !== null
                 && $durations['request_to_complete'] !== null
                 && $durations['fulfillment_state'] === 'completed');

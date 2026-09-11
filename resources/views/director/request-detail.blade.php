@@ -114,10 +114,10 @@
                         <div>
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-xs text-slate-500">Request → Approval</span>
-                                <span class="text-sm font-bold {{ $durations['request_to_approval'] ? 'text-slate-900' : 'text-slate-300' }}">{{ $durations['request_to_approval'] ?? '—' }}</span>
+                                <span class="text-sm font-bold {{ match($durations['request_to_approval_state']) { 'completed' => 'text-slate-900', 'ongoing' => 'text-amber-600', default => 'text-slate-300' } }}">{{ $durations['request_to_approval'] ?? '—' }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                <div class="h-full bg-corpblue-400 rounded-full" style="width: {{ $durations['request_to_approval'] ? '100' : '0' }}%"></div>
+                                <div class="h-full rounded-full {{ $durations['request_to_approval_state'] === 'ongoing' ? 'bg-amber-400' : 'bg-corpblue-400' }}" style="width: {{ $durations['request_to_approval'] ? '100' : '0' }}%"></div>
                             </div>
                         </div>
                         <div>
