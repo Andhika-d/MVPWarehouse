@@ -27,7 +27,7 @@
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
                             <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
-                                <tr><th class="px-5 py-3"><input type="checkbox" data-check-all aria-label="Pilih semua"></th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Pemohon</th><th class="px-5 py-3">Tanggal Approval</th></tr>
+                                <tr><th class="px-5 py-3"><input type="checkbox" data-check-all aria-label="Pilih semua"></th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Pemohon</th><th class="px-5 py-3">Tanggal Approval</th><th class="px-5 py-3 text-right">Aksi</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 @foreach($requests as $stockRequest)
@@ -37,6 +37,7 @@
                                         <td class="whitespace-nowrap px-5 py-4 font-semibold text-blue-700">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
                                         <td class="px-5 py-4 text-slate-600">{{ $stockRequest->user?->name ?? '-' }}</td>
                                         <td class="whitespace-nowrap px-5 py-4 text-slate-500">{{ ($stockRequest->approved_at ?? $stockRequest->created_at)->translatedFormat('d M Y') }}</td>
+                                        <td class="px-5 py-4 text-right"><x-hr-request-close-button :request="$stockRequest" class="whitespace-nowrap" /></td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -75,6 +76,8 @@
             @endif
         </section>
     </div>
+
+    <x-slot:modals><x-hr-request-close-modal /></x-slot:modals>
 
     <x-slot:scripts><script>
         const checkAll = document.querySelector('[data-check-all]');

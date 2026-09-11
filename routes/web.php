@@ -74,7 +74,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/hr/requests/{request}/approve', [RequestController::class, 'approve']);
         Route::post('/hr/requests/{request}/reject', [RequestController::class, 'reject']);
         Route::post('/hr/requests/{request}/delay', [RequestController::class, 'delay']);
-        Route::post('/hr/requests/{request}/close', [RequestController::class, 'hrCloseSisa'])->middleware('throttle:20,1');
+        Route::post('/hr/requests/{request}/close', [RequestController::class, 'hrCloseSisa'])->middleware('throttle:20,1')->name('hr.requests.close');
 
         Route::post('/hr/nota/{date}/approve-all', [RequestController::class, 'approveAll']);
         Route::post('/hr/nota/{date}/reject-all', [RequestController::class, 'rejectAll']);

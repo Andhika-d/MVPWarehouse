@@ -65,8 +65,8 @@
                                 {{ $request->review_note ? '"' . $request->review_note . '"' : '-' }}
                             </td>
                             <td class="py-4 px-6 text-right">
-                                @if($request->canClose())
-                                <button onclick="openCloseModal(this)" data-id="{{ $request->id }}" data-url="/hr/requests/{{ $request->id }}/close" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" data-remain="{{ $request->remainingQuantity() }}" data-unit="{{ $request->unit }}" class="px-3 py-1.5 border border-amber-300 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-50 transition-all cursor-pointer whitespace-nowrap">Tutup Sisa</button>
+                                @if($request->canClose() && ! $request->procurementNote?->isDraft())
+                                <x-hr-request-close-button :request="$request" class="whitespace-nowrap" />
                                 @else
                                 <span class="text-xs text-slate-300">—</span>
                                 @endif
@@ -92,55 +92,5 @@
         </div>
     </div>
 
-    <x-slot:modals>
-    {{-- MODAL TUTUP SISA --}}
-    <div id="hrCloseModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="hrCloseModalTitle">
-        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeHrCloseModal()"></div>
-        <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 z-[101]">
-            <h3 id="hrCloseModalTitle" class="text-base font-bold text-slate-900 mb-1">Tutup Sisa Request</h3>
-            <p class="text-xs text-slate-500 mb-4">Sisa yang belum diterima tidak akan diproses lebih lanjut. Aksi ini permanen.</p>
-            <form id="hrCloseForm" method="POST" action="">
-                @csrf
-                <input type="hidden" name="stock_request_id" id="hrClose_request_id">
-                <div class="flex flex-col gap-3">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Barang</label>
-                        <p id="hrClose_item_name" class="text-sm font-semibold text-slate-900"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Sisa yang Ditutup</label>
-                        <p id="hrClose_remain" class="text-sm font-bold text-amber-600"></p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Alasan Penutupan <span class="text-red-500">*</span></label>
-                        <textarea name="note" id="hrClose_note" rows="3" required maxlength="255" placeholder="Contoh: Kebutuhan sudah tidak diperlukan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"></textarea>
-                        <p class="mt-1 text-xs text-slate-500">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
-                    </div>
-                </div>
-                <div class="flex gap-3 mt-5">
-                    <button type="button" onclick="closeHrCloseModal()" class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-all">Batal</button>
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-all">Tutup Sisa</button>
-                </div>
-            </form>
-        </div>
-    </div>
-    </x-slot:modals>
-
-    <x-slot:scripts>
-    <script>
-        function openCloseModal(button) {
-            document.getElementById('hrClose_request_id').value = button.getAttribute('data-id');
-            document.getElementById('hrCloseForm').action = button.getAttribute('data-url');
-            document.getElementById('hrClose_item_name').textContent = button.getAttribute('data-name');
-            var remain = parseInt(button.getAttribute('data-remain'), 10);
-            var unit = button.getAttribute('data-unit');
-            document.getElementById('hrClose_remain').textContent = remain + ' ' + unit;
-            document.getElementById('hrClose_note').value = '';
-            openModal('hrCloseModal');
-        }
-        function closeHrCloseModal() {
-            closeModal('hrCloseModal');
-        }
-    </script>
-    </x-slot:scripts>
+    <x-slot:modals><x-hr-request-close-modal /></x-slot:modals>
 </x-layout>

@@ -41,7 +41,7 @@ class ProcurementNoteController extends Controller
 
     public function show(ProcurementNote $procurementNote)
     {
-        $procurementNote->load(['items.stockRequest', 'creator', 'canceller']);
+        $procurementNote->load(['items.stockRequest.item', 'creator', 'canceller']);
         $availableRequests = collect();
         if ($procurementNote->isDraft()) {
             $availableRequests = StockRequest::with(['item', 'user'])

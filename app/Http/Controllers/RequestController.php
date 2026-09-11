@@ -323,7 +323,7 @@ class RequestController extends Controller
 
     public function hrHistory(Request $request)
     {
-        $query = $this->buildExportQuery($request, 'hr')->with('requestHistories.user');
+        $query = $this->buildExportQuery($request, 'hr')->with(['requestHistories.user', 'procurementNote']);
 
         $requests = $query->latest()->paginate(20)->withQueryString();
 

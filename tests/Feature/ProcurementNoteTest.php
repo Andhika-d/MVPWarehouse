@@ -86,6 +86,68 @@ class ProcurementNoteTest extends TestCase
             ->assertOk()->assertSee('Diterima Penuh (2/2 Pcs)');
     }
 
+    public function test_hr_can_close_partial_and_cancel_unreceived_requests_from_an_issued_note(): void
+    {
+        [$hr, $warehouse, $partialRequest, $unreceivedRequest] = $this->fixtures();
+
+        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), [
+            'request_ids' => [$partialRequest->id, $unreceivedRequest->id],
+        ]);
+        $note = ProcurementNote::firstOrFail();
+        $this->actingAs($hr)->post(route('hr.procurement-notes.issue', $note));
+        $this->actingAs($warehouse)->post('/gudang/penerimaan', [
+            'stock_request_id' => $partialRequest->id,
+            'received_quantity' => 1,
+        ]);
+
+        $this->actingAs($hr)->get(route('hr.procurement-notes.show', $note))
+            ->assertOk()
+            ->assertSee('Tutup Sisa')
+            ->assertSee('Batalkan Request');
+
+        $this->actingAs($hr)->post(route('hr.requests.close', $partialRequest), [
+            'note' => 'Supplier hanya mengirim sebagian',
+        ])->assertSessionHas('success');
+
+        $this->assertSame('Ditutup Sebagian', $partialRequest->fresh()->status);
+        $this->assertSame('Ditutup Sebagian', $note->items()->where('stock_request_id', $partialRequest->id)->value('request_status'));
+        $this->assertSame(ProcurementNote::STATUS_PARTIAL, $note->fresh()->status);
+
+        $this->actingAs($hr)->post(route('hr.requests.close', $unreceivedRequest), [
+            'note' => 'Kebutuhan dibatalkan',
+        ])->assertSessionHas('success');
+
+        $this->assertSame('Dibatalkan', $unreceivedRequest->fresh()->status);
+        $this->assertSame('Dibatalkan', $note->items()->where('stock_request_id', $unreceivedRequest->id)->value('request_status'));
+        $this->assertSame(ProcurementNote::STATUS_COMPLETED, $note->fresh()->status);
+    }
+
+    public function test_hr_queue_exposes_cancel_action_but_draft_note_blocks_request_closure(): void
+    {
+        [$hr, , $request] = $this->fixtures();
+
+        $this->actingAs($hr)->get('/hr/daftar-belanja')
+            ->assertOk()
+            ->assertSee('Batalkan Request')
+            ->assertSee(route('hr.requests.close', $request), false);
+
+        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), [
+            'request_ids' => [$request->id],
+        ]);
+        $note = ProcurementNote::firstOrFail();
+
+        $this->actingAs($hr)->get(route('hr.procurement-notes.show', $note))
+            ->assertOk()
+            ->assertDontSee('data-mode="cancel"', false);
+
+        $this->actingAs($hr)->post(route('hr.requests.close', $request), [
+            'note' => 'Tidak jadi dibeli',
+        ])->assertSessionHas('error', 'Request masih berada dalam draft nota. Keluarkan request dari draft sebelum membatalkannya.');
+
+        $this->assertSame('Disetujui', $request->fresh()->status);
+        $this->assertSame($note->id, $request->fresh()->procurement_note_id);
+    }
+
     public function test_cancelling_note_releases_requests_back_to_queue(): void
     {
         [$hr, , $firstRequest] = $this->fixtures();

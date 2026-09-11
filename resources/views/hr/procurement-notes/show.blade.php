@@ -26,14 +26,46 @@
 
         <div class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="grid gap-4 border-b border-slate-200 bg-slate-50/60 p-5 text-sm sm:grid-cols-3"><div><span class="block text-xs text-slate-500">Tanggal Nota</span><b>{{ $procurementNote->issued_at?->translatedFormat('d F Y, H:i') ?? 'Belum diterbitkan' }}</b></div><div><span class="block text-xs text-slate-500">Driver</span><b>{{ $procurementNote->driver_name ?: '-' }}</b></div><div><span class="block text-xs text-slate-500">Terakhir Dicetak</span><b>{{ $procurementNote->last_printed_at?->translatedFormat('d F Y, H:i') ?? '-' }}</b></div>@if($procurementNote->notes)<div class="sm:col-span-3"><span class="block text-xs text-slate-500">Catatan</span>{{ $procurementNote->notes }}</div>@endif</div>
-            <div class="overflow-x-auto"><table class="w-full text-left text-sm"><thead class="border-b border-slate-200 text-xs uppercase text-slate-500"><tr><th class="px-5 py-3">No</th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Diterima</th><th class="px-5 py-3">Pemohon</th><th class="px-5 py-3">Status</th></tr></thead><tbody class="divide-y divide-slate-100">@foreach($procurementNote->items as $item)<tr><td class="px-5 py-4">{{ $loop->iteration }}</td><td class="px-5 py-4"><b>{{ $item->item_name }}</b>@if($item->review_note)<span class="block text-xs text-corpblue-600">{{ $item->review_note }}</span>@endif</td><td class="px-5 py-4">{{ $item->quantity }} {{ $item->unit }}</td><td class="px-5 py-4">{{ $item->received_quantity }} {{ $item->unit }}</td><td class="px-5 py-4">{{ $item->requester_name ?: '-' }}</td><td class="px-5 py-4"><x-status-badge domain="receipt" :status="$item->receiptStatusLabel()" /></td></tr>@endforeach</tbody></table></div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="border-b border-slate-200 text-xs uppercase text-slate-500">
+                        <tr><th class="px-5 py-3">No</th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Diterima</th><th class="px-5 py-3">Pemohon</th><th class="px-5 py-3">Status</th><th class="px-5 py-3 text-right">Aksi</th></tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        @foreach($procurementNote->items as $item)
+                        <tr>
+                            <td class="px-5 py-4">{{ $loop->iteration }}</td>
+                            <td class="px-5 py-4"><b>{{ $item->item_name }}</b>@if($item->review_note)<span class="block text-xs text-corpblue-600">{{ $item->review_note }}</span>@endif</td>
+                            <td class="px-5 py-4">{{ $item->quantity }} {{ $item->unit }}</td>
+                            <td class="px-5 py-4">{{ $item->received_quantity }} {{ $item->unit }}</td>
+                            <td class="px-5 py-4">{{ $item->requester_name ?: '-' }}</td>
+                            <td class="px-5 py-4"><x-status-badge domain="receipt" :status="$item->receiptStatusLabel()" /></td>
+                            <td class="px-5 py-4 text-right">
+                                @if($procurementNote->issued_at && $procurementNote->status !== 'Dibatalkan' && $item->stockRequest?->canClose())
+                                <x-hr-request-close-button :request="$item->stockRequest" class="whitespace-nowrap" />
+                                @else
+                                <span class="text-xs text-slate-300">-</span>
+                                @endif
+                            </td>
+                        </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         @if(!in_array($procurementNote->status, ['Selesai', 'Dibatalkan']) && $procurementNote->items->sum('received_quantity') === 0)
-            <form method="POST" action="{{ route('hr.procurement-notes.cancel', $procurementNote) }}" data-submit-once class="rounded-xl border border-red-200 bg-red-50 p-5">@csrf<label class="mb-1 block text-xs font-semibold text-red-800">Alasan pembatalan</label><div class="flex flex-col gap-2 sm:flex-row"><input required name="reason" maxlength="1000" class="min-h-11 flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm"><button type="submit" class="btn btn--danger">Batalkan Nota</button></div></form>
+            <form method="POST" action="{{ route('hr.procurement-notes.cancel', $procurementNote) }}" data-submit-once class="rounded-xl border border-red-200 bg-red-50 p-5">
+                @csrf
+                <label class="mb-1 block text-xs font-semibold text-red-800">Batalkan Dokumen Nota</label>
+                <p class="mb-3 text-xs text-red-700">Request di dalam nota akan dikembalikan ke antrean pengadaan, bukan diakhiri sebagai request yang dibatalkan.</p>
+                <div class="flex flex-col gap-2 sm:flex-row"><input required name="reason" maxlength="1000" placeholder="Alasan pembatalan nota" class="min-h-11 flex-1 rounded-lg border border-red-200 bg-white px-3 py-2 text-sm"><button type="submit" class="btn btn--danger">Batalkan Nota</button></div>
+            </form>
         @endif
         @if($procurementNote->status === 'Dibatalkan')<div class="rounded-xl border border-red-200 bg-red-50 p-5 text-sm text-red-800"><b>Alasan pembatalan:</b> {{ $procurementNote->cancellation_reason }}</div>@endif
     </div>
+
+    <x-slot:modals><x-hr-request-close-modal /></x-slot:modals>
 
     <x-slot:scripts><script>
         function guardNoteAction(element) {
