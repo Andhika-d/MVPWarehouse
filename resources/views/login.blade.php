@@ -58,11 +58,11 @@
 
                 <div class="relative z-10">
                     {{-- Logo --}}
-                    <img src="{{ asset('img/logo.png') }}" alt="Logo PT Taehang Indonesia" class="h-[82px] w-auto mx-auto mb-6">
+                    <img src="{{ asset('img/logo.png') }}" alt="Logo PT Taehang Indonesia" class="h-[82px] w-auto mx-auto">
 
                     {{-- Company branding --}}
-                    <h1 class="text-2xl font-bold tracking-[0.15em] uppercase leading-snug">PT Taehang Indonesia</h1>
-                    <p class="text-base font-semibold text-corpblue-200 tracking-[0.08em] mt-1.5">Plan 2</p>
+                    <h1 class="text-2xl font-bold uppercase leading-snug">PT TAE HANG INDONESIA</h1>
+                    <p class="text-base font-semibold text-corpblue-200 tracking-[0.08em] mt-1.5">PLAN DUA</p>
 
                     {{-- Divider 1 --}}
                     <div class="w-10 h-px bg-white/20 mx-auto my-7"></div>
