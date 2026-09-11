@@ -37,7 +37,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3 px-5">Tanggal</th>
                             <th class="py-3 px-5">Barang</th>
                             <th class="py-3 px-5">Jumlah</th>
@@ -53,26 +53,10 @@
                             <td class="py-3 px-5 font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</td>
                             <td class="py-3 px-5">{{ $request->quantity }} <span class="text-xs text-slate-500">{{ $request->unit }}</span></td>
                             <td class="py-3 px-5">
-                                <span class="px-2 py-0.5 {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }} rounded-full text-xs font-semibold">{{ $request->priority }}</span>
+                                <x-status-badge domain="priority" :status="$request->priority" />
                             </td>
                             <td class="py-3 px-5">
-                                @php
-                                    $statusColors = [
-                                        'Disetujui' => ['bg' => 'bg-emerald-50 text-emerald-700', 'dot' => 'bg-emerald-500'],
-                                        'Ditolak' => ['bg' => 'bg-red-50 text-red-700', 'dot' => 'bg-red-500'],
-                                        'Diterima Penuh' => ['bg' => 'bg-emerald-50 text-emerald-700', 'dot' => 'bg-emerald-500'],
-                                        'Sebagian Diterima' => ['bg' => 'bg-indigo-50 text-indigo-700', 'dot' => 'bg-indigo-500'],
-                                        'Menunggu Review' => ['bg' => 'bg-amber-50 text-amber-700', 'dot' => 'bg-amber-500'],
-                                        'Pending' => ['bg' => 'bg-amber-50 text-amber-700', 'dot' => 'bg-amber-500'],
-                                        'Ditutup Sebagian' => ['bg' => 'bg-slate-100 text-slate-700', 'dot' => 'bg-slate-500'],
-                                        'Dibatalkan' => ['bg' => 'bg-stone-100 text-stone-700', 'dot' => 'bg-stone-500'],
-                                    ];
-                                    $sc = $statusColors[$request->status] ?? ['bg' => 'bg-slate-100 text-slate-600', 'dot' => 'bg-slate-400'];
-                                @endphp
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 {{ $sc['bg'] }} rounded-full text-xs font-semibold">
-                                    <span class="w-1.5 h-1.5 {{ $sc['dot'] }} rounded-full"></span>
-                                    {{ $request->status }}
-                                </span>
+                                <x-status-badge domain="request" :status="$request->status" dot />
                             </td>
                             <td class="py-3 px-5 text-right">
                                 <a href="/gudang/history/{{ $request->id }}" class="text-corpblue-500 hover:text-corpblue-700 font-medium text-xs bg-corpblue-50 hover:bg-corpblue-100 px-3 py-2 rounded-lg transition-all">Detail</a>
@@ -102,13 +86,11 @@
                         <p class="font-semibold text-slate-900 text-sm truncate">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</p>
                         <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
                     </div>
-                    <span class="shrink-0 ml-3 px-2 py-0.5 rounded-full text-[11px] font-semibold {{ $statusColors[$request->status]['bg'] ?? 'bg-slate-100 text-slate-600' }}">
-                        {{ $request->status }}
-                    </span>
+                    <x-status-badge domain="request" :status="$request->status" class="ml-3 shrink-0" />
                 </div>
                 <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
-                    <span class="px-1.5 py-0.5 {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }} rounded text-[10px] font-semibold">{{ $request->priority }}</span>
-                    <span class="text-[11px] text-slate-400">{{ $request->created_at->translatedFormat('d M Y') }}</span>
+                    <x-status-badge domain="priority" :status="$request->priority" />
+                    <span class="text-xs text-slate-500">{{ $request->created_at->translatedFormat('d M Y') }}</span>
                 </div>
             </a>
             @empty

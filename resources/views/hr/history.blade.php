@@ -38,7 +38,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-4 px-6">Nota & Tanggal</th>
                             <th class="py-4 px-6">Nama Barang</th>
                             <th class="py-4 px-6">Jumlah</th>
@@ -53,31 +53,15 @@
                         <tr class="hover:bg-slate-50/40 transition-colors {{ $request->status === 'Ditolak' ? 'bg-red-50/10' : '' }}">
                             <td class="py-4 px-6">
                                 <span class="text-slate-900 font-bold block">#NOTA-{{ $request->created_at->format('Ymd') }}</span>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</span>
+                                <span class="mt-0.5 block text-xs text-slate-500">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</span>
                             </td>
                             <td class="py-4 px-6 font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</td>
-                            <td class="py-4 px-6 text-slate-900">{{ $request->quantity }} <span class="text-xs text-slate-400 font-medium">{{ $request->unit }}</span></td>
+                            <td class="py-4 px-6 text-slate-900">{{ $request->quantity }} <span class="text-xs font-medium text-slate-500">{{ $request->unit }}</span></td>
                             <td class="py-4 px-6 text-xs text-slate-600">{{ $request->user?->name ?? 'Gudang' }}</td>
                             <td class="py-4 px-6">
-                                @if($request->status === 'Diterima Penuh')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">Diterima Penuh</span>
-                                @elseif($request->status === 'Ditutup Sebagian')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-slate-100 text-slate-700 rounded-full text-xs font-bold">Ditutup Sebagian</span>
-                                @elseif($request->status === 'Dibatalkan')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-stone-100 text-stone-700 rounded-full text-xs font-bold">Dibatalkan</span>
-                                @elseif($request->status === 'Sebagian Diterima')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">Sebagian Diterima</span>
-                                @elseif($request->status === 'Disetujui')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs font-bold">Disetujui</span>
-                                @elseif($request->status === 'Ditolak')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-red-100 text-red-900 rounded-full text-xs font-bold">Ditolak</span>
-                                @elseif($request->status === 'Pending')
-                                <span class="inline-flex items-center px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-bold">Pending / Ditunda</span>
-                                @else
-                                <span class="inline-flex items-center px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full text-xs font-bold">{{ $request->status }}</span>
-                                @endif
+                                <x-status-badge domain="request" :status="$request->status" />
                             </td>
-                            <td class="py-4 px-6 text-xs {{ $request->status === 'Ditolak' ? 'text-red-900 font-semibold leading-relaxed max-w-xs' : 'text-slate-400 font-normal leading-relaxed' }}">
+                            <td class="py-4 px-6 text-xs {{ $request->status === 'Ditolak' ? 'text-red-900 font-semibold leading-relaxed max-w-xs' : 'text-slate-500 font-normal leading-relaxed' }}">
                                 {{ $request->review_note ? '"' . $request->review_note . '"' : '-' }}
                             </td>
                             <td class="py-4 px-6 text-right">
@@ -130,7 +114,7 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-0.5">Alasan Penutupan <span class="text-red-500">*</span></label>
                         <textarea name="note" id="hrClose_note" rows="3" required maxlength="255" placeholder="Contoh: Kebutuhan sudah tidak diperlukan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"></textarea>
-                        <p class="text-[11px] text-slate-400 mt-1">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
+                        <p class="mt-1 text-xs text-slate-500">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">

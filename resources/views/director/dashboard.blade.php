@@ -5,7 +5,7 @@
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {{-- Pending --}}
             <div class="bg-white rounded-2xl border border-slate-200 border-l-4 border-l-corpblue-500 p-5">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Menunggu Proses</p>
+                <p class="ui-heading">Menunggu Proses</p>
                 <p class="text-3xl font-extrabold text-slate-900 mt-1.5">{{ $pendingCount }}</p>
                 @if($urgentPendingCount > 0)
                 <p class="text-xs text-red-600 font-semibold mt-1">{{ $urgentPendingCount }} mendesak</p>
@@ -14,7 +14,7 @@
 
             {{-- Terlambat --}}
             <div class="bg-white rounded-2xl border {{ $overdueCount > 0 ? 'border-red-200 border-l-red-500' : 'border-slate-200 border-l-corpblue-500' }} border-l-4 p-5">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Terlambat (>3 Hari)</p>
+                <p class="ui-heading">Terlambat (&gt;3 Hari)</p>
                 <p class="text-3xl font-extrabold {{ $overdueCount > 0 ? 'text-red-600' : 'text-slate-900' }} mt-1.5">{{ $overdueCount }}</p>
                 @if($overdueCount > 0)
                 <p class="text-xs text-red-500 font-medium mt-1">proses aktif tertahan</p>
@@ -25,16 +25,16 @@
 
             {{-- Avg Processing --}}
             <div class="bg-white rounded-2xl border border-slate-200 border-l-corpblue-500 border-l-4 p-5">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Rata-rata Selesai</p>
+                <p class="ui-heading">Rata-rata Selesai</p>
                 <p class="text-3xl font-extrabold text-slate-900 mt-1.5">{{ $avgDays ?? '—' }} <span class="text-base font-semibold text-slate-400">hari</span></p>
-                <p class="text-xs text-slate-400 mt-1">dari 30 hari terakhir</p>
+                <p class="mt-1 text-xs text-slate-500">dari 30 hari terakhir</p>
             </div>
 
             {{-- Belum Diterima --}}
             <div class="bg-white rounded-2xl border border-slate-200 border-l-corpblue-500 border-l-4 p-5">
-                <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Belum Diterima</p>
+                <p class="ui-heading">Belum Diterima</p>
                 <p class="text-3xl font-extrabold text-slate-900 mt-1.5">{{ $waitingReceiptCount }}</p>
-                <p class="text-xs text-slate-400 mt-1">disetujui, menunggu gudang</p>
+                <p class="mt-1 text-xs text-slate-500">disetujui, menunggu gudang</p>
             </div>
         </div>
 
@@ -45,8 +45,8 @@
             <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:h-full flex flex-col min-h-0">
                 <div class="flex items-center justify-between gap-3 mb-4 shrink-0">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Hambatan Proses (&gt;3 Hari)</h3>
-                        <p class="text-[11px] text-slate-400 mt-1">Proses aktif dan riwayat 30 hari</p>
+                        <h3 class="ui-heading">Hambatan Proses (&gt;3 Hari)</h3>
+                        <p class="mt-1 text-xs text-slate-500">Proses aktif dan riwayat 30 hari</p>
                     </div>
                     <span class="rounded-full {{ $overdueCount > 0 ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700' }} px-2.5 py-1 text-xs font-bold">{{ $overdueCount }} aktif</span>
                 </div>
@@ -56,7 +56,7 @@
                 @endphp
                 <div class="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pr-2">
                     <div>
-                        <h4 class="mb-3 text-[11px] font-bold uppercase tracking-wider text-slate-600">Proses Aktif</h4>
+                        <h4 class="ui-heading mb-3">Proses Aktif</h4>
                         <div class="space-y-3">
                             @foreach($processBottlenecks['labels'] as $key => $label)
                             @php $count = $processBottlenecks['active_counts'][$key]; @endphp
@@ -73,11 +73,11 @@
 
                     @if($processBottlenecks['active_items']->isNotEmpty())
                     <div class="border-t border-slate-100 pt-4">
-                        <div class="mb-2 flex items-center justify-between"><h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Detail Aktif</h4><a href="{{ route('director.requests', ['status' => 'all']) }}" class="text-[11px] font-semibold text-corpblue-600 hover:text-corpblue-800">Lihat Semua</a></div>
+                        <div class="mb-2 flex items-center justify-between"><h4 class="ui-heading">Detail Aktif</h4><a href="{{ route('director.requests', ['status' => 'all']) }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">Lihat Semua</a></div>
                         <div class="divide-y divide-slate-100">
                             @foreach($processBottlenecks['active_items'] as $item)
                             <a href="{{ route('director.request-detail', $item['request']) }}" class="flex items-center justify-between gap-3 py-2.5 hover:bg-slate-50">
-                                <div class="min-w-0"><p class="truncate text-xs font-semibold text-slate-800">{{ $item['request']->item?->name ?? $item['request']->item_name ?? 'Barang' }}</p><p class="mt-0.5 truncate text-[10px] text-slate-400">{{ $item['stage_label'] }} · {{ $item['request']->user?->name ?? '—' }}</p></div>
+                                <div class="min-w-0"><p class="truncate text-xs font-semibold text-slate-800">{{ $item['request']->item?->name ?? $item['request']->item_name ?? 'Barang' }}</p><p class="mt-0.5 truncate text-xs text-slate-500">{{ $item['stage_label'] }} · {{ $item['request']->user?->name ?? '—' }}</p></div>
                                 <span class="shrink-0 text-xs font-bold text-red-600">{{ $item['days_open'] }} hari</span>
                             </a>
                             @endforeach
@@ -86,7 +86,7 @@
                     @endif
 
                     <div class="border-t border-slate-100 pt-4">
-                        <div class="mb-3 flex items-center justify-between gap-3"><h4 class="text-[11px] font-bold uppercase tracking-wider text-slate-600">Riwayat 30 Hari</h4><span class="text-[10px] text-slate-400">{{ $processBottlenecks['historical_delayed_requests'] }}/{{ $processBottlenecks['historical_total'] }} request pernah terlambat</span></div>
+                        <div class="mb-3 flex items-center justify-between gap-3"><h4 class="ui-heading">Riwayat 30 Hari</h4><span class="text-xs text-slate-500">{{ $processBottlenecks['historical_delayed_requests'] }}/{{ $processBottlenecks['historical_total'] }} request pernah terlambat</span></div>
                         <div class="space-y-3">
                             @foreach($processBottlenecks['labels'] as $key => $label)
                             @php $count = $processBottlenecks['historical_counts'][$key]; @endphp
@@ -104,8 +104,8 @@
             <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-1 lg:h-full overflow-y-auto">
                 <div class="flex items-start justify-between gap-3 mb-5">
                     <div>
-                        <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Ringkasan Gudang</h3>
-                        <p class="text-xs text-slate-400 mt-1">Kondisi inventaris saat ini</p>
+                        <h3 class="ui-heading">Ringkasan Gudang</h3>
+                        <p class="mt-1 text-xs text-slate-500">Kondisi inventaris saat ini</p>
                     </div>
                     <svg class="text-slate-400 shrink-0" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-5h6v5M8 10h.01M12 10h.01M16 10h.01M8 13h.01M12 13h.01M16 13h.01"/></svg>
                 </div>
@@ -150,7 +150,7 @@
 
             {{-- Recent Critical Events --}}
             <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:col-span-1 lg:h-full flex flex-col min-h-0">
-                <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Kejadian 7 Hari Terakhir</h3>
+                <h3 class="ui-heading mb-5">Kejadian 7 Hari Terakhir</h3>
                 <div class="space-y-3 min-h-0 flex-1 overflow-y-auto overscroll-contain pr-2">
                     @forelse($recentMovements as $mov)
                     <div class="flex items-start gap-3">

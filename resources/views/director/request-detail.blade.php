@@ -22,7 +22,7 @@
                         <div class="w-11 h-11 rounded-xl bg-red-100 flex items-center justify-center">
                             <svg class="text-red-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                         </div>
-                        @elseif(in_array($request->status, ['Menunggu Review', 'Pending']))
+                        @elseif($request->status === 'Pending')
                         <div class="w-11 h-11 rounded-xl bg-amber-100 flex items-center justify-center">
                             <svg class="text-amber-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                         </div>
@@ -37,70 +37,50 @@
                         @endif
                         <div>
                             <h2 class="text-lg font-bold text-slate-900">{{ $request->item_name }}</h2>
-                            <p class="text-xs text-slate-400">{{ $request->created_at->format('d M Y, H:i') }}</p>
+                            <p class="text-xs text-slate-500">{{ $request->created_at->format('d M Y, H:i') }}</p>
                         </div>
                     </div>
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Peminta</span>
+                            <span class="text-xs text-slate-500">Peminta</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->user?->name ?? '—' }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Jumlah</span>
+                            <span class="text-xs text-slate-500">Jumlah</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->quantity }} {{ $request->unit }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Diterima</span>
+                            <span class="text-xs text-slate-500">Diterima</span>
                             <span class="text-sm font-medium {{ $request->received_quantity >= $request->quantity ? 'text-emerald-600' : 'text-amber-600' }}">{{ $request->received_quantity }} {{ $request->unit }}</span>
                         </div>
                         @if($request->received_quantity < $request->quantity)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">{{ $request->isClosed() ? 'Sisa (ditutup)' : 'Sisa' }}</span>
+                            <span class="text-xs text-slate-500">{{ $request->isClosed() ? 'Sisa (ditutup)' : 'Sisa' }}</span>
                             <span class="text-sm font-semibold {{ $request->isClosed() ? 'text-slate-400' : 'text-red-600' }}">{{ $request->quantity - $request->received_quantity }} {{ $request->unit }}</span>
                         </div>
                         @endif
                         @if($request->isClosed() && $request->closed_at)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Ditutup oleh</span>
+                            <span class="text-xs text-slate-500">Ditutup oleh</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->closedBy?->name ?? '—' }} · {{ $request->closed_at->format('d M Y, H:i') }}</span>
                         </div>
                         @endif
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Prioritas</span>
-                            @if($request->priority === 'Mendesak')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">Mendesak</span>
-                            @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">Normal</span>
-                            @endif
+                            <span class="text-xs text-slate-500">Prioritas</span>
+                            <x-status-badge domain="priority" :status="$request->priority" />
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-400">Status</span>
-                            @if($request->status === 'Menunggu Review' || $request->status === 'Pending')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Disetujui')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-corpblue-50 text-corpblue-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Sebagian Diterima')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Diterima Penuh')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Ditolak')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Ditutup Sebagian')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @elseif($request->status === 'Dibatalkan')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold">{{ $request->status }}</span>
-                            @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ $request->status }}</span>
-                            @endif
+                            <span class="text-xs text-slate-500">Status</span>
+                            <x-status-badge domain="request" :status="$request->status" />
                         </div>
                         <div class="py-2">
-                            <span class="text-xs text-slate-400 block mb-1">Alasan</span>
+                            <span class="mb-1 block text-xs text-slate-500">Alasan</span>
                             <p class="text-sm text-slate-600 leading-relaxed">{{ $request->reason ?: '—' }}</p>
                         </div>
                         @if($request->isClosed() && $request->close_note)
                         <div class="py-2">
-                            <span class="text-xs text-slate-400 block mb-1">Alasan Penutupan</span>
+                            <span class="mb-1 block text-xs text-slate-500">Alasan Penutupan</span>
                             <p class="text-sm text-slate-600 leading-relaxed">{{ $request->close_note }}</p>
                         </div>
                         @endif
@@ -109,7 +89,7 @@
 
                 {{-- Duration Analysis --}}
                 <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-4">Analisis Durasi</h3>
+                    <h3 class="ui-heading mb-4">Analisis Durasi</h3>
                     <div class="space-y-4">
                         <div>
                             <div class="flex items-center justify-between mb-1">
@@ -189,7 +169,7 @@
             {{-- ═══ Right: Timeline ═══ --}}
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Timeline</h3>
+                    <h3 class="ui-heading mb-6">Timeline</h3>
 
                     @if($timeline->isEmpty())
                     <p class="text-sm text-slate-400 text-center py-8">Belum ada aktivitas.</p>
@@ -221,7 +201,7 @@
                                 <div class="flex-1 min-w-0 {{ !$isLast ? 'pb-3' : '' }}">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="text-sm font-semibold text-slate-900">{{ $event['label'] }}</span>
-                                        <span class="text-[10px] text-slate-400 font-medium uppercase">{{ $event['time']?->format('d M H:i') ?? '—' }}</span>
+                                        <span class="text-xs font-medium uppercase text-slate-500">{{ $event['time']?->format('d M H:i') ?? '—' }}</span>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">oleh <span class="font-medium text-slate-600">{{ $event['user'] }}</span></p>
                                     @if(isset($event['decision']))

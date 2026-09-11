@@ -16,7 +16,7 @@
                 @if(request()->filled('search') || (request()->filled('role') && request('role') !== 'all'))
                 <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
-                <button type="button" onclick="openModal('addUserModal')" class="px-4 py-2 bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer">+ Tambah</button>
+                <button type="button" onclick="openModal('addUserModal')" class="btn btn--primary">+ Tambah</button>
             </form>
         </div>
 
@@ -39,31 +39,31 @@
                             <td class="px-4 py-3 font-medium text-slate-900">{{ $user->name }}</td>
                             <td class="px-4 py-3 text-slate-600">{{ $user->email }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full {{ $user->role === 'admin' ? 'bg-slate-100 text-slate-700' : ($user->role === 'hr' ? 'bg-indigo-50 text-indigo-700' : 'bg-corpblue-50 text-corpblue-700') }} text-xs font-semibold">{{ strtoupper($user->role) }}</span>
+                                <x-status-badge domain="role" :status="$user->role" />
                             </td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full {{ $user->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700' }} text-xs font-semibold">{{ $user->is_active ? 'Aktif' : 'Nonaktif' }}</span>
+                                <x-status-badge domain="account" :status="$user->is_active ? 'Aktif' : 'Nonaktif'" />
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1 flex-wrap">
                                     <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" data-confirm="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} user {{ $user->name }}?" data-confirm-title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} User" data-confirm-tone="{{ $user->is_active ? 'warning' : 'success' }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="px-2 py-1 text-xs {{ $user->is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50' }} rounded transition-colors cursor-pointer">{{ $user->is_active ? 'Nonaktif' : 'Aktif' }}</button>
+                                        <button type="submit" class="action-link {{ $user->is_active ? 'action-link--warning' : 'action-link--success' }}">{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                     </form>
                                     <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" data-confirm="Reset password user {{ $user->name }}? Password baru akan dibuat otomatis." data-confirm-title="Reset Password" data-confirm-tone="warning" class="inline">
                                         @csrf
-                                        <button type="submit" class="px-2 py-1 text-xs text-slate-500 hover:bg-slate-100 rounded transition-colors cursor-pointer">Reset PW</button>
+                                        <button type="submit" class="action-link action-link--neutral">Reset PW</button>
                                     </form>
                                     @if($user->role !== 'admin' && $user->id !== auth()->id())
                                     <form method="POST" action="{{ route('admin.users.login-as', $user) }}" class="inline">
                                         @csrf
-                                        <button type="submit" class="px-2 py-1 text-xs text-indigo-600 hover:bg-indigo-50 rounded transition-colors cursor-pointer">Login As</button>
+                                        <button type="submit" class="action-link action-link--primary">Login As</button>
                                     </form>
                                     @endif
                                     @if($user->id !== auth()->id())
                                     <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Hapus user {{ $user->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus User" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer">Hapus</button>
+                                        <button type="submit" class="action-link action-link--danger">Hapus</button>
                                     </form>
                                     @endif
                                 </div>
@@ -71,7 +71,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-400">Tidak ada data pengguna.</td>
+                            <td colspan="5" class="px-4 py-12 text-center text-sm text-slate-500">Tidak ada data pengguna.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -117,8 +117,8 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeModal('addUserModal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg font-medium cursor-pointer">Simpan</button>
+                        <button type="button" onclick="closeModal('addUserModal')" class="btn btn--secondary">Batal</button>
+                        <button type="submit" class="btn btn--primary">Simpan</button>
                     </div>
                 </form>
             </div>

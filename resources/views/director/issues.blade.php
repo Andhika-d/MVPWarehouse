@@ -22,37 +22,24 @@
                     <div class="min-w-0 flex-1">
                         <div class="flex items-center gap-2 flex-wrap mb-1">
                             <span class="text-sm font-semibold text-slate-900">{{ $issue->category }}</span>
-                            @if($issue->severity === 'Kritis')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">Kritis</span>
-                            @elseif($issue->severity === 'Peringatan')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">Peringatan</span>
-                            @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">Normal</span>
-                            @endif
-
-                            @if($issue->status === 'Open')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-semibold">Open</span>
-                            @elseif($issue->status === 'Dalam Tinjauan')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 text-xs font-semibold">Dalam Tinjauan</span>
-                            @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 text-xs font-semibold">Selesai</span>
-                            @endif
+                            <x-status-badge domain="severity" :status="$issue->severity" />
+                            <x-status-badge domain="issue" :status="$issue->status" />
                         </div>
                         <p class="text-sm text-slate-600">{{ $issue->description }}</p>
                         @if($issue->stockRequest)
-                        <p class="text-xs text-slate-400 mt-1">Terkait: {{ $issue->stockRequest->item_name }} — {{ $issue->stockRequest->user?->name ?? '—' }}</p>
+                        <p class="mt-1 text-xs text-slate-500">Terkait: {{ $issue->stockRequest->item_name }} — {{ $issue->stockRequest->user?->name ?? '—' }}</p>
                         @endif
                         @if($issue->note)
-                        <p class="text-xs text-blue-600 mt-1 italic">Catatan: {{ $issue->note }}</p>
+                        <p class="mt-1 text-xs italic text-corpblue-600">Catatan: {{ $issue->note }}</p>
                         @endif
-                        <p class="text-xs text-slate-400 mt-1">{{ $issue->created_at->diffForHumans() }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $issue->created_at->diffForHumans() }}</p>
                     </div>
                 </div>
             </div>
             @empty
             <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
                 <svg class="mx-auto text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                <p class="text-sm text-slate-400 mt-3">Belum ada masalah tercatat.</p>
+                <p class="mt-3 text-sm text-slate-500">Belum ada masalah tercatat.</p>
             </div>
             @endforelse
         </div>

@@ -26,14 +26,14 @@
                     @csrf
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-sm">
-                            <thead class="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500">
+                            <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
                                 <tr><th class="px-5 py-3"><input type="checkbox" data-check-all aria-label="Pilih semua"></th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Jumlah</th><th class="px-5 py-3">Pemohon</th><th class="px-5 py-3">Tanggal Approval</th></tr>
                             </thead>
                             <tbody class="divide-y divide-slate-100">
                                 @foreach($requests as $stockRequest)
                                     <tr class="hover:bg-slate-50/60">
                                         <td class="px-5 py-4"><input type="checkbox" name="request_ids[]" value="{{ $stockRequest->id }}" data-request-check @checked(in_array($stockRequest->id, old('request_ids', [])))></td>
-                                        <td class="px-5 py-4"><span class="block font-semibold text-slate-900">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</span>@if($stockRequest->review_note)<span class="mt-1 block text-xs text-blue-600">{{ $stockRequest->review_note }}</span>@endif</td>
+                                        <td class="px-5 py-4"><span class="block font-semibold text-slate-900">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</span>@if($stockRequest->review_note)<span class="mt-1 block text-xs text-corpblue-600">{{ $stockRequest->review_note }}</span>@endif</td>
                                         <td class="whitespace-nowrap px-5 py-4 font-semibold text-blue-700">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
                                         <td class="px-5 py-4 text-slate-600">{{ $stockRequest->user?->name ?? '-' }}</td>
                                         <td class="whitespace-nowrap px-5 py-4 text-slate-500">{{ ($stockRequest->approved_at ?? $stockRequest->created_at)->translatedFormat('d M Y') }}</td>
@@ -45,7 +45,7 @@
                     <div class="grid gap-3 border-t border-slate-200 bg-slate-50/50 p-5 sm:grid-cols-2">
                         <div><label class="mb-1 block text-xs font-semibold text-slate-600">Nama Driver (opsional)</label><input name="driver_name" value="{{ old('driver_name') }}" maxlength="255" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></div>
                         <div><label class="mb-1 block text-xs font-semibold text-slate-600">Catatan Nota (opsional)</label><input name="notes" value="{{ old('notes') }}" maxlength="2000" class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm"></div>
-                        <div class="sm:col-span-2"><button class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">Buat Draft Nota</button></div>
+                        <div class="sm:col-span-2"><button class="btn btn--primary">Buat Draft Nota</button></div>
                     </div>
                 </form>
             @endif
@@ -57,7 +57,7 @@
                 <div class="p-10 text-center text-sm text-slate-500">Belum ada nota pengadaan.</div>
             @else
                 <div class="overflow-x-auto"><table class="w-full text-left text-sm">
-                    <thead class="border-b border-slate-200 bg-slate-50 text-[11px] uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Nomor</th><th class="px-5 py-3">Tanggal Nota</th><th class="px-5 py-3">Item</th><th class="px-5 py-3">Driver</th><th class="px-5 py-3">Status</th><th class="px-5 py-3"></th></tr></thead>
+                    <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Nomor</th><th class="px-5 py-3">Tanggal Nota</th><th class="px-5 py-3">Item</th><th class="px-5 py-3">Driver</th><th class="px-5 py-3">Status</th><th class="px-5 py-3"></th></tr></thead>
                     <tbody class="divide-y divide-slate-100">
                         @foreach($notes as $note)
                             <tr class="hover:bg-slate-50/60">
@@ -65,8 +65,8 @@
                                 <td class="whitespace-nowrap px-5 py-4 text-slate-600">{{ ($note->issued_at ?? $note->created_at)->translatedFormat('d M Y H:i') }}</td>
                                 <td class="px-5 py-4">{{ $note->items_count }} item</td>
                                 <td class="px-5 py-4 text-slate-600">{{ $note->driver_name ?: '-' }}</td>
-                                <td class="px-5 py-4"><span class="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-700">{{ $note->status }}</span></td>
-                                <td class="px-5 py-4 text-right"><a href="{{ route('hr.procurement-notes.show', $note) }}" class="font-semibold text-blue-600 hover:text-blue-800">Buka</a></td>
+                                <td class="px-5 py-4"><x-status-badge domain="procurement" :status="$note->status" /></td>
+                                <td class="px-5 py-4 text-right"><a href="{{ route('hr.procurement-notes.show', $note) }}" class="action-link action-link--primary">Buka</a></td>
                             </tr>
                         @endforeach
                     </tbody>

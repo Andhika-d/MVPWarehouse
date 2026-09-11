@@ -17,10 +17,7 @@
                     <h2 class="text-lg font-bold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</h2>
                     <p class="text-sm text-slate-500 mt-0.5">{{ $request->user?->name ?? 'Gudang' }} &middot; {{ $request->created_at->translatedFormat('d M Y, H:i') }}</p>
                 </div>
-                <span class="shrink-0 px-3 py-1 rounded-full text-xs font-semibold
-                    {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : ($request->status === 'Diterima Penuh' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Sebagian Diterima' ? 'bg-indigo-50 text-indigo-700' : ($request->status === 'Ditutup Sebagian' ? 'bg-slate-100 text-slate-700' : ($request->status === 'Dibatalkan' ? 'bg-stone-100 text-stone-700' : 'bg-amber-50 text-amber-700'))))) }}">
-                    {{ $request->status }}
-                </span>
+                <x-status-badge domain="request" :status="$request->status" class="shrink-0" />
             </div>
 
             {{-- Info row --}}
@@ -96,9 +93,19 @@
             <h3 class="text-sm font-semibold text-slate-900 mb-4">Timeline</h3>
             <div class="space-y-3">
                 @foreach($request->requestHistories->sortBy('created_at') as $history)
+                @php
+                    $historyDot = match ($history->status) {
+                        'Pending' => 'bg-amber-500',
+                        'Sebagian Diterima' => 'bg-indigo-500',
+                        'Diterima Penuh' => 'bg-emerald-500',
+                        'Ditolak' => 'bg-red-500',
+                        'Ditutup Sebagian', 'Dibatalkan' => 'bg-slate-500',
+                        default => 'bg-corpblue-500',
+                    };
+                @endphp
                 <div class="flex gap-3">
                     <div class="flex flex-col items-center">
-                        <span class="w-2.5 h-2.5 rounded-full shrink-0 {{ $history->status === 'Disetujui' ? 'bg-emerald-500' : ($history->status === 'Ditolak' ? 'bg-red-500' : 'bg-corpblue-500') }}"></span>
+                        <span class="h-2.5 w-2.5 shrink-0 rounded-full {{ $historyDot }}"></span>
                         @if(!$loop->last)
                             <span class="w-px flex-1 bg-slate-200 my-1"></span>
                         @endif
@@ -108,7 +115,7 @@
                         @if($history->note)
                             <p class="text-sm text-slate-600 mt-0.5">{{ $history->note }}</p>
                         @endif
-                        <p class="text-xs text-slate-400 mt-1">{{ $history->user?->name ?? 'Sistem' }} &middot; {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
+                        <p class="mt-1 text-xs text-slate-500">{{ $history->user?->name ?? 'Sistem' }} &middot; {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
                     </div>
                 </div>
                 @endforeach

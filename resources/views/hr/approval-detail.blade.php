@@ -16,56 +16,54 @@
                         </p>
                     </div>
                 </div>
-                <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $request->status === 'Pending' ? 'bg-amber-100 text-amber-800' : 'bg-blue-50 text-blue-600' }}">
-                    {{ $request->status }}
-                </span>
+                <x-status-badge domain="request" :status="$request->status" />
             </div>
 
             <div class="mt-6 grid gap-4 md:grid-cols-2">
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Pemohon</p>
+                    <p class="ui-heading">Pemohon</p>
                     <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->user?->name ?? 'Gudang' }}</p>
                     @if($request->user?->email)
                     <p class="text-xs text-slate-500">{{ $request->user->email }}</p>
                     @endif
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Tanggal Permintaan</p>
+                    <p class="ui-heading">Tanggal Permintaan</p>
                     <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->created_at->translatedFormat('l, d F Y') }}</p>
                     <p class="text-xs text-slate-500">{{ $request->created_at->format('H:i') }} WIB</p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Jumlah</p>
+                    <p class="ui-heading">Jumlah</p>
                     <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->quantity }} <span class="text-slate-500">{{ $request->unit }}</span></p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Stok Saat Ini</p>
+                    <p class="ui-heading">Stok Saat Ini</p>
                     <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->item?->stock ?? '-' }} <span class="text-slate-500">{{ $request->unit }}</span></p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Kode Tag</p>
+                    <p class="ui-heading">Kode Tag</p>
                     <p class="mt-1 text-sm font-semibold text-slate-900 font-mono text-xs whitespace-nowrap">{{ $request->item?->storageLocation?->code ?? '-' }}</p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Prioritas</p>
-                    <p class="mt-1">
-                        <span class="px-2 py-0.5 rounded text-xs font-semibold {{ $request->priority === 'Mendesak' ? 'bg-red-50 text-red-600' : 'bg-slate-100 text-slate-600' }}">{{ $request->priority }}</span>
-                    </p>
+                    <p class="ui-heading">Prioritas</p>
+                    <p class="mt-1"><x-status-badge domain="priority" :status="$request->priority" /></p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4 md:col-span-2">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Alasan</p>
+                    <p class="ui-heading">Alasan</p>
                     <p class="mt-1 text-sm text-slate-700">{{ $request->reason ?? '-' }}</p>
                 </div>
             </div>
 
             @if($request->attachment_path)
-            @php($ext = strtolower(pathinfo($request->attachment_path, PATHINFO_EXTENSION)))
-            @php($imageExts = ['jpg', 'jpeg', 'png'])
-            @php($attachmentUrl = Storage::disk('public')->url($request->attachment_path))
+            @php
+                $ext = strtolower(pathinfo($request->attachment_path, PATHINFO_EXTENSION));
+                $imageExts = ['jpg', 'jpeg', 'png'];
+                $attachmentUrl = Storage::disk('public')->url($request->attachment_path);
+            @endphp
             <div class="mt-4 rounded-lg border border-slate-200 p-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <p class="text-xs font-semibold uppercase tracking-wider text-slate-400">Lampiran / Foto</p>
-                    <a href="{{ $attachmentUrl }}" target="_blank" class="inline-flex items-center space-x-1.5 px-3 py-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 text-xs font-bold hover:bg-blue-600 hover:text-white transition-all min-h-[44px]">
+                    <p class="ui-heading">Lampiran / Foto</p>
+                    <a href="{{ $attachmentUrl }}" target="_blank" class="action-link action-link--primary">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                         <span>Buka / Unduh ({{ strtoupper($ext) }})</span>
                     </a>
@@ -89,12 +87,22 @@
             <h3 class="text-base font-semibold text-slate-900">Timeline Status</h3>
             <div class="mt-6 space-y-4">
                 @forelse($request->requestHistories->sortBy('created_at') as $history)
+                    @php
+                        $historyDot = match ($history->status) {
+                            'Pending' => 'bg-amber-500',
+                            'Sebagian Diterima' => 'bg-indigo-500',
+                            'Diterima Penuh' => 'bg-emerald-500',
+                            'Ditolak' => 'bg-red-500',
+                            'Ditutup Sebagian', 'Dibatalkan' => 'bg-slate-500',
+                            default => 'bg-corpblue-500',
+                        };
+                    @endphp
                     <div class="flex gap-3 rounded-lg border border-slate-100 p-4">
-                        <div class="mt-1 h-2.5 w-2.5 rounded-full bg-blue-600"></div>
+                        <div class="mt-1 h-2.5 w-2.5 rounded-full {{ $historyDot }}"></div>
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ $history->status }}</p>
                             <p class="text-sm text-slate-600">{{ $history->note }}</p>
-                            <p class="mt-1 text-xs text-slate-400">Oleh {{ $history->user?->name ?? 'Sistem' }} • {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
+                            <p class="mt-1 text-xs text-slate-500">Oleh {{ $history->user?->name ?? 'Sistem' }} • {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
                         </div>
                     </div>
                 @empty
@@ -110,16 +118,16 @@
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <form action="/hr/requests/{{ $request->id }}/approve" method="POST" class="flex-1">
                     @csrf
-                    <button type="submit" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold transition-all cursor-pointer min-h-[44px]">
+                    <button type="submit" class="btn btn--success w-full">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                         Terima
                     </button>
                 </form>
-                <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 border border-red-200 rounded-lg text-sm font-semibold transition-all cursor-pointer min-h-[44px]">
+                <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" class="btn btn--danger flex-1">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     Tolak
                 </button>
-                <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openDelayModal(this)" class="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-amber-50 hover:bg-amber-500 hover:text-white text-amber-600 border border-amber-200 rounded-lg text-sm font-semibold transition-all cursor-pointer min-h-[44px]">
+                <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openDelayModal(this)" class="btn btn--warning flex-1">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                     Tunda
                 </button>
@@ -149,8 +157,8 @@
                     </div>
                 </div>
                 <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
-                    <button onclick="closeRejectModal()" type="button" class="px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs min-h-[44px]">Batal</button>
-                    <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tolak</button>
+                    <button onclick="closeRejectModal()" type="button" class="btn btn--secondary">Batal</button>
+                    <button type="submit" class="btn btn--danger">Tolak</button>
                 </div>
             </form>
         </div>
@@ -176,8 +184,8 @@
                     </div>
                 </div>
                 <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
-                    <button onclick="closeDelayModal()" type="button" class="px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs min-h-[44px]">Batal</button>
-                    <button type="submit" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-xs font-semibold text-white rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tunda</button>
+                    <button onclick="closeDelayModal()" type="button" class="btn btn--secondary">Batal</button>
+                    <button type="submit" class="btn btn--warning">Tunda</button>
                 </div>
             </form>
         </div>

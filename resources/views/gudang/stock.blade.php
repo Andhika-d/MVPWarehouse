@@ -75,7 +75,7 @@
                                 <td class="px-4 py-3 text-slate-600">{{ $item->size ?? '—' }}</td>
                                 <td class="px-4 py-3 text-center"><span class="font-semibold {{ $item->stock === 0 ? 'text-red-600' : ($item->stock <= 5 ? 'text-amber-600' : 'text-slate-900') }}">{{ $item->stock }}</span></td>
                                 <td class="px-4 py-3 text-slate-600">{{ $item->unit }}</td>
-                                <td class="px-4 py-3 text-center"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-corpblue-50 text-corpblue-700 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-corpblue-500 rounded-full"></span> Terisi</span></td>
+                                <td class="px-4 py-3 text-center"><x-status-badge domain="location" status="Terisi" dot /></td>
                             </tr>
                             @endforeach
                             @else
@@ -87,7 +87,7 @@
                                 <td class="px-4 py-3 text-slate-400">—</td>
                                 <td class="px-4 py-3 text-center text-slate-400">—</td>
                                 <td class="px-4 py-3 text-slate-400">—</td>
-                                <td class="px-4 py-3 text-center"><span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span> Kosong</span></td>
+                                <td class="px-4 py-3 text-center"><x-status-badge domain="location" status="Kosong" dot /></td>
                             </tr>
                             @endif
                         @empty

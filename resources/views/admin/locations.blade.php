@@ -92,11 +92,7 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-center">
-                                @if($loc->isOccupied())
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">Terisi</span>
-                                @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">Kosong</span>
-                                @endif
+                                <x-status-badge domain="location" :status="$loc->status" />
                             </td>
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 @forelse($loc->items as $item)

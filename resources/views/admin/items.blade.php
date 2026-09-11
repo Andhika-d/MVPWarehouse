@@ -109,15 +109,15 @@
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $loc->rack }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-semibold">Terisi</span>
+                                <x-status-badge domain="location" status="Terisi" />
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="px-2 py-1 text-xs text-corpblue-600 hover:bg-corpblue-50 rounded transition-colors cursor-pointer">Edit</button>
-                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="px-2 py-1 text-xs text-amber-600 hover:bg-amber-50 rounded transition-colors cursor-pointer">Adjust</button>
+                                    <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">Edit</button>
+                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">Adjust</button>
                                     <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="Hapus item {{ $item->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus Item" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="px-2 py-1 text-xs text-red-500 hover:bg-red-50 rounded transition-colors cursor-pointer">Hapus</button>
+                                        <button type="submit" class="action-link action-link--danger">Hapus</button>
                                     </form>
                                 </div>
                             </td>
@@ -140,7 +140,7 @@
                             <td class="px-4 py-3 text-right"><span class="text-slate-400">0</span></td>
                             <td class="px-4 py-3 text-slate-600">{{ $loc->rack }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 text-[11px] font-semibold">Kosong</span>
+                                <x-status-badge domain="location" status="Kosong" />
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <span class="text-xs text-slate-400">—</span>
@@ -202,8 +202,8 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeModal('editItemModal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg font-medium transition-colors cursor-pointer">Simpan</button>
+                        <button type="button" onclick="closeModal('editItemModal')" class="btn btn--secondary">Batal</button>
+                        <button type="submit" class="btn btn--primary">Simpan</button>
                     </div>
                 </form>
             </div>
@@ -233,8 +233,8 @@
                         <input type="text" name="reason" id="adjust_reason" required maxlength="255" placeholder="Contoh: Koreksi stok fisik, Hasil audit, dll." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeModal('adjustStockModal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium transition-colors cursor-pointer">Simpan Penyesuaian</button>
+                        <button type="button" onclick="closeModal('adjustStockModal')" class="btn btn--secondary">Batal</button>
+                        <button type="submit" class="btn btn--warning">Simpan Penyesuaian</button>
                     </div>
                 </form>
             </div>

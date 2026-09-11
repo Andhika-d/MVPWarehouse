@@ -71,7 +71,7 @@
                     <textarea name="reason" rows="3" required placeholder="Jelaskan alasan pemindahan barang..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none resize-none"></textarea>
                 </div>
 
-                <button type="submit" class="w-full px-4 py-2.5 bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer">
+                <button type="submit" class="btn btn--primary w-full">
                     Ajukan Pengajuan Lokasi
                 </button>
             </form>
@@ -82,7 +82,7 @@
             <div class="flex items-center justify-between gap-3 mb-3">
                 <h3 class="text-sm font-semibold text-slate-900">Riwayat Pengajuan Saya</h3>
                 <div class="flex items-center gap-2">
-                    <a href="/gudang/location-change/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">Preview Export</a>
+                    <a href="/gudang/location-change/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn btn--secondary">Preview Export</a>
                 </div>
             </div>
             @forelse($myChanges as $change)
@@ -90,13 +90,7 @@
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <span class="font-semibold text-sm text-slate-900">{{ $change->item->name }}{{ $change->item->size ? ' ('.$change->item->size.')' : '' }}</span>
-                        @if($change->isPending())
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700">Menunggu</span>
-                        @elseif($change->status === 'Disetujui')
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700">Disetujui</span>
-                        @else
-                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 text-red-700">Ditolak</span>
-                        @endif
+                        <x-status-badge domain="location-change" :status="$change->status" :label="$change->isPending() ? 'Menunggu' : null" />
                     </div>
                     <div class="flex items-center gap-2">
                         @if($change->status === 'Disetujui' && $change->resolution_action === 'swap')

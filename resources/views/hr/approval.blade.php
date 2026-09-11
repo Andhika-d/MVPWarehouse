@@ -25,19 +25,21 @@
 
         <!-- ================= 2. KARTU NOTA (DIGABUNG PER TANGGAL) ================= -->
         @forelse($notas as $date => $notaItems)
-        @php($first = $notaItems->first())
+        @php
+            $first = $notaItems->first();
+        @endphp
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all duration-300">
 
             <!-- HEADER NOTA + AKSI BULK -->
             <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                    <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-500 text-xs font-bold text-white">
                         {{ \Carbon\Carbon::parse($date)->format('d') }}
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
                             <span class="font-bold text-slate-900 text-sm">#NOTA-{{ str_replace('-', '', $date) }}</span>
-                            <span class="text-[10px] px-2 py-0.5 bg-blue-50 text-blue-600 rounded-full font-semibold">{{ $notaItems->count() }} item</span>
+                            <span class="status-badge status-badge--info">{{ $notaItems->count() }} item</span>
                         </div>
                         <p class="text-xs text-slate-500 mt-0.5">
                             {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }} • Pemohon: {{ $first->user?->name ?? 'Gudang' }}
@@ -66,7 +68,7 @@
             <div class="overflow-x-auto bg-white">
                 <table class="w-full text-left border-collapse text-xs">
                     <thead>
-                        <tr class="bg-slate-50/50 text-slate-400 font-bold border-b border-slate-100 uppercase tracking-wider text-[10px]">
+                        <tr class="border-b border-slate-100 bg-slate-50/50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3 px-6">Barang</th>
                             <th class="py-3 px-6">Kode Tag</th>
                             <th class="py-3 px-6">Jumlah</th>
@@ -80,20 +82,20 @@
                         <tr class="hover:bg-slate-50/30 transition-colors duration-200">
                             <td class="py-4 px-6 font-bold text-slate-900 text-sm">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }} @if($request->attachment_path)<span title="Ada lampiran/foto" class="ml-1">📎</span>@endif</td>
                             <td class="py-4 px-6"><span class="text-slate-600 font-bold block font-mono text-xs whitespace-nowrap">{{ $request->item?->storageLocation?->code ?? '-' }}</span></td>
-                            <td class="py-4 px-6 text-sm font-bold text-slate-900">{{ $request->quantity }} <span class="text-xs text-slate-400 font-medium">{{ $request->unit }}</span></td>
+                            <td class="py-4 px-6 text-sm font-bold text-slate-900">{{ $request->quantity }} <span class="text-xs font-medium text-slate-500">{{ $request->unit }}</span></td>
                             <td class="py-4 px-6 text-slate-500 max-w-xs leading-relaxed">{{ $request->reason ?? '-' }}</td>
                             <td class="py-4 px-6 text-center">
-                                <span class="px-2 py-1 bg-blue-50 text-blue-600 rounded font-semibold text-[10px]">{{ $request->status }}</span>
+                                <x-status-badge domain="request" :status="$request->status" />
                             </td>
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
-                                    <a href="/hr/requests/{{ $request->id }}" title="Lihat detail & lampiran" class="px-2.5 py-2 bg-slate-50 text-slate-700 hover:bg-blue-600 hover:text-white border border-slate-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px] inline-flex items-center">Detail</a>
+                                    <a href="/hr/requests/{{ $request->id }}" title="Lihat detail & lampiran" class="action-link action-link--neutral">Detail</a>
                                     <form action="/hr/requests/{{ $request->id }}/approve" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" title="Terima item ini" class="px-2.5 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Terima</button>
+                                        <button type="submit" title="Terima item ini" class="action-link action-link--success">Terima</button>
                                     </form>
-                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" title="Tolak item ini" class="px-2.5 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Tolak</button>
-                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openDelayModal(this)" title="Tunda item ini" class="px-2.5 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 text-[10px] font-bold rounded-lg transition-all cursor-pointer min-h-[44px]">Tunda</button>
+                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" title="Tolak item ini" class="action-link action-link--danger">Tolak</button>
+                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openDelayModal(this)" title="Tunda item ini" class="action-link action-link--warning">Tunda</button>
                                 </div>
                             </td>
                         </tr>

@@ -95,10 +95,7 @@
                             <p class="text-sm font-medium text-slate-900 truncate">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</p>
                             <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
                         </div>
-                        <span class="shrink-0 ml-3 px-2 py-0.5 rounded-full text-[11px] font-semibold
-                            {{ $request->status === 'Disetujui' ? 'bg-emerald-50 text-emerald-700' : ($request->status === 'Ditolak' ? 'bg-red-50 text-red-700' : 'bg-amber-50 text-amber-700') }}">
-                            {{ $request->status }}
-                        </span>
+                        <x-status-badge domain="request" :status="$request->status" class="ml-3 shrink-0" />
                     </div>
                     @endforeach
                 </div>

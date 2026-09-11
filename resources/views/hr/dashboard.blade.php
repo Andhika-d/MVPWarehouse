@@ -22,10 +22,10 @@
             {{-- BAR STATUS DISTRIBUSI --}}
             @php
                 $allStatuses = [
-                    'Menunggu Review' => ['label' => 'Menunggu Review', 'color' => 'bg-blue-500'],
+                    'Menunggu Review' => ['label' => 'Menunggu Review', 'color' => 'bg-corpblue-500'],
                     'Pending' => ['label' => 'Pending', 'color' => 'bg-amber-500'],
-                    'Disetujui' => ['label' => 'Disetujui', 'color' => 'bg-indigo-500'],
-                    'Sebagian Diterima' => ['label' => 'Diterima Sebagian', 'color' => 'bg-orange-400'],
+                    'Disetujui' => ['label' => 'Disetujui', 'color' => 'bg-corpblue-500'],
+                    'Sebagian Diterima' => ['label' => 'Sebagian Diterima', 'color' => 'bg-indigo-500'],
                     'Diterima Penuh' => ['label' => 'Diterima Penuh', 'color' => 'bg-emerald-500'],
                     'Ditutup Sebagian' => ['label' => 'Ditutup Sebagian', 'color' => 'bg-slate-400'],
                     'Dibatalkan' => ['label' => 'Dibatalkan', 'color' => 'bg-stone-400'],
@@ -68,7 +68,7 @@
                     <div class="p-2 bg-amber-50 text-amber-600 rounded-lg">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <a href="/hr/approval" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700">Tinjau</a>
+                    <a href="/hr/approval" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-700">Tinjau</a>
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-slate-900">{{ $pendingRequests }}</p>
@@ -83,7 +83,7 @@
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     @if($urgentRequests > 0)
-                    <span class="px-2 py-0.5 bg-red-50 text-red-600 rounded-full text-[10px] font-bold uppercase">Urgent</span>
+                    <x-status-badge domain="priority" status="Mendesak" label="Urgent" />
                     @endif
                 </div>
                 <div>
@@ -98,7 +98,7 @@
                     <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <a href="/hr/daftar-belanja" class="text-[11px] font-semibold text-blue-600 hover:text-blue-700">Nota</a>
+                    <a href="/hr/daftar-belanja" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-700">Nota</a>
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-slate-900">{{ $approvedRequests }}</p>
@@ -143,7 +143,7 @@
             <div class="hidden md:block overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-slate-50/70 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr class="border-b border-slate-200 bg-slate-50/70 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3.5 px-6">Barang</th>
                             <th class="py-3.5 px-6">Pemohon</th>
                             <th class="py-3.5 px-6">Jumlah</th>
@@ -156,7 +156,7 @@
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-4 px-6">
                                 <span class="font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</span>
-                                <span class="text-[10px] text-slate-400 block mt-0.5">Stok: {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</span>
+                                <span class="mt-0.5 block text-xs text-slate-500">Stok: {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</span>
                             </td>
                             <td class="py-4 px-6 text-sm font-medium text-slate-600">{{ $request->user?->name ?? '-' }}</td>
                             <td class="py-4 px-6">
@@ -195,10 +195,10 @@
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-slate-900 truncate">{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}</p>
-                            <p class="text-[11px] text-slate-400 mt-0.5">{{ $request->user?->name ?? '-' }} &middot; Stok {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</p>
+                            <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; Stok {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</p>
                         </div>
                         @if($request->priority === 'Mendesak')
-                        <span class="shrink-0 px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase">Urgent</span>
+                        <x-status-badge domain="priority" status="Mendesak" label="Urgent" class="shrink-0" />
                         @endif
                     </div>
                     <div class="flex items-center gap-3 text-xs text-slate-500">

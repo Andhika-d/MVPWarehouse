@@ -126,7 +126,7 @@
                             </td>
                             <td class="px-4 py-3 text-center text-slate-600">{{ $item->unit }}</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-emerald-500 rounded-full"></span> Terisi</span>
+                                <x-status-badge domain="location" status="Terisi" dot />
                             </td>
                         </tr>
                         @empty
@@ -149,7 +149,7 @@
                             <td class="px-4 py-3 text-center"><span class="text-slate-400">0</span></td>
                             <td class="px-4 py-3 text-center text-slate-600">—</td>
                             <td class="px-4 py-3 text-center">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full text-xs font-semibold"><span class="w-1.5 h-1.5 bg-slate-400 rounded-full"></span> Kosong</span>
+                                <x-status-badge domain="location" status="Kosong" dot />
                             </td>
                         </tr>
                         @endforelse

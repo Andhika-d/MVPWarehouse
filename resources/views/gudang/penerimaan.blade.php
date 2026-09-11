@@ -21,7 +21,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
-                        <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3 px-5">Barang</th>
                             <th class="py-3 px-5 text-center">Diminta</th>
                             <th class="py-3 px-5 text-center">Diterima</th>
@@ -35,7 +35,7 @@
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-3 px-5">
                                 <p class="font-semibold text-slate-900">{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}</p>
-                                <p class="text-xs text-slate-400 mt-0.5 whitespace-nowrap">{{ $req->item?->storageLocation?->rack ?? '—' }} · {{ $req->item?->storageLocation?->code ?? '' }} · {{ $req->unit }}</p>
+                                <p class="mt-0.5 whitespace-nowrap text-xs text-slate-500">{{ $req->item?->storageLocation?->rack ?? '—' }} · {{ $req->item?->storageLocation?->code ?? '' }} · {{ $req->unit }}</p>
                             </td>
                             <td class="py-3 px-5 text-center font-bold text-blue-600">{{ $req->quantity }}</td>
                             <td class="py-3 px-5 text-center font-semibold text-emerald-600">{{ $req->received_quantity }}</td>
@@ -51,7 +51,7 @@
                                         data-name="{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}"
                                         data-remain="{{ $req->remainingQuantity() }}"
                                         data-unit="{{ $req->unit }}"
-                                        class="px-3 py-1.5 border border-amber-300 text-amber-700 text-xs font-semibold rounded-lg hover:bg-amber-50 transition-all cursor-pointer">Tutup Sisa</button>
+                                        class="action-link action-link--warning">Tutup Sisa</button>
                                     <button
                                         onclick="openReceiveModal(this)"
                                         data-id="{{ $req->id }}"
@@ -60,13 +60,13 @@
                                         data-received="{{ $req->received_quantity }}"
                                         data-remain="{{ $req->remainingQuantity() }}"
                                         data-unit="{{ $req->unit }}"
-                                        class="px-3 py-1.5 bg-corpblue-500 text-white text-xs font-semibold rounded-lg hover:bg-corpblue-600 transition-all cursor-pointer">Terima</button>
+                                        class="action-link action-link--primary">Terima</button>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-slate-400 text-sm">Tidak ada request yang menunggu penerimaan.</td>
+                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Tidak ada request yang menunggu penerimaan.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -113,8 +113,8 @@
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">
-                    <button type="button" onclick="closeReceiveModal()" class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-all">Batal</button>
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-corpblue-500 text-white text-sm font-semibold rounded-lg hover:bg-corpblue-600 transition-all">Simpan</button>
+                    <button type="button" onclick="closeReceiveModal()" class="btn btn--secondary flex-1">Batal</button>
+                    <button type="submit" class="btn btn--primary flex-1">Simpan</button>
                 </div>
             </form>
         </div>
@@ -140,12 +140,12 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-0.5">Alasan Penutupan <span class="text-red-500">*</span></label>
                         <textarea name="note" id="close_note" rows="3" required maxlength="255" placeholder="Contoh: Supplier tidak dapat memenuhi sisa pesanan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"></textarea>
-                        <p class="text-[11px] text-slate-400 mt-1">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
+                        <p class="mt-1 text-xs text-slate-500">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">
-                    <button type="button" onclick="closeCloseModal()" class="flex-1 px-4 py-2.5 border border-slate-200 text-slate-600 text-sm font-semibold rounded-lg hover:bg-slate-50 transition-all">Batal</button>
-                    <button type="submit" class="flex-1 px-4 py-2.5 bg-amber-500 text-white text-sm font-semibold rounded-lg hover:bg-amber-600 transition-all">Tutup Sisa</button>
+                    <button type="button" onclick="closeCloseModal()" class="btn btn--secondary flex-1">Batal</button>
+                    <button type="submit" class="btn btn--warning flex-1">Tutup Sisa</button>
                 </div>
             </form>
         </div>

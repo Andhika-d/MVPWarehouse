@@ -49,30 +49,10 @@
                             <td class="px-5 py-3 text-slate-600">{{ $req->user?->name ?? '—' }}</td>
                             <td class="px-5 py-3 text-slate-600">{{ $req->quantity }} {{ $req->unit }}</td>
                             <td class="px-5 py-3">
-                                @if($req->priority === 'Mendesak')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">Mendesak</span>
-                                @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">Normal</span>
-                                @endif
+                                <x-status-badge domain="priority" :status="$req->priority" />
                             </td>
                             <td class="px-5 py-3">
-                                @if($req->status === 'Menunggu Review' || $req->status === 'Pending')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Disetujui')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-corpblue-50 text-corpblue-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Sebagian Diterima')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Diterima Penuh')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Ditolak')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Ditutup Sebagian')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @elseif($req->status === 'Dibatalkan')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 text-xs font-semibold">{{ $req->status }}</span>
-                                @else
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ $req->status }}</span>
-                                @endif
+                                <x-status-badge domain="request" :status="$req->status" />
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $req->received_quantity }}/{{ $req->quantity }}</td>
                             <td class="px-5 py-3 text-slate-400 text-xs">{{ $req->created_at->format('d M Y') }}</td>

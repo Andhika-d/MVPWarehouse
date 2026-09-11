@@ -14,7 +14,7 @@
                 <a href="{{ route('admin.location-changes.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
                 <div class="flex items-center gap-2">
-                    <a href="{{ route('admin.location-changes.export-preview', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">Preview Export</a>
+                    <a href="{{ route('admin.location-changes.export-preview', request()->query()) }}" class="btn btn--secondary">Preview Export</a>
                 </div>
             </form>
         </div>
@@ -38,13 +38,7 @@
                     <div class="min-w-0 flex-1">
                         {{-- Status badge --}}
                         <div class="flex items-center gap-2 flex-wrap mb-2">
-                            @if($change->isPending())
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">Menunggu</span>
-                            @elseif($change->status === 'Disetujui')
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">Disetujui</span>
-                            @else
-                            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">Ditolak</span>
-                            @endif
+                            <x-status-badge domain="location-change" :status="$change->status" :label="$change->isPending() ? 'Menunggu' : null" />
 
                             @if($isSub)
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold">Pemindahan</span>
@@ -87,7 +81,7 @@
                                 @if($toOccupied)
                                 <span class="text-xs text-slate-500">berisi {{ $toItems->take(3)->pluck('name')->implode(', ') }}</span>
                                 @else
-                                <span class="text-xs text-slate-400">kosong</span>
+                                <span class="text-xs text-slate-500">kosong</span>
                                 @endif
                             </div>
 
@@ -97,7 +91,7 @@
                         </div>
 
                         {{-- Meta --}}
-                        <p class="text-xs text-slate-400 mt-2">Diajukan oleh {{ $change->requestedBy?->name ?? '—' }} &middot; {{ $change->created_at->diffForHumans() }}</p>
+                        <p class="mt-2 text-xs text-slate-500">Diajukan oleh {{ $change->requestedBy?->name ?? '—' }} &middot; {{ $change->created_at->diffForHumans() }}</p>
                         @if($change->reason)
                         <p class="text-xs text-slate-500 mt-1 italic">"{{ $change->reason }}"</p>
                         @endif
@@ -120,10 +114,10 @@
                             @if($toOccupied && !$isSub)
                             <input type="hidden" name="action" value="swap">
                             @endif
-                            <button type="submit" class="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer">Setujui</button>
+                            <button type="submit" class="action-link action-link--success">Setujui</button>
                         </form>
                         @endif
-                        <button onclick="openRejectModal({{ $change->id }})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-lg transition-colors cursor-pointer">Tolak</button>
+                        <button onclick="openRejectModal({{ $change->id }})" class="action-link action-link--danger">Tolak</button>
                     </div>
                     @endif
                 </div>
@@ -131,7 +125,7 @@
             @empty
             <div class="bg-white rounded-xl border border-slate-200 p-12 text-center">
                 <svg class="mx-auto text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                <p class="text-sm text-slate-400 mt-3">Belum ada pengajuan perubahan lokasi.</p>
+                <p class="mt-3 text-sm text-slate-500">Belum ada pengajuan perubahan lokasi.</p>
             </div>
             @endforelse
         </div>
@@ -180,8 +174,8 @@
                     </div>
 
                     <div class="flex justify-end gap-2 pt-1">
-                        <button type="button" onclick="closeModal('approveModal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg font-medium cursor-pointer">Setujui</button>
+                        <button type="button" onclick="closeModal('approveModal')" class="btn btn--secondary">Batal</button>
+                        <button type="submit" class="btn btn--success">Setujui</button>
                     </div>
                 </form>
             </div>
@@ -202,8 +196,8 @@
                         <textarea name="admin_note" rows="3" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none" placeholder="Alasan penolakan..."></textarea>
                     </div>
                     <div class="flex justify-end gap-2">
-                        <button type="button" onclick="closeModal('rejectModal')" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg cursor-pointer">Batal</button>
-                        <button type="submit" class="px-4 py-2 text-sm bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium cursor-pointer">Tolak</button>
+                        <button type="button" onclick="closeModal('rejectModal')" class="btn btn--secondary">Batal</button>
+                        <button type="submit" class="btn btn--danger">Tolak</button>
                     </div>
                 </form>
             </div>
