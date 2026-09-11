@@ -126,7 +126,7 @@
                             </td>
                             <td class="px-4 py-3 text-center text-slate-600">{{ $item->unit }}</td>
                             <td class="px-4 py-3 text-center">
-                                <x-status-badge domain="location" status="Terisi" dot />
+                                <x-status-badge domain="location" status="Terisi" :label="$item->stock === 0 ? 'Terisi (Barang Kosong)' : 'Terisi'" dot />
                             </td>
                         </tr>
                         @empty

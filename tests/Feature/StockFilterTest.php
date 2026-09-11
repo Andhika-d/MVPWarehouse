@@ -51,7 +51,7 @@ class StockFilterTest extends TestCase
 
         $itemEmptyResponse = $this->actingAs($user)->get('/gudang/stock?status=item_empty');
         $itemEmptyResponse->assertOk();
-        $itemEmptyResponse->assertOk();
+        $itemEmptyResponse->assertSee('Terisi (Barang Kosong)');
         $this->assertSame([
             $zeroStockLocation->id,
         ], DB::table('storage_locations')
@@ -66,11 +66,18 @@ class StockFilterTest extends TestCase
 
         $emptyResponse = $this->actingAs($user)->get('/gudang/stock?status=empty');
         $emptyResponse->assertOk();
-        $emptyResponse->assertOk();
+        $emptyResponse->assertDontSee('Terisi (Barang Kosong)');
         $this->assertSame([
             $emptyLocation->id,
         ], StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
             ->pluck('id')
             ->all());
+
+        foreach (['hr', 'director'] as $role) {
+            $this->actingAs($this->user($role))
+                ->get("/{$role}/stock?status=item_empty")
+                ->assertOk()
+                ->assertSee('Terisi (Barang Kosong)');
+        }
     }
 }
