@@ -1,3 +1,30 @@
+@php
+    $currentUser = auth()->user();
+    $currentRole = $currentUser?->role ?? 'gudang';
+    $roleLabel = match ($currentRole) {
+        'admin' => 'Administrator',
+        'hr' => 'HRD',
+        'director' => 'Direktur',
+        default => 'Gudang',
+    };
+    $roleDescription = match ($currentRole) {
+        'admin' => 'Super User',
+        'hr' => 'HR Taehang',
+        'director' => 'Executive Monitoring',
+        default => 'PIC Gudang',
+    };
+    $roleInitials = match ($currentRole) {
+        'admin' => 'AD',
+        'hr' => 'HR',
+        'director' => 'DR',
+        default => 'GD',
+    };
+    $roleAvatarClass = match ($currentRole) {
+        'admin' => 'bg-slate-800',
+        'director' => 'bg-indigo-700',
+        default => 'bg-corpblue-500',
+    };
+@endphp
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -92,7 +119,7 @@
         .anim-dropdown-out { animation: dropdownOut 0.12s ease-in both; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+<body class="flex h-screen flex-col overflow-hidden bg-slate-50 text-slate-800 font-sans antialiased">
 
     @if(setting('dev_mode'))
     <div class="bg-red-600 text-white text-center text-xs font-bold px-4 py-2 no-print">
@@ -111,17 +138,17 @@
     </div>
     @endif
 
-    <div class="flex h-screen overflow-hidden">
+    <div id="appShell" class="flex min-h-0 flex-1 overflow-hidden">
 
     <!-- MOBILE OVERLAY -->
-    <div id="sidebarOverlay" class="fixed inset-0 bg-slate-900/50 z-40 lg:hidden hidden" onclick="closeSidebar()"></div>
+    <button type="button" id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" onclick="closeSidebar()" aria-label="Tutup menu"></button>
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-slate-200 flex flex-col justify-between shrink-0 transform -translate-x-full lg:relative lg:translate-x-0 transition-transform duration-200 ease-in-out">
-            <div>
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col bg-white border-r border-slate-200 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0" aria-label="Navigasi utama">
+            <div class="flex min-h-0 flex-1 flex-col">
                 <!-- Brand / Logo Perusahaan -->
                 <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
-                    @if(request()->is('hr*'))
+                    @if($currentRole === 'hr')
                     <div class="w-9 h-9 rounded-lg bg-corpblue-500 flex items-center justify-center shrink-0 shadow-sm">
                         <svg class="text-white" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                     </div>
@@ -130,7 +157,7 @@
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan 2</span>
                         <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">MVPWarehouse</span>
                     </div>
-                    @elseif(request()->is('gudang*'))
+                    @elseif($currentRole === 'gudang')
                     <div class="w-9 h-9 rounded-lg bg-corpblue-500 flex items-center justify-center shrink-0 shadow-sm">
                         <svg class="text-white" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     </div>
@@ -139,7 +166,7 @@
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan 2</span>
                         <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">MVPWarehouse</span>
                     </div>
-                    @elseif(request()->is('director*'))
+                    @elseif($currentRole === 'director')
                     <div class="w-9 h-9 rounded-lg bg-indigo-700 flex items-center justify-center shrink-0 shadow-sm">
                         <svg class="text-white" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                     </div>
@@ -155,11 +182,14 @@
                         <span class="text-[10px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1">MVPWarehouse</span>
                     </div>
                     @endif
+                    <button type="button" onclick="closeSidebar()" class="touch-target ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 lg:hidden" aria-label="Tutup menu">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                 </div>
 
-                <nav class="p-4 space-y-1">
-                    <!-- PEMISAH LOGIKA PERAN BERDASARKAN URL -->
-                        @if(request()->is('admin*'))
+                <nav class="min-h-0 flex-1 space-y-1 overflow-y-auto p-4">
+                    <!-- Menu dipilih dari role pengguna; URL hanya menentukan status aktif. -->
+                        @if($currentRole === 'admin')
                         <!-- ================= MENU UNTUK ADMINISTRATOR ================= -->
 
                         <a href="{{ route('admin.dashboard') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
@@ -231,7 +261,7 @@
                             <span>Kelola Bantuan</span>
                         </a>
 
-                        @elseif(request()->is('hr*'))
+                        @elseif($currentRole === 'hr')
                         <!-- ================= MENU UNTUK HRD ================= -->
 
                         <!-- Group: Workflow -->
@@ -272,7 +302,7 @@
                             <svg class="shrink-0 {{ request()->is('hr/history*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span>History Pengadaan Barang</span>
                         </a>
-                    @elseif(request()->is('gudang*'))
+                    @elseif($currentRole === 'gudang')
                         <!-- ================= MENU UNTUK GUDANG ================= -->
 
                         <!-- Group: Operasional -->
@@ -331,7 +361,7 @@
                             <svg class="shrink-0 {{ request()->is('gudang/history*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span>History Permintaan</span>
                         </a>
-                    @elseif(request()->is('director*'))
+                    @elseif($currentRole === 'director')
                         <!-- ================= MENU UNTUK DIREKTUR ================= -->
 
                         <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Executive Monitoring</div>
@@ -378,40 +408,14 @@
             </div>
 
                 <!-- User Panel & Logout -->
-            <div class="p-3 border-t border-slate-100">
-                @if(request()->is('hr*'))
+            <div class="shrink-0 border-t border-slate-100 p-3">
                 <div class="flex items-center gap-3 px-3 py-2 mb-2 rounded-lg bg-slate-50">
-                    <div class="w-8 h-8 rounded-full bg-corpblue-500 text-white flex items-center justify-center text-xs font-bold tracking-wider shrink-0">HR</div>
+                    <div class="w-8 h-8 rounded-full {{ $roleAvatarClass }} text-white flex items-center justify-center text-xs font-bold tracking-wider shrink-0">{{ $roleInitials }}</div>
                     <div class="flex flex-col min-w-0 leading-none">
-                        <span class="text-xs font-semibold text-slate-800 truncate">HRD</span>
-                        <span class="text-[10px] text-slate-400 font-medium">HR Taehang</span>
+                        <span class="text-xs font-semibold text-slate-800 truncate">{{ $currentUser?->name ?? $roleLabel }}</span>
+                        <span class="text-[10px] text-slate-500 font-medium">{{ $roleDescription }}</span>
                     </div>
                 </div>
-                @elseif(request()->is('gudang*'))
-                <div class="flex items-center gap-3 px-3 py-2 mb-2 rounded-lg bg-slate-50">
-                    <div class="w-8 h-8 rounded-full bg-corpblue-500 text-white flex items-center justify-center text-xs font-bold tracking-wider shrink-0">GD</div>
-                    <div class="flex flex-col min-w-0 leading-none">
-                        <span class="text-xs font-semibold text-slate-800 truncate">Gudang Utama</span>
-                        <span class="text-[10px] text-slate-400 font-medium">PIC Gudang</span>
-                    </div>
-                </div>
-                @elseif(request()->is('admin*'))
-                <div class="flex items-center gap-3 px-3 py-2 mb-2 rounded-lg bg-slate-50">
-                    <div class="w-8 h-8 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs font-bold tracking-wider shrink-0">AD</div>
-                    <div class="flex flex-col min-w-0 leading-none">
-                        <span class="text-xs font-semibold text-slate-800 truncate">Administrator</span>
-                        <span class="text-[10px] text-slate-400 font-medium">Super User</span>
-                    </div>
-                </div>
-                @elseif(request()->is('director*'))
-                <div class="flex items-center gap-3 px-3 py-2 mb-2 rounded-lg bg-slate-50">
-                    <div class="w-8 h-8 rounded-full bg-indigo-700 text-white flex items-center justify-center text-xs font-bold tracking-wider shrink-0">DR</div>
-                    <div class="flex flex-col min-w-0 leading-none">
-                        <span class="text-xs font-semibold text-slate-800 truncate">Direktur</span>
-                        <span class="text-[10px] text-slate-400 font-medium">Mr. Yang</span>
-                    </div>
-                </div>
-                @endif
                 <form method="POST" action="{{ route('logout') }}" class="w-full" data-confirm="Yakin ingin keluar?" data-confirm-title="Keluar Akun" data-confirm-tone="danger" data-confirm-button="Keluar">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 px-4 py-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-all cursor-pointer">
@@ -423,20 +427,20 @@
         </aside>
 
         <!-- 2. MAIN LAYOUT (Area Konten Dashboard) -->
-        <div class="flex-1 flex flex-col min-w-0 bg-slate-50">
+        <div id="contentShell" class="flex min-w-0 flex-1 flex-col bg-slate-50">
             <!-- Topbar / Header Utama -->
-                <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-8 shrink-0">
-                    <div class="flex items-center gap-3">
+                <header class="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 lg:px-8">
+                    <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <!-- Hamburger button (mobile only) -->
-                        <button id="hamburgerBtn" onclick="openSidebar()" class="lg:hidden p-2 -ml-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer" aria-label="Buka menu">
+                        <button id="hamburgerBtn" onclick="openSidebar()" class="touch-target -ml-2 shrink-0 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:hidden" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
                             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>
-                        <h1 class="text-base lg:text-lg font-semibold text-slate-900">{{ $headerTitle ?? 'Selamat Datang' }}</h1>
+                        <h1 class="truncate text-sm font-semibold text-slate-900 sm:text-base lg:text-lg">{{ $headerTitle ?? 'Selamat Datang' }}</h1>
                     </div>
                     
                     <!-- Area Kanan Header (Notifikasi Dinamis & Profil Peran) -->
-                    <div class="flex items-center space-x-3 md:space-x-6">
-                        <a href="{{ route('help.index') }}" aria-label="Bantuan" title="Bantuan" class="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600 cursor-pointer">?</a>
+                    <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
+                        <a href="{{ route('help.index') }}" aria-label="Bantuan" title="Bantuan" class="touch-target flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600">?</a>
                         
                         <!-- NOTIFIKASI DROPDOWN -->
                         <x-notifications-dropdown />
@@ -444,15 +448,13 @@
                         <!-- INFORMASI PROFIL DINAMIS -->
                         <div class="flex items-center space-x-2 md:space-x-3">
                             <div class="text-right hidden sm:block">
-                                <p class="text-sm font-semibold text-slate-900">
-                                    {{ request()->is('admin*') ? 'Administrator' : (request()->is('hr*') ? 'HRD' : (request()->is('director*') ? 'Direktur' : 'Gudang Utama')) }}
-                                </p>
+                                <p class="max-w-36 truncate text-sm font-semibold text-slate-900">{{ $currentUser?->name ?? $roleLabel }}</p>
                                 <p class="text-xs text-slate-500 font-medium tracking-wide uppercase">
-                                    {{ request()->is('admin*') ? 'Super User' : (request()->is('hr*') ? 'HR Taehang' : (request()->is('director*') ? 'Mr. Yang' : 'PIC Gudang')) }}
+                                    {{ $roleLabel }}
                                 </p>
                             </div>
-                            <div class="w-9 h-9 rounded-full {{ request()->is('admin*') ? 'bg-slate-800' : (request()->is('hr*') ? 'bg-indigo-600' : (request()->is('director*') ? 'bg-indigo-700' : 'bg-corpblue-500')) }} text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm shrink-0">
-                                {{ request()->is('admin*') ? 'AD' : (request()->is('hr*') ? 'HR' : (request()->is('director*') ? 'DR' : 'GD')) }}
+                            <div class="w-10 h-10 rounded-full {{ $roleAvatarClass }} text-white flex items-center justify-center font-bold text-sm tracking-wider shadow-sm shrink-0" aria-hidden="true">
+                                {{ $roleInitials }}
                             </div>
                         </div>
 
@@ -460,7 +462,8 @@
                 </header>
 
             <!-- Tempat Konten Dinamis Diisi -->
-            <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            <main id="mainContent" class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+                <x-flash-messages />
                 {{ $slot }}
             </main>
         </div>
@@ -471,7 +474,7 @@
     <div id="modalRoot">{{ $modals ?? '' }}</div>
 
     {{-- ═══ GLOBAL CONFIRM MODAL ═══ --}}
-    <div id="confirmModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+    <div id="confirmModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle" aria-hidden="true">
         <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
             <div class="px-6 py-5 flex items-start gap-4">
                 <div id="confirmModalIcon" class="w-11 h-11 rounded-xl flex items-center justify-center shrink-0 bg-red-100">
@@ -490,46 +493,100 @@
     </div>
 
     <script>
-        function openSidebar() {
-            document.getElementById('sidebar').classList.remove('-translate-x-full');
-            document.getElementById('sidebarOverlay').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-        function closeSidebar() {
-            document.getElementById('sidebar').classList.add('-translate-x-full');
-            document.getElementById('sidebarOverlay').classList.add('hidden');
-            document.body.style.overflow = '';
+        var _sidebarOpener = null;
+        var _openModals = [];
+        var _modalOpeners = new Map();
+        var _confirmForm = null;
+        var _confirmSubmitter = null;
+        var _confirmOpener = null;
+
+        function isDesktopSidebar() {
+            return window.matchMedia('(min-width: 1024px)').matches;
         }
 
-        // ── Global Modal Utility ──────────────────────────────────────
-        let _modalScrollPos = 0;
+        function syncSidebarState() {
+            var sidebar = document.getElementById('sidebar');
+            var hamburger = document.getElementById('hamburgerBtn');
+            var isOpen = isDesktopSidebar() || !sidebar.classList.contains('-translate-x-full');
+            sidebar.inert = !isOpen;
+            hamburger.setAttribute('aria-expanded', isOpen && !isDesktopSidebar() ? 'true' : 'false');
+        }
+
+        function openSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            _sidebarOpener = document.activeElement;
+            sidebar.classList.remove('-translate-x-full');
+            sidebar.inert = false;
+            document.getElementById('sidebarOverlay').classList.remove('hidden');
+            document.getElementById('hamburgerBtn').setAttribute('aria-expanded', 'true');
+            document.getElementById('contentShell').inert = true;
+            document.body.style.overflow = 'hidden';
+            setTimeout(function () { sidebar.querySelector('a, button')?.focus(); }, 50);
+        }
+
+        function closeSidebar(restoreFocus) {
+            if (isDesktopSidebar()) return;
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebar').inert = true;
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+            document.getElementById('hamburgerBtn').setAttribute('aria-expanded', 'false');
+            document.getElementById('contentShell').inert = false;
+            document.body.style.overflow = '';
+            if (restoreFocus !== false && _sidebarOpener) _sidebarOpener.focus();
+            _sidebarOpener = null;
+        }
+
+        function focusableElements(container) {
+            return Array.from(container.querySelectorAll('a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'))
+                .filter(function (element) { return element.offsetParent !== null; });
+        }
+
+        function activeDialog() {
+            var confirmModal = document.getElementById('confirmModal');
+            if (!confirmModal.classList.contains('hidden')) return confirmModal;
+            return _openModals.length ? _openModals[_openModals.length - 1] : null;
+        }
+
+        function syncModalBackground() {
+            var confirmIsOpen = !document.getElementById('confirmModal').classList.contains('hidden');
+            var hasDialog = confirmIsOpen || _openModals.length > 0;
+            document.getElementById('appShell').inert = hasDialog;
+            document.getElementById('modalRoot').inert = confirmIsOpen;
+            document.getElementById('mainContent').style.overflow = hasDialog ? 'hidden' : '';
+        }
 
         function openModal(overlayId, opts) {
             opts = opts || {};
             var overlay = document.getElementById(overlayId);
-            if (!overlay) return;
-            _modalScrollPos = window.scrollY;
-            document.body.style.position = 'fixed';
-            document.body.style.top = '-' + _modalScrollPos + 'px';
-            document.body.style.width = '100%';
-            overlay.classList.remove('hidden');
-            overlay.classList.add('flex');
-            // animate overlay
-            overlay.classList.remove('anim-fade-out');
-            overlay.classList.add('anim-fade-in');
-            // animate panel
+            if (!overlay || !overlay.classList.contains('hidden')) return;
+
+            _modalOpeners.set(overlay, document.activeElement);
+            _openModals.push(overlay);
+            overlay.setAttribute('aria-hidden', 'false');
+            overlay.classList.remove('hidden', 'anim-fade-out');
+            overlay.classList.add('flex', 'anim-fade-in');
+
             var panel = overlay.querySelector('.bg-white');
             if (panel) {
                 panel.classList.remove('anim-modal-out');
                 panel.classList.add('anim-modal-in');
             }
-            var first = overlay.querySelector('input:not([type=hidden]),textarea');
-            if (first) setTimeout(function(){ first.focus(); }, 60);
+
+            syncModalBackground();
+            setTimeout(function () {
+                var first = overlay.querySelector('[autofocus], input:not([type="hidden"]), textarea, select, button, a[href]');
+                if (first) first.focus();
+                else {
+                    overlay.setAttribute('tabindex', '-1');
+                    overlay.focus();
+                }
+            }, 60);
         }
 
         function closeModal(overlayId) {
             var overlay = document.getElementById(overlayId);
-            if (!overlay) return;
+            if (!overlay || overlay.classList.contains('hidden') || overlay.dataset.closing === 'true') return;
+            overlay.dataset.closing = 'true';
             overlay.classList.remove('anim-fade-in');
             overlay.classList.add('anim-fade-out');
             var panel = overlay.querySelector('.bg-white');
@@ -537,38 +594,22 @@
                 panel.classList.remove('anim-modal-in');
                 panel.classList.add('anim-modal-out');
             }
+
             setTimeout(function() {
                 overlay.classList.add('hidden');
-                overlay.classList.remove('flex');
-                overlay.classList.remove('anim-fade-out');
+                overlay.classList.remove('flex', 'anim-fade-out');
+                overlay.setAttribute('aria-hidden', 'true');
+                delete overlay.dataset.closing;
                 if (panel) panel.classList.remove('anim-modal-out');
+                _openModals = _openModals.filter(function (modal) { return modal !== overlay; });
+                syncModalBackground();
+                var opener = _modalOpeners.get(overlay);
+                _modalOpeners.delete(overlay);
+                if (opener && document.contains(opener)) opener.focus();
             }, 160);
-            document.body.style.position = '';
-            document.body.style.top = '';
-            document.body.style.width = '';
-            window.scrollTo(0, _modalScrollPos);
-            _modalScrollPos = 0;
         }
 
-        // global escape handler for the topmost visible modal
-        document.addEventListener('keydown', function(e) {
-            if (e.key !== 'Escape') return;
-            // confirm modal takes priority
-            var confirmOverlay = document.getElementById('confirmModal');
-            if (confirmOverlay && !confirmOverlay.classList.contains('hidden')) {
-                closeConfirmModal();
-                return;
-            }
-            var modals = document.querySelectorAll('#modalRoot > div:not(.hidden)');
-            if (modals.length === 0) return;
-            var top = modals[modals.length - 1];
-            var closeBtn = top.querySelector('button[aria-label="Tutup"]');
-            if (closeBtn) closeBtn.click();
-        });
-
         // ── Global Confirm Modal ──────────────────────────────────────
-        var _confirmForm = null;
-        var _confirmScrollPos = 0;
 
         var _toneStyles = {
             danger:  { iconBg: 'bg-red-100', iconColor: 'text-red-600', btnBg: 'bg-red-600 hover:bg-red-700', icon: '<svg class="text-red-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>' },
@@ -577,9 +618,11 @@
             success: { iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600', btnBg: 'bg-emerald-600 hover:bg-emerald-700', icon: '<svg class="text-emerald-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>' },
         };
 
-        function openConfirmModal(form, message, opts) {
+        function openConfirmModal(form, message, opts, submitter) {
             opts = opts || {};
             _confirmForm = form;
+            _confirmSubmitter = submitter || null;
+            _confirmOpener = document.activeElement;
             var tone = opts.tone || 'danger';
             var title = opts.title || 'Konfirmasi';
             var button = opts.button || 'Lanjutkan';
@@ -596,12 +639,8 @@
             btn.textContent = button;
             btn.className = 'px-5 py-2 text-sm text-white rounded-xl font-semibold transition-colors cursor-pointer ' + ts.btnBg;
 
-            _confirmScrollPos = window.scrollY;
-            document.body.style.position = 'fixed';
-            document.body.style.top = '-' + _confirmScrollPos + 'px';
-            document.body.style.width = '100%';
-
             var cm = document.getElementById('confirmModal');
+            cm.setAttribute('aria-hidden', 'false');
             cm.classList.remove('hidden');
             cm.classList.add('flex');
             // animate overlay
@@ -617,10 +656,14 @@
             iconEl.classList.remove('anim-icon-pop');
             void iconEl.offsetWidth;
             iconEl.classList.add('anim-icon-pop');
+            syncModalBackground();
+            setTimeout(function () { btn.focus(); }, 60);
         }
 
-        function closeConfirmModal() {
+        function closeConfirmModal(restoreFocus) {
             var overlay = document.getElementById('confirmModal');
+            if (overlay.classList.contains('hidden') || overlay.dataset.closing === 'true') return;
+            overlay.dataset.closing = 'true';
             overlay.classList.remove('anim-fade-in');
             overlay.classList.add('anim-fade-out');
             var panel = overlay.querySelector('.bg-white');
@@ -632,29 +675,33 @@
                 overlay.classList.add('hidden');
                 overlay.classList.remove('flex');
                 overlay.classList.remove('anim-fade-out');
+                overlay.setAttribute('aria-hidden', 'true');
+                delete overlay.dataset.closing;
                 if (panel) panel.classList.remove('anim-modal-out');
+                document.getElementById('modalRoot').inert = false;
+                syncModalBackground();
+                if (restoreFocus !== false && _confirmOpener && document.contains(_confirmOpener)) _confirmOpener.focus();
+                _confirmOpener = null;
             }, 160);
-            document.body.style.position = '';
-            document.body.style.top = '';
-            document.body.style.width = '';
-            window.scrollTo(0, _confirmScrollPos);
-            _confirmScrollPos = 0;
             _confirmForm = null;
+            _confirmSubmitter = null;
         }
 
         function confirmModalAction() {
-            if (_confirmForm) {
-                var form = _confirmForm;
-                form.removeAttribute('data-confirm');
-                form.submit();
-            }
-            closeConfirmModal();
+            if (!_confirmForm) return;
+            var form = _confirmForm;
+            var submitter = _confirmSubmitter;
+            var message = form.getAttribute('data-confirm');
+            form.removeAttribute('data-confirm');
+            closeConfirmModal(false);
+            form.requestSubmit(submitter && form.contains(submitter) ? submitter : undefined);
+            if (message) form.setAttribute('data-confirm', message);
         }
 
         // ── Auto-bind data-confirm on all forms ──────────────────────
         document.addEventListener('submit', function(e) {
             var form = e.target;
-            if (form.tagName !== 'FORM') return;
+            if (form.tagName !== 'FORM' || e.defaultPrevented) return;
             if (!form.hasAttribute('data-confirm')) return;
 
             e.preventDefault();
@@ -662,8 +709,59 @@
                 title: form.getAttribute('data-confirm-title') || 'Konfirmasi',
                 tone: form.getAttribute('data-confirm-tone') || 'danger',
                 button: form.getAttribute('data-confirm-button') || 'Lanjutkan',
-            });
-        }, true);
+            }, e.submitter);
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (!document.getElementById('confirmModal').classList.contains('hidden')) {
+                    closeConfirmModal();
+                    return;
+                }
+                if (_openModals.length > 0) {
+                    var modal = _openModals[_openModals.length - 1];
+                    var closeButton = modal.querySelector('button[aria-label="Tutup"]');
+                    if (closeButton) closeButton.click();
+                    else closeModal(modal.id);
+                    return;
+                }
+                if (!isDesktopSidebar() && !document.getElementById('sidebar').classList.contains('-translate-x-full')) closeSidebar();
+                return;
+            }
+
+            if (e.key !== 'Tab') return;
+            var focusContainer = activeDialog();
+            var sidebar = document.getElementById('sidebar');
+            if (!focusContainer && !isDesktopSidebar() && !sidebar.classList.contains('-translate-x-full')) focusContainer = sidebar;
+            if (!focusContainer) return;
+            var focusable = focusableElements(focusContainer);
+            if (focusable.length === 0) {
+                e.preventDefault();
+                focusContainer.focus();
+                return;
+            }
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        });
+
+        window.matchMedia('(min-width: 1024px)').addEventListener('change', function () {
+            document.getElementById('sidebar').classList.add('-translate-x-full');
+            document.getElementById('sidebarOverlay').classList.add('hidden');
+            document.getElementById('contentShell').inert = false;
+            document.body.style.overflow = '';
+            syncSidebarState();
+        });
+        document.querySelectorAll('#modalRoot > [role="dialog"]').forEach(function (modal) {
+            modal.setAttribute('aria-hidden', modal.classList.contains('hidden') ? 'true' : 'false');
+        });
+        syncSidebarState();
     </script>
     {{ $scripts ?? '' }}
 

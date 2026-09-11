@@ -4,13 +4,6 @@
 
     <div class="space-y-4">
 
-        @if(session('success'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold px-4 py-3 rounded-lg">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-        <div class="bg-red-50 border border-red-200 text-red-800 text-sm font-semibold px-4 py-3 rounded-lg">{{ session('error') }}</div>
-        @endif
-
         {{-- Filter --}}
         <form method="GET" action="/gudang/penerimaan" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
             <input type="month" name="month" value="{{ request('month') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">

@@ -59,10 +59,13 @@ document.querySelectorAll('form[data-submit-once]').forEach((form) => {
             return;
         }
 
-        form.dataset.submitting = 'true';
-        form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((button) => {
-            button.disabled = true;
-            button.setAttribute('aria-disabled', 'true');
+        queueMicrotask(() => {
+            if (event.defaultPrevented) return;
+            form.dataset.submitting = 'true';
+            form.querySelectorAll('button[type="submit"], input[type="submit"]').forEach((button) => {
+                button.disabled = true;
+                button.setAttribute('aria-disabled', 'true');
+            });
         });
     });
 });

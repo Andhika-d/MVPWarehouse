@@ -160,6 +160,27 @@ class NotificationTest extends TestCase
         $this->assertNotNull($notification->fresh()->read_at);
     }
 
+    public function test_mark_read_returns_target_url_for_notification_dropdown(): void
+    {
+        $gudang = $this->makeUser('gudang');
+        $hr = $this->makeUser('hr');
+        $item = $this->makeItem();
+        $request = $this->makeRequest($gudang, $item);
+
+        $this->actingAs($hr)->post('/hr/requests/' . $request->id . '/approve');
+        $notification = $gudang->notifications()->where('type', RequestApprovedNotification::class)->first();
+
+        $this->actingAs($gudang)
+            ->postJson('/notifications/' . $notification->id . '/read')
+            ->assertOk()
+            ->assertJson([
+                'success' => true,
+                'url' => '/gudang/history/' . $request->id,
+            ]);
+
+        $this->assertNotNull($notification->fresh()->read_at);
+    }
+
     public function test_notification_dropdown_renders_on_role_pages(): void
     {
         $gudang = $this->makeUser('gudang');

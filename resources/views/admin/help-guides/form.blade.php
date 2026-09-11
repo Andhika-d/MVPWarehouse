@@ -2,8 +2,6 @@
     <x-slot:title>{{ $guide->exists ? 'Edit' : 'Tambah' }} Panduan — MVPWarehouse</x-slot:title>
     <x-slot:headerTitle>{{ $guide->exists ? 'Edit' : 'Tambah' }} Panduan</x-slot:headerTitle>
     <div class="mx-auto max-w-6xl">
-        @if($errors->any())<div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-        @if(session('success'))<div class="mb-5 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('success') }}</div>@endif
         <form method="POST" enctype="multipart/form-data" action="{{ $guide->exists ? route('admin.help-guides.update', $guide) : route('admin.help-guides.store') }}" class="space-y-5" id="guideForm">
             @csrf @if($guide->exists) @method('PUT') @endif
             <div class="grid gap-5 lg:grid-cols-[.8fr_1.2fr]">

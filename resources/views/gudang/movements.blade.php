@@ -4,16 +4,6 @@
 
     <div class="space-y-4">
 
-        @if(session('success'))
-            <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold px-4 py-3 rounded-lg">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="bg-amber-50 border border-amber-200 text-amber-800 text-sm font-semibold px-4 py-3 rounded-lg flex items-center gap-2">
-                <svg class="text-amber-500 shrink-0" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-                {{ session('error') }}
-            </div>
-        @endif
-
         {{-- Filter --}}
         <form method="GET" action="/gudang/movements" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-wrap">
@@ -170,7 +160,7 @@
     </script>
 
     <x-slot:modals>
-        <div id="exportModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true">
+        <div id="exportModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeExportModal()"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden anim-modal-in z-[101]" onclick="event.stopPropagation()">
                 <div class="px-6 py-5 flex items-start gap-4">
@@ -178,7 +168,7 @@
                         <svg class="text-corpblue-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h3 class="text-base font-bold text-slate-900">Export Perubahan Stok</h3>
+                        <h3 id="exportModalTitle" class="text-base font-bold text-slate-900">Export Perubahan Stok</h3>
                         <p class="text-sm text-slate-500 mt-1">Pilih data yang ingin di-export ke Excel.</p>
                     </div>
                 </div>

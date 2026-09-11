@@ -39,4 +39,42 @@ class HelpGuideTest extends TestCase
 
         $this->actingAs($gudang)->get('/admin/help-guides')->assertForbidden();
     }
+
+    public function test_role_neutral_help_page_keeps_authenticated_navigation_and_identity(): void
+    {
+        $roles = [
+            'admin' => 'Master Barang',
+            'hr' => 'Verifikasi & Approval',
+            'gudang' => 'Penerimaan Barang',
+            'director' => 'Semua Request',
+        ];
+
+        foreach ($roles as $role => $navigationLabel) {
+            $user = User::factory()->create([
+                'name' => 'Pengguna '.ucfirst($role),
+                'role' => $role,
+            ]);
+
+            $this->actingAs($user)
+                ->get(route('help.index'))
+                ->assertOk()
+                ->assertSee('Pengguna '.ucfirst($role))
+                ->assertSee($navigationLabel, false)
+                ->assertSee('aria-controls="sidebar"', false);
+        }
+    }
+
+    public function test_shared_layout_displays_flash_feedback_once(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $response = $this->actingAs($admin)
+            ->withSession(['success' => 'Operasi berhasil disimpan.'])
+            ->get(route('admin.users.index'))
+            ->assertOk()
+            ->assertSee('Operasi berhasil disimpan.')
+            ->assertSee('role="status"', false);
+
+        $this->assertSame(1, substr_count($response->getContent(), 'Operasi berhasil disimpan.'));
+    }
 }

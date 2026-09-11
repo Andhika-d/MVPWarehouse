@@ -71,14 +71,6 @@
                     <textarea name="reason" rows="3" required placeholder="Jelaskan alasan pemindahan barang..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none resize-none"></textarea>
                 </div>
 
-                @if($errors->any())
-                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-600">
-                    @foreach($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                    @endforeach
-                </div>
-                @endif
-
                 <button type="submit" class="w-full px-4 py-2.5 bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer">
                     Ajukan Pengajuan Lokasi
                 </button>

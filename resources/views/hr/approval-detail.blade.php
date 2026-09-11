@@ -150,7 +150,7 @@
                 </div>
                 <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
                     <button onclick="closeRejectModal()" type="button" class="px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs min-h-[44px]">Batal</button>
-                    <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tolak</button>
+                    <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tolak</button>
                 </div>
             </form>
         </div>

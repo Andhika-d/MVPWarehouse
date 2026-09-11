@@ -4,22 +4,6 @@
 
     <div class="space-y-6">
 
-        @if(session('success'))
-        <div class="bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold px-4 py-3 rounded-lg">
-            {{ session('success') }}
-        </div>
-        @endif
-
-        @if($errors->any())
-        <div class="bg-red-50 border border-red-200 text-red-800 text-sm font-semibold px-4 py-3 rounded-lg">
-            <ul class="list-disc list-inside space-y-1">
-                @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-        @endif
-
         <!-- ================= 1. SEARCH BAR & QUICK FILTER TAB ================= -->
         <form method="GET" action="/hr/approval" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
@@ -154,7 +138,7 @@
                 </div>
                 <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
                     <button onclick="closeRejectModal()" type="button" class="px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50 transition-all cursor-pointer shadow-2xs min-h-[44px]">Batal</button>
-                    <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tolak</button>
+                    <button type="submit" class="px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer min-h-[44px]">Tolak</button>
                 </div>
             </form>
         </div>

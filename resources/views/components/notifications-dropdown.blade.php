@@ -3,19 +3,19 @@
     $initialNotifications = auth()->user()->notifications()->latest()->limit(10)->get();
 @endphp
 
-<div class="relative py-2">
-    <button type="button" id="notifToggle" class="relative p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-all focus:outline-none cursor-pointer">
-        <span id="notifBadge" class="{{ $initialUnread > 0 ? '' : 'hidden' }} absolute top-0 right-0 min-w-4 h-4 px-1 bg-red-500 text-white rounded-full ring-2 ring-white flex items-center justify-center text-[9px] font-bold transition-transform">{{ $initialUnread > 0 ? $initialUnread : '' }}</span>
+<div class="relative">
+    <button type="button" id="notifToggle" class="touch-target relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900" aria-label="Buka notifikasi" aria-controls="notifPanel" aria-expanded="false">
+        <span id="notifBadge" class="{{ $initialUnread > 0 ? '' : 'hidden' }} absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white ring-2 ring-white transition-transform" aria-live="polite">{{ $initialUnread > 0 ? $initialUnread : '' }}</span>
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
     </button>
 
-    <div id="notifPanel" class="hidden absolute right-0 mt-1 w-80 bg-white border border-slate-200 rounded-xl shadow-xl z-50">
+    <div id="notifPanel" class="fixed left-4 right-4 z-50 hidden max-h-[calc(100dvh-5rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-1 sm:w-80" role="region" aria-labelledby="notifTitle" tabindex="-1">
         <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-slate-900">Notifikasi</h3>
-            <button type="button" id="notifMarkAllRead" class="{{ $initialUnread > 0 ? '' : 'hidden' }} text-[11px] font-semibold text-blue-600 hover:underline cursor-pointer">Tandai semua dibaca</button>
+            <h3 id="notifTitle" class="text-sm font-semibold text-slate-900">Notifikasi</h3>
+            <button type="button" id="notifMarkAllRead" class="{{ $initialUnread > 0 ? '' : 'hidden' }} min-h-10 rounded-lg px-2 text-xs font-semibold text-corpblue-600 hover:bg-corpblue-50">Tandai semua dibaca</button>
         </div>
 
-        <div id="notifList" class="max-h-64 overflow-y-auto divide-y divide-slate-50">
+        <div id="notifList" class="notification-list overflow-y-auto divide-y divide-slate-50">
             @forelse($initialNotifications as $notification)
                 @php
                     $data = $notification->data;
@@ -25,6 +25,7 @@
                         'approved' => ['dot' => 'bg-emerald-500', 'badge' => 'bg-emerald-50 text-emerald-700'],
                         'rejected' => ['dot' => 'bg-red-500', 'badge' => 'bg-red-50 text-red-700'],
                         'delayed' => ['dot' => 'bg-amber-500', 'badge' => 'bg-amber-50 text-amber-700'],
+                        'warning' => ['dot' => 'bg-amber-500', 'badge' => 'bg-amber-50 text-amber-700'],
                         'completed' => ['dot' => 'bg-indigo-500', 'badge' => 'bg-indigo-50 text-indigo-700'],
                     ][$type] ?? ['dot' => 'bg-slate-400', 'badge' => 'bg-slate-100 text-slate-600'];
                 @endphp
@@ -45,6 +46,7 @@
                 <p class="text-xs text-slate-400 py-8 text-center">Tidak ada notifikasi.</p>
             @endforelse
         </div>
+        <p id="notifStatus" class="sr-only" aria-live="polite"></p>
     </div>
 </div>
 
@@ -57,6 +59,7 @@
         approved:    { dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700' },
         rejected:    { dot: 'bg-red-500', badge: 'bg-red-50 text-red-700' },
         delayed:     { dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700' },
+        warning:     { dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700' },
         completed:   { dot: 'bg-indigo-500', badge: 'bg-indigo-50 text-indigo-700' },
     };
     const DEFAULT_STYLE = { dot: 'bg-slate-400', badge: 'bg-slate-100 text-slate-600' };
@@ -69,6 +72,7 @@
     const badge = document.getElementById('notifBadge');
     const list = document.getElementById('notifList');
     const markAllBtn = document.getElementById('notifMarkAllRead');
+    const status = document.getElementById('notifStatus');
 
     function timeAgo(isoString) {
         const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
@@ -116,6 +120,7 @@
                 setTimeout(function () { badge.classList.remove('scale-125'); }, 300);
             }
         } else {
+            if (document.activeElement === markAllBtn) panel.focus();
             badge.classList.add('hidden');
             markAllBtn.classList.add('hidden');
         }
@@ -123,44 +128,69 @@
     }
 
     function poll() {
-        fetch('/notifications/poll', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(function (r) { return r.json(); })
+        return fetch('/notifications/poll', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) {
+                if (!r.ok) throw new Error('Gagal memuat notifikasi.');
+                return r.json();
+            })
             .then(function (data) {
                 updateBadge(data.unread_count);
 
-                if (data.notifications.length === 0) {
-                    list.innerHTML = '<p class="text-xs text-slate-400 py-8 text-center">Tidak ada notifikasi.</p>';
-                } else {
-                    list.innerHTML = data.notifications.map(renderNotification).join('');
-                    bindNotifClicks();
+                var focusedElement = document.activeElement;
+                var preserveFocusedItem = focusedElement !== panel && panel.contains(focusedElement);
+                if (!preserveFocusedItem) {
+                    if (data.notifications.length === 0) {
+                        list.innerHTML = '<p class="text-xs text-slate-500 py-8 text-center">Tidak ada notifikasi.</p>';
+                    } else {
+                        list.innerHTML = data.notifications.map(renderNotification).join('');
+                        bindNotifClicks();
+                    }
                 }
 
                 lastPoll = Date.now();
+                status.textContent = '';
             })
-            .catch(function () {});
+            .catch(function () { status.textContent = 'Notifikasi belum dapat diperbarui.'; });
     }
 
     function markAsRead(notifId, formEl) {
-        fetch('/notifications/' + notifId + '/read', {
+        return fetch('/notifications/' + notifId + '/read', {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: '_token=' + encodeURIComponent(CSRF_TOKEN)
-        }).then(function () {
+        }).then(function (response) {
+            if (!response.ok) throw new Error('Gagal menandai notifikasi.');
+            return response.json();
+        }).then(function (data) {
             if (formEl) {
                 formEl.classList.remove('bg-blue-50/30');
                 var dot = formEl.querySelector('.rounded-full');
                 if (dot) dot.classList.remove('animate-pulse');
             }
-            poll();
-        }).catch(function () {});
+            return data;
+        }).catch(function () {
+            status.textContent = 'Status notifikasi belum dapat diperbarui.';
+            return null;
+        });
     }
 
     function markAllAsRead() {
+        if (document.activeElement === markAllBtn) panel.focus();
+        markAllBtn.disabled = true;
+        status.textContent = 'Memperbarui notifikasi.';
         fetch('/notifications/read-all', {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: '_token=' + encodeURIComponent(CSRF_TOKEN)
-        }).then(function () { poll(); }).catch(function () {});
+        }).then(function (response) {
+            if (!response.ok) throw new Error('Gagal menandai semua notifikasi.');
+            status.textContent = 'Semua notifikasi ditandai sudah dibaca.';
+            return poll();
+        }).catch(function () {
+            status.textContent = 'Notifikasi belum dapat diperbarui.';
+        }).finally(function () {
+            markAllBtn.disabled = false;
+        });
     }
 
     function bindNotifClicks() {
@@ -170,45 +200,71 @@
                 var form = item.closest('form');
                 var id = item.dataset.notifId;
                 var url = item.dataset.url;
-                markAsRead(id, form);
-                if (url) window.location.href = url;
+                markAsRead(id, form).then(function (data) {
+                    var destination = data?.url || url;
+                    if (destination) window.location.href = destination;
+                });
             });
         });
+    }
+
+    function positionPanel() {
+        if (window.innerWidth < 640) {
+            panel.style.top = Math.round(toggle.getBoundingClientRect().bottom + 8) + 'px';
+        } else {
+            panel.style.top = '';
+        }
+    }
+
+    function openPanel() {
+        positionPanel();
+        panel.classList.remove('hidden', 'anim-dropdown-out');
+        panel.classList.add('anim-dropdown-in');
+        toggle.setAttribute('aria-expanded', 'true');
+        setTimeout(function () { panel.focus(); }, 30);
+        if (Date.now() - lastPoll > 5000) poll();
+    }
+
+    function closePanel(restoreFocus) {
+        if (panel.classList.contains('hidden')) return;
+        panel.classList.remove('anim-dropdown-in');
+        panel.classList.add('anim-dropdown-out');
+        toggle.setAttribute('aria-expanded', 'false');
+        setTimeout(function() {
+            panel.classList.add('hidden');
+            panel.classList.remove('anim-dropdown-out');
+            if (restoreFocus) toggle.focus();
+        }, 130);
     }
 
     toggle.addEventListener('click', function (e) {
         e.stopPropagation();
         if (panel.classList.contains('hidden')) {
-            panel.classList.remove('hidden');
-            panel.classList.remove('anim-dropdown-out');
-            panel.classList.add('anim-dropdown-in');
+            openPanel();
         } else {
-            panel.classList.remove('anim-dropdown-in');
-            panel.classList.add('anim-dropdown-out');
-            setTimeout(function() {
-                panel.classList.add('hidden');
-                panel.classList.remove('anim-dropdown-out');
-            }, 130);
-        }
-        if (!panel.classList.contains('hidden') && (Date.now() - lastPoll > 5000)) {
-            poll();
+            closePanel(false);
         }
     });
 
     document.addEventListener('click', function (e) {
         if (panel.classList.contains('hidden')) return;
         if (panel.contains(e.target) || toggle.contains(e.target)) return;
-        panel.classList.remove('anim-dropdown-in');
-        panel.classList.add('anim-dropdown-out');
-        setTimeout(function() {
-            panel.classList.add('hidden');
-            panel.classList.remove('anim-dropdown-out');
-        }, 130);
+        closePanel(false);
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && !panel.classList.contains('hidden')) closePanel(true);
+    });
+
+    window.addEventListener('resize', function () {
+        if (!panel.classList.contains('hidden')) positionPanel();
     });
 
     markAllBtn.addEventListener('click', function () { markAllAsRead(); });
 
-    setInterval(poll, POLL_INTERVAL);
+    setInterval(function () {
+        if (!document.hidden) poll();
+    }, POLL_INTERVAL);
     bindNotifClicks();
 })();
 </script>

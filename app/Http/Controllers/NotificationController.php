@@ -30,6 +30,10 @@ class NotificationController extends Controller
     {
         Auth::user()->unreadNotifications->markAsRead();
 
+        if (request()->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+
         return redirect()->back();
     }
 
@@ -37,10 +41,19 @@ class NotificationController extends Controller
     {
         if ($notification->notifiable_id === Auth::id()) {
             $notification->markAsRead();
+            $url = data_get($notification->data, 'url');
 
-            if ($url = data_get($notification->data, 'url')) {
+            if (request()->expectsJson()) {
+                return response()->json(['success' => true, 'url' => $url]);
+            }
+
+            if ($url) {
                 return redirect($url);
             }
+        }
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Notifikasi tidak ditemukan.'], 403);
         }
 
         return redirect()->back();

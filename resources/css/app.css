@@ -41,7 +41,7 @@ main {
 }
 
 /* ---- Animasi dropdown daftar barang (requestbarang) ---- */
-@keyframes dropdownIn {
+@keyframes itemDropdownIn {
     from {
         opacity: 0;
         transform: translateY(-4px);
@@ -53,36 +53,26 @@ main {
 }
 
 #itemList {
-    animation: dropdownIn 0.15s ease-out;
+    animation: itemDropdownIn 0.15s ease-out;
 }
 
-/* ---- Animasi modal ---- */
-@keyframes modalFadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+/* ---- Baseline interaction accessibility ---- */
+:where(a[href], button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 2px solid #0057b8 !important;
+    outline-offset: 2px !important;
 }
 
-@keyframes modalZoomIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95) translateY(8px);
-    }
-    to {
-        opacity: 1;
-        transform: scale(1) translateY(0);
-    }
+:where(button, input, select, textarea):disabled {
+    cursor: not-allowed;
 }
 
-#modalRoot > div:not(.hidden) {
-    animation: modalFadeIn 0.2s ease-out both;
+.touch-target {
+    min-width: 40px;
+    min-height: 40px;
 }
 
-#modalRoot > div:not(.hidden) > div:last-child {
-    animation: modalZoomIn 0.22s ease-out both;
+.notification-list {
+    max-height: min(16rem, calc(100dvh - 10rem));
 }
 
 /* ---- Animasi login card ---- */
@@ -105,8 +95,6 @@ main {
 @media (prefers-reduced-motion: reduce) {
     main,
     #itemList,
-    #modalRoot > div,
-    #modalRoot > div > div:last-child,
     .login-card,
     .typing-text {
         animation: none !important;

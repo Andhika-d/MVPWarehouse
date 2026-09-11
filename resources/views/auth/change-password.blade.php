@@ -4,12 +4,6 @@
 
     <div class="max-w-md mx-auto">
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-            @if (session('error'))
-                <div class="mb-4 rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
-                    {{ session('error') }}
-                </div>
-            @endif
-
             <p class="text-sm text-slate-600 mb-6">
                 Password sementara Anda wajib diganti sebelum dapat menggunakan aplikasi.
             </p>

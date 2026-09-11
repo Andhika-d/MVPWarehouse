@@ -3,16 +3,6 @@
     <x-slot:headerTitle>Nota Pengadaan Barang</x-slot:headerTitle>
 
     <div class="space-y-6">
-        @if(session('success'))
-            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">{{ session('success') }}</div>
-        @endif
-        @if(session('error'))
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">{{ session('error') }}</div>
-        @endif
-        @if($errors->any())
-            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">{{ $errors->first() }}</div>
-        @endif
-
         <form method="GET" action="/hr/daftar-belanja" data-auto-filter class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
             <div>
                 <label for="procurementDate" class="mb-1 block text-xs font-semibold text-slate-500">Tanggal</label>

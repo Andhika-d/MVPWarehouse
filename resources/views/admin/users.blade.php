@@ -84,10 +84,10 @@
     </div>
 
     <x-slot:modals>
-        <div id="addUserModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true">
+        <div id="addUserModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="addUserModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 class="text-base font-semibold text-slate-900">Tambah Pengguna</h3>
+                    <h3 id="addUserModalTitle" class="text-base font-semibold text-slate-900">Tambah Pengguna</h3>
                     <button onclick="closeModal('addUserModal')" aria-label="Tutup" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
