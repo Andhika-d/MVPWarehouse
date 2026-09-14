@@ -3,7 +3,7 @@
 
         {{-- Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.audit.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
+            <form id="auditFilters" method="GET" action="{{ route('admin.audit.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari detail atau aksi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
@@ -13,7 +13,8 @@
                     <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ $action }}</option>
                     @endforeach
                 </select>
-                @if(request()->filled('search') || request()->filled('action'))
+                <x-period-filter-button :period="$period" />
+                @if(request()->filled('search') || request()->filled('action') || $period)
                 <a href="{{ route('admin.audit.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
                 <a href="{{ route('admin.audit.export-preview', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">Preview Export</a>
@@ -56,4 +57,5 @@
         </div>
 
     </div>
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="auditFilters" /></x-slot:modals>
 </x-layout>

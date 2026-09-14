@@ -4,14 +4,6 @@
 
     <div class="space-y-4">
 
-        {{-- Filter --}}
-        <form method="GET" action="/gudang/penerimaan" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center gap-3">
-            <input type="month" name="month" value="{{ request('month') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
-            @if(request()->has('month'))
-                <a href="/gudang/penerimaan" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
-            @endif
-        </form>
-
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-slate-100">
                 <h3 class="text-sm font-semibold text-slate-900">Request Menunggu Penerimaan</h3>

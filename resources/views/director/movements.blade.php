@@ -2,7 +2,7 @@
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
+            <form id="movementFilters" method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari barang atau keterangan..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 <select name="type" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Tipe</option>
@@ -10,8 +10,9 @@
                     <option value="OUT" {{ ($type ?? '') === 'OUT' ? 'selected' : '' }}>Barang Keluar</option>
                     <option value="ADJUSTMENT" {{ ($type ?? '') === 'ADJUSTMENT' ? 'selected' : '' }}>Penyesuaian</option>
                 </select>
-                @if(request()->filled('search') || (request()->filled('type') && request('type') !== 'all'))
-                <a href="/director/movements" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <x-period-filter-button :period="$period" />
+                @if(request()->filled('search') || (request()->filled('type') && request('type') !== 'all') || $period)
+                <a href="{{ url()->current() }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
             </form>
         </div>
@@ -73,4 +74,6 @@
         </div>
 
     </div>
+
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="movementFilters" /></x-slot:modals>
 </x-layout>

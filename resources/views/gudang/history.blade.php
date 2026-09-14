@@ -5,7 +5,7 @@
     <div class="space-y-4">
 
         {{-- Search & Filter --}}
-        <form method="GET" action="/gudang/history" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <form id="historyFilters" method="GET" action="/gudang/history" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="relative flex-1 max-w-sm">
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -13,7 +13,7 @@
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama barang..." class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-                <input type="month" name="month" value="{{ request('month') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
+                <x-period-filter-button :period="$period" />
                 <select name="status" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
                     <option value="all" {{ request('status', 'all') === 'all' ? 'selected' : '' }}>Semua Status</option>
                     <option value="Menunggu Review" {{ request('status') === 'Menunggu Review' ? 'selected' : '' }}>Menunggu Review</option>
@@ -25,7 +25,7 @@
                     <option value="Dibatalkan" {{ request('status') === 'Dibatalkan' ? 'selected' : '' }}>Dibatalkan</option>
                     <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
-                @if(request()->hasAny(['search', 'status', 'month']))
+                @if(request()->hasAny(['search', 'status']) || $period)
                     <a href="/gudang/history" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
                 @endif
                 <a href="/gudang/history/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="border border-slate-200 bg-white px-3 py-2 rounded-lg text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-all">Preview Export</a>
@@ -104,4 +104,5 @@
         </div>
 
     </div>
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="historyFilters" /></x-slot:modals>
 </x-layout>

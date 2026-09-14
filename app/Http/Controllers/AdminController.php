@@ -13,6 +13,7 @@ use App\Models\StockRequest;
 use App\Models\StorageLocation;
 use App\Models\User;
 use App\Support\LocationChangeExporter;
+use App\Support\PeriodRange;
 use App\Support\XlsxParser;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -485,15 +486,12 @@ class AdminController extends Controller
 
     public function locationChangesIndex(Request $request)
     {
-        $query = LocationChangeRequest::with(['item', 'fromLocation', 'toLocation.items', 'swapItem', 'requestedBy', 'approvedBy']);
-
-        if ($request->filled('status') && $request->input('status') !== 'all') {
-            $query->where('status', $request->input('status'));
-        }
+        $period = PeriodRange::fromRequest($request);
+        $query = LocationChangeExporter::query($request, 'admin');
 
         $changes = $query->latest()->paginate(20)->withQueryString();
 
-        return view('admin.location-changes', compact('changes'));
+        return view('admin.location-changes', compact('changes', 'period'));
     }
 
     public function exportLocationChangesExcel(Request $request)
@@ -921,6 +919,7 @@ class AdminController extends Controller
 
     public function auditIndex(Request $request)
     {
+        $period = PeriodRange::fromRequest($request);
         $query = AuditLog::with('user');
 
         if ($request->filled('action')) {
@@ -937,12 +936,13 @@ class AdminController extends Controller
                   });
             });
         }
+        $period?->apply($query, 'created_at');
 
         $logs = $query->latest()->paginate(30)->withQueryString();
 
         $actions = AuditLog::distinct()->pluck('action')->sort()->values();
 
-        return view('admin.audit', compact('logs', 'actions'));
+        return view('admin.audit', compact('logs', 'actions', 'period'));
     }
 
     public function exportAuditExcel(Request $request)
@@ -995,6 +995,7 @@ class AdminController extends Controller
                   });
             });
         }
+        PeriodRange::fromRequest($request)?->apply($query, 'created_at');
 
         return $query->latest()->get()->map(function (AuditLog $log) {
             return [

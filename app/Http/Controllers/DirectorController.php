@@ -8,7 +8,10 @@ use App\Models\LocationChangeRequest;
 use App\Models\StockMovement;
 use App\Models\StockRequest;
 use App\Models\StorageLocation;
+use App\Support\PeriodRange;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 
 class DirectorController extends Controller
@@ -173,11 +176,12 @@ class DirectorController extends Controller
         ));
     }
 
-    public function requests()
+    public function requests(Request $request)
     {
-        $status = request('status');
-        $priority = request('priority');
-        $search = request('search');
+        $status = $request->query('status');
+        $priority = $request->query('priority');
+        $search = $request->query('search');
+        $period = PeriodRange::fromRequest($request);
 
         $query = StockRequest::with('item', 'user', 'requestHistories.user');
 
@@ -196,13 +200,14 @@ class DirectorController extends Controller
                     });
             });
         }
+        $period?->apply($query, 'created_at');
 
         $requests = $query->orderByRaw("CASE WHEN priority = 'Mendesak' THEN 0 ELSE 1 END")
             ->latest()
             ->paginate(20)
-            ->appends(request()->query());
+            ->appends($request->query());
 
-        return view('director.requests', compact('requests', 'status', 'priority', 'search'));
+        return view('director.requests', compact('requests', 'status', 'priority', 'search', 'period'));
     }
 
     public function requestDetail(StockRequest $request)
@@ -410,10 +415,11 @@ class DirectorController extends Controller
         return view('director.request-detail', compact('request', 'timeline', 'durations'));
     }
 
-    public function movements()
+    public function movements(Request $request)
     {
-        $type = request('type');
-        $search = request('search');
+        $type = $request->query('type');
+        $search = $request->query('search');
+        $period = PeriodRange::fromRequest($request);
 
         $query = StockMovement::with('item', 'user', 'stockRequest');
 
@@ -427,20 +433,32 @@ class DirectorController extends Controller
                 })->orWhere('reason', 'like', "%{$search}%");
             });
         }
+        $period?->apply($query, 'occurred_at');
 
-        $movements = $query->orderByDesc('occurred_at')->paginate(30)->appends(request()->query());
+        $movements = $query->orderByDesc('occurred_at')->paginate(30)->appends($request->query());
 
-        return view('director.movements', compact('movements', 'type', 'search'));
+        return view('director.movements', compact('movements', 'type', 'search', 'period'));
     }
 
-    public function timeline()
+    public function timeline(Request $request)
     {
-        $search = request('search');
+        $search = $request->query('search');
+        $period = PeriodRange::fromRequest($request);
         $perPage = 50;
 
-        $auditLogs = AuditLog::with('user')->latest()->take(500)->get();
-
-        $stockRequests = StockRequest::with('user', 'item', 'requestHistories.user')->latest()->take(200)->get();
+        $requestQuery = StockRequest::with('user', 'item', 'requestHistories.user');
+        if ($period) {
+            $start = $period->start;
+            $end = $period->endExclusive();
+            $requestQuery->where(function ($query) use ($start, $end) {
+                $query->whereBetween('created_at', [$start, $end])
+                    ->orWhereBetween('approved_at', [$start, $end])
+                    ->orWhereBetween('closed_at', [$start, $end])
+                    ->orWhereHas('requestHistories', fn ($history) => $history->whereBetween('created_at', [$start, $end]))
+                    ->orWhereHas('stockMovements', fn ($movement) => $movement->whereBetween('occurred_at', [$start, $end]));
+            });
+        }
+        $stockRequests = $requestQuery->latest()->get();
 
         // Build map of receipt movements by stock_request_id for deduplication
         $receiptMovementsByRequest = StockMovement::where('type', StockMovement::TYPE_IN)
@@ -534,24 +552,17 @@ class DirectorController extends Controller
             return $events;
         })->flatten(1);
 
-        // Get all receipt movement IDs that are already represented in requestEvents
-        $receiptRequestIds = $stockRequests
-            ->whereIn('status', ['Sebagian Diterima', 'Diterima Penuh'])
-            ->pluck('id');
-
-        $stockMovements = StockMovement::with('item', 'user')
-            ->where('type', '!=', StockMovement::TYPE_IN)
-            ->latest('occurred_at')
-            ->take(200)
-            ->get();
+        $movementQuery = StockMovement::with('item', 'user')
+            ->where('type', '!=', StockMovement::TYPE_IN);
+        $period?->apply($movementQuery, 'occurred_at');
+        $stockMovements = $movementQuery->latest('occurred_at')->get();
 
         // Also add IN movements not linked to any request in our set
-        $orphanInMovements = StockMovement::with('item', 'user')
+        $orphanMovementQuery = StockMovement::with('item', 'user')
             ->where('type', StockMovement::TYPE_IN)
-            ->whereNull('stock_request_id')
-            ->latest('occurred_at')
-            ->take(100)
-            ->get();
+            ->whereNull('stock_request_id');
+        $period?->apply($orphanMovementQuery, 'occurred_at');
+        $orphanInMovements = $orphanMovementQuery->latest('occurred_at')->get();
 
         $stockMovements = $stockMovements->merge($orphanInMovements);
 
@@ -578,8 +589,9 @@ class DirectorController extends Controller
             ];
         });
 
-        $locationChanges = LocationChangeRequest::with('item', 'fromLocation', 'toLocation', 'requestedBy', 'approvedBy')
-            ->latest()->take(100)->get();
+        $locationQuery = LocationChangeRequest::with('item', 'fromLocation', 'toLocation', 'requestedBy', 'approvedBy');
+        $period?->apply($locationQuery, 'created_at');
+        $locationChanges = $locationQuery->latest()->get();
         $locationEvents = $locationChanges->map(function ($lc) {
             $status = $lc->status;
             $detail = $lc->target_sub_location !== null
@@ -597,6 +609,14 @@ class DirectorController extends Controller
 
         $allEvents = $requestEvents->merge($movementEvents)->merge($locationEvents)->sortByDesc('time')->values();
 
+        if ($period) {
+            $allEvents = $allEvents->filter(function ($event) use ($period) {
+                $time = Carbon::parse($event['time']);
+
+                return $time->gte($period->start) && $time->lt($period->endExclusive());
+            })->values();
+        }
+
         if ($search) {
             $allEvents = $allEvents->filter(function ($e) use ($search) {
                 return str_contains(strtolower($e['type']), strtolower($search))
@@ -605,9 +625,16 @@ class DirectorController extends Controller
             })->values();
         }
 
-        $paginated = $allEvents->slice(0, 500);
+        $page = LengthAwarePaginator::resolveCurrentPage();
+        $paginated = new LengthAwarePaginator(
+            $allEvents->forPage($page, $perPage)->values(),
+            $allEvents->count(),
+            $perPage,
+            $page,
+            ['path' => $request->url(), 'query' => $request->query()],
+        );
 
-        return view('director.timeline', compact('paginated', 'search'));
+        return view('director.timeline', compact('paginated', 'search', 'period'));
     }
 
     public function stock()

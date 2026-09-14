@@ -5,7 +5,7 @@
     <div class="space-y-4">
 
         {{-- Filter --}}
-        <form method="GET" action="/gudang/movements" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <form id="movementFilters" method="GET" action="/gudang/movements" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-wrap">
                 <select name="type" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
                     <option value="">Semua Tipe</option>
@@ -19,9 +19,8 @@
                         <option value="{{ $item->id }}" {{ request('item_id') == $item->id ? 'selected' : '' }}>{{ $item->display_name }}</option>
                     @endforeach
                 </select>
-                <input type="date" name="date_from" value="{{ request('date_from') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500" title="Dari tanggal">
-                <input type="date" name="date_to" value="{{ request('date_to') }}" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500" title="Sampai tanggal">
-                @if(request()->hasAny(['type', 'item_id', 'date_from', 'date_to']))
+                <x-period-filter-button :period="$period" />
+                @if(request()->hasAny(['type', 'item_id']) || $period)
                     <a href="/gudang/movements" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
                 @endif
             </div>
@@ -160,6 +159,7 @@
     </script>
 
     <x-slot:modals>
+        <x-period-filter-modal :period="$period" form-id="movementFilters" />
         <div id="exportModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="exportModalTitle">
             <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeExportModal()"></div>
             <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md overflow-hidden anim-modal-in z-[101]" onclick="event.stopPropagation()">
@@ -175,8 +175,9 @@
                 <div class="px-6 pb-5">
                     <form id="exportForm" method="GET" action="/gudang/movements/export/preview" class="space-y-2">
                         <input type="hidden" name="item_id" value="{{ request('item_id', '') }}">
-                        <input type="hidden" name="date_from" value="{{ request('date_from', '') }}">
-                        <input type="hidden" name="date_to" value="{{ request('date_to', '') }}">
+                        <input type="hidden" name="period_mode" value="{{ $period?->mode }}">
+                        <input type="hidden" name="period_start" value="{{ $period?->startDate() }}">
+                        <input type="hidden" name="period_end" value="{{ $period?->endDate() }}">
                         <input type="hidden" name="export_type" id="exportTypeInput" value="">
 
                         <button type="submit" onclick="setExportType('in')" class="w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:border-emerald-300 hover:bg-emerald-50 transition-all group">

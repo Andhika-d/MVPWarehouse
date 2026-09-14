@@ -163,7 +163,7 @@ class ProcurementNoteTest extends TestCase
         $this->actingAs($hr)->get('/hr/daftar-belanja')->assertOk()->assertSee('Mouse Wireless');
     }
 
-    public function test_exact_date_filter_applies_to_approval_queue_and_note_history(): void
+    public function test_exact_date_filter_only_applies_to_permanent_note_history(): void
     {
         [$hr, , $firstRequest, $secondRequest] = $this->fixtures();
         $firstRequest->update(['approved_at' => '2026-09-08 09:00:00']);
@@ -185,7 +185,7 @@ class ProcurementNoteTest extends TestCase
             ->assertOk()
             ->assertDontSee('type="month"', false)
             ->assertSee('Mouse Wireless')
-            ->assertDontSee('Keyboard')
+            ->assertSee('Keyboard')
             ->assertSee('NOTA-20260908-099')
             ->assertDontSee('NOTA-20260909-099');
     }
