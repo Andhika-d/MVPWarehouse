@@ -139,11 +139,11 @@
 
             {{-- PIC --}}
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-semibold text-slate-900 mb-2">Hubungi GA</h3>
-                <p class="text-xs text-slate-500 mb-3">Untuk pengajuan mendesak atau koreksi data.</p>
+                <h3 class="text-sm font-semibold text-slate-900 mb-2">Hubungi Administrator System</h3>
+                <p class="text-xs text-slate-500 mb-3">Untuk koreksi data.</p>
                 <div class="bg-slate-50 p-3 rounded-lg">
                     <p class="text-xs font-semibold text-slate-900">Andhika Dwiky Fauzi</p>
-                    <p class="text-[11px] text-slate-400 mt-0.5">General Affair &middot; Ext: 104</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">Administrator System &middot; Ext: 104</p>
                 </div>
             </div>
         </div>

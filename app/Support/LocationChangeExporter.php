@@ -28,6 +28,8 @@ class LocationChangeExporter
             $query->where('status', $request->input('status'));
         }
 
+        PeriodRange::fromRequest($request)?->apply($query, 'created_at');
+
         return $query->latest();
     }
 

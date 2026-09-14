@@ -81,9 +81,11 @@
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <div class="flex items-center justify-between gap-3 mb-3">
                 <h3 class="text-sm font-semibold text-slate-900">Riwayat Pengajuan Saya</h3>
-                <div class="flex items-center gap-2">
+                <form id="locationHistoryFilters" method="GET" class="flex items-center gap-2">
+                    <x-period-filter-button :period="$period" />
                     <a href="/gudang/location-change/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="btn btn--secondary">Preview Export</a>
-                </div>
+                    @if($period)<a href="/gudang/location-change" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>@endif
+                </form>
             </div>
             @forelse($myChanges as $change)
             <div class="py-3 {{ !$loop->last ? 'border-b border-slate-100' : '' }}">
@@ -136,6 +138,8 @@
         </div>
 
     </div>
+
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="locationHistoryFilters" /></x-slot:modals>
 
     <x-slot:scripts>
         <script>

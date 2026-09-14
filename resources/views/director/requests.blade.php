@@ -3,7 +3,7 @@
 
         {{-- Filters --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
+            <form id="requestFilters" method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari barang, alasan, peminta..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Status</option>
@@ -21,7 +21,8 @@
                     <option value="Mendesak" {{ ($priority ?? '') === 'Mendesak' ? 'selected' : '' }}>Mendesak</option>
                     <option value="Normal" {{ ($priority ?? '') === 'Normal' ? 'selected' : '' }}>Normal</option>
                 </select>
-                @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'all') || (request()->filled('priority') && request('priority') !== 'all'))
+                <x-period-filter-button :period="$period" />
+                @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'all') || (request()->filled('priority') && request('priority') !== 'all') || $period)
                 <a href="/director/requests" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
             </form>
@@ -69,4 +70,5 @@
         </div>
 
     </div>
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="requestFilters" /></x-slot:modals>
 </x-layout>

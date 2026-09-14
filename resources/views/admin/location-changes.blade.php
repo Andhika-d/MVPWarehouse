@@ -3,14 +3,15 @@
 
         {{-- Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.location-changes.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
+            <form id="locationChangeFilters" method="GET" action="{{ route('admin.location-changes.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Status</option>
                     <option value="Menunggu Konfirmasi" {{ request('status') === 'Menunggu Konfirmasi' ? 'selected' : '' }}>Menunggu Konfirmasi</option>
                     <option value="Disetujui" {{ request('status') === 'Disetujui' ? 'selected' : '' }}>Disetujui</option>
                     <option value="Ditolak" {{ request('status') === 'Ditolak' ? 'selected' : '' }}>Ditolak</option>
                 </select>
-                @if(request()->filled('status') && request('status') !== 'all')
+                <x-period-filter-button :period="$period" />
+                @if((request()->filled('status') && request('status') !== 'all') || $period)
                 <a href="{{ route('admin.location-changes.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
                 <div class="flex items-center gap-2">
@@ -137,6 +138,7 @@
     </div>
 
     <x-slot:modals>
+        <x-period-filter-modal :period="$period" form-id="locationChangeFilters" />
         <div id="approveModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">

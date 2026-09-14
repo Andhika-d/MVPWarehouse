@@ -14,6 +14,7 @@ use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use App\Support\ItemLocationSorter;
+use App\Support\PeriodRange;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -127,33 +128,12 @@ class RequestController extends Controller
 
     public function history(Request $request)
     {
-        $query = StockRequest::with(['item.storageLocation', 'user', 'requestHistories.user'])
-            ->where('user_id', Auth::id());
-
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->whereHas('item', function ($itemQuery) use ($search) {
-                    $itemQuery->where('name', 'like', "%{$search}%");
-                })->orWhere('item_name', 'like', "%{$search}%");
-            });
-        }
-
-        if ($request->filled('status') && $request->input('status') !== 'all') {
-            $query->where('status', $request->input('status'));
-        }
-
-        if ($request->filled('month')) {
-            $date = $this->safeMonth($request->input('month'));
-            if ($date) {
-                $query->whereYear('created_at', $date->year)
-                      ->whereMonth('created_at', $date->month);
-            }
-        }
+        $period = PeriodRange::fromRequest($request);
+        $query = $this->buildExportQuery($request, 'gudang')->with('requestHistories.user');
 
         $requests = $query->latest()->paginate(20)->withQueryString();
 
-        return view('gudang.history', compact('requests'));
+        return view('gudang.history', compact('requests', 'period'));
     }
 
     public function detail(StockRequest $request)
@@ -195,28 +175,13 @@ class RequestController extends Controller
             ->whereNull('procurement_note_id');
         $notesQuery = ProcurementNote::with('creator')->withCount('items');
 
-        $exactDate = $this->safeDate($request->input('date'));
-        if ($exactDate) {
-            $queueQuery->where(function ($query) use ($exactDate) {
-                $query->where(function ($approved) use ($exactDate) {
-                    $approved->whereNotNull('approved_at')->whereDate('approved_at', $exactDate->toDateString());
-                })->orWhere(function ($created) use ($exactDate) {
-                    $created->whereNull('approved_at')->whereDate('created_at', $exactDate->toDateString());
-                });
-            });
-            $notesQuery->where(function ($query) use ($exactDate) {
-                $query->where(function ($issued) use ($exactDate) {
-                    $issued->whereNotNull('issued_at')->whereDate('issued_at', $exactDate->toDateString());
-                })->orWhere(function ($created) use ($exactDate) {
-                    $created->whereNull('issued_at')->whereDate('created_at', $exactDate->toDateString());
-                });
-            });
-        }
+        $period = PeriodRange::fromRequest($request);
+        $period?->applyWithFallback($notesQuery, 'issued_at', 'created_at');
 
         $requests = $queueQuery->latest('approved_at')->latest()->get();
         $notes = $notesQuery->latest()->paginate(20)->withQueryString();
 
-        return view('hr.daftar-belanja', compact('requests', 'notes'));
+        return view('hr.daftar-belanja', compact('requests', 'notes', 'period'));
     }
 
     public function exportShoppingListExcel(Request $request)
@@ -234,17 +199,6 @@ class RequestController extends Controller
         $query = StockRequest::with('item.storageLocation')
             ->where('status', 'Disetujui')
             ->whereNull('procurement_note_id');
-
-        $exactDate = $this->safeDate($request->input('date'));
-        if ($exactDate) {
-            $query->where(function ($filter) use ($exactDate) {
-                $filter->where(function ($approved) use ($exactDate) {
-                    $approved->whereNotNull('approved_at')->whereDate('approved_at', $exactDate->toDateString());
-                })->orWhere(function ($created) use ($exactDate) {
-                    $created->whereNull('approved_at')->whereDate('created_at', $exactDate->toDateString());
-                });
-            });
-        }
 
         $requests = $query->latest()->get();
 
@@ -323,11 +277,12 @@ class RequestController extends Controller
 
     public function hrHistory(Request $request)
     {
+        $period = PeriodRange::fromRequest($request);
         $query = $this->buildExportQuery($request, 'hr')->with(['requestHistories.user', 'procurementNote']);
 
         $requests = $query->latest()->paginate(20)->withQueryString();
 
-        return view('hr.history', compact('requests'));
+        return view('hr.history', compact('requests', 'period'));
     }
 
     public function exportHrHistoryPdf(Request $request)
@@ -397,9 +352,7 @@ class RequestController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        if (in_array($scope, ['approval', 'hr'], true) && ($date = $this->safeDate($request->input('date')))) {
-            $query->whereDate('created_at', $date->format('Y-m-d'));
-        }
+        PeriodRange::fromRequest($request)?->apply($query, 'created_at');
 
         return $query;
     }

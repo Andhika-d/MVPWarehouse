@@ -2,9 +2,10 @@
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
+            <form id="timelineFilters" method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari aktivitas..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                @if(request()->filled('search'))
+                <x-period-filter-button :period="$period" />
+                @if(request()->filled('search') || $period)
                 <a href="/director/timeline" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
             </form>
@@ -53,7 +54,11 @@
                     @endforelse
                 </div>
             </div>
+            @if($paginated->hasPages())
+            <div class="mt-5 border-t border-slate-100 pt-4">{{ $paginated->links() }}</div>
+            @endif
         </div>
 
     </div>
+    <x-slot:modals><x-period-filter-modal :period="$period" form-id="timelineFilters" /></x-slot:modals>
 </x-layout>

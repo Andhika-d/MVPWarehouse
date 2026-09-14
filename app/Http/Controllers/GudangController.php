@@ -12,6 +12,7 @@ use App\Models\StockRequest;
 use App\Models\StorageLocation;
 use App\Support\ItemLocationSorter;
 use App\Support\LocationChangeExporter;
+use App\Support\PeriodRange;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,34 +20,13 @@ use Illuminate\Support\Facades\DB;
 
 class GudangController extends Controller
 {
-    private function safeMonth(?string $value): ?\Carbon\Carbon
-    {
-        if ($value === null || ! preg_match('/^\d{4}-\d{2}$/', $value)) {
-            return null;
-        }
-
-        try {
-            return \Carbon\Carbon::parse($value);
-        } catch (\Exception) {
-            return null;
-        }
-    }
-
-    public function penerimaanIndex(Request $request)
+    public function penerimaanIndex()
     {
         $query = StockRequest::with('item.storageLocation')
             ->whereIn('status', ['Disetujui', 'Sebagian Diterima'])
             ->whereColumn('received_quantity', '<', 'quantity');
 
-        if ($request->filled('month')) {
-            $date = $this->safeMonth($request->input('month'));
-            if ($date) {
-                $query->whereYear('created_at', $date->year)
-                      ->whereMonth('created_at', $date->month);
-            }
-        }
-
-        $requests = $query->latest()->paginate(20)->withQueryString();
+        $requests = $query->latest()->paginate(20);
 
         return view('gudang.penerimaan', compact('requests'));
     }
@@ -210,9 +190,8 @@ class GudangController extends Controller
         $validated = $request->validate([
             'type' => ['nullable', 'in:IN,OUT,ADJUSTMENT'],
             'item_id' => ['nullable', 'exists:items,id'],
-            'date_from' => ['nullable', 'date_format:Y-m-d'],
-            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
         ]);
+        $period = PeriodRange::fromRequest($request);
 
         $query = StockMovement::with('item', 'stockRequest', 'user')->orderByDesc('occurred_at');
 
@@ -224,33 +203,25 @@ class GudangController extends Controller
             $query->where('item_id', $validated['item_id']);
         }
 
-        if (!empty($validated['date_from'])) {
-            $query->where('occurred_at', '>=', $validated['date_from']);
-        }
-
-        if (!empty($validated['date_to'])) {
-            $query->where('occurred_at', '<=', $validated['date_to'] . ' 23:59:59');
-        }
+        $period?->apply($query, 'occurred_at');
 
         $movements = $query->paginate(20)->withQueryString();
         $items = Item::orderBy('name')->get();
 
-        return view('gudang.movements', compact('movements', 'items'));
+        return view('gudang.movements', compact('movements', 'items', 'period'));
     }
 
-    public function locationChangeIndex()
+    public function locationChangeIndex(Request $request)
     {
         $items = Item::with('storageLocation')
             ->whereNotNull('storage_location_id')
             ->orderBy('name')
             ->get();
 
-        $myChanges = LocationChangeRequest::with(['item', 'fromLocation', 'toLocation', 'swapItem'])
-            ->where('requested_by', Auth::id())
-            ->latest()
-            ->paginate(10);
+        $period = PeriodRange::fromRequest($request);
+        $myChanges = LocationChangeExporter::query($request, 'gudang')->paginate(10)->withQueryString();
 
-        return view('gudang.location-change', compact('items', 'myChanges'));
+        return view('gudang.location-change', compact('items', 'myChanges', 'period'));
     }
 
     public function locationSearch(Request $request)
@@ -422,8 +393,6 @@ class GudangController extends Controller
         $validated = $request->validate([
             'export_type' => ['required', 'in:in,out,in_out,adjustment,all'],
             'item_id' => ['nullable', 'exists:items,id'],
-            'date_from' => ['nullable', 'date_format:Y-m-d'],
-            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
         ]);
 
         $query = StockMovement::with('item', 'user')
@@ -444,13 +413,7 @@ class GudangController extends Controller
             $query->where('item_id', $validated['item_id']);
         }
 
-        if (!empty($validated['date_from'])) {
-            $query->where('occurred_at', '>=', $validated['date_from']);
-        }
-
-        if (!empty($validated['date_to'])) {
-            $query->where('occurred_at', '<=', $validated['date_to'] . ' 23:59:59');
-        }
+        PeriodRange::fromRequest($request)?->apply($query, 'occurred_at');
 
         $rows = [];
         $query->chunk(500, function ($movements) use (&$rows) {

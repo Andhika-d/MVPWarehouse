@@ -3,16 +3,6 @@
     <x-slot:headerTitle>Nota Pengadaan Barang</x-slot:headerTitle>
 
     <div class="space-y-6">
-        <form method="GET" action="/hr/daftar-belanja" data-auto-filter class="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center">
-            <div>
-                <label for="procurementDate" class="mb-1 block text-xs font-semibold text-slate-500">Tanggal</label>
-                <input id="procurementDate" type="date" name="date" value="{{ request('date') }}" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-corpblue-500 focus:outline-none">
-            </div>
-            @if(request()->has('date'))
-                <a href="/hr/daftar-belanja" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
-            @endif
-        </form>
-
         <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
             <div class="border-b border-slate-200 bg-slate-50/60 px-5 py-4">
                 <h2 class="text-sm font-bold text-slate-900">Antrean Request Disetujui</h2>
@@ -53,7 +43,16 @@
         </section>
 
         <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-            <div class="border-b border-slate-200 px-5 py-4"><h2 class="text-sm font-bold text-slate-900">Riwayat Nota Permanen</h2></div>
+            <div class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h2 class="text-sm font-bold text-slate-900">Riwayat Nota Permanen</h2>
+                    <p class="mt-1 text-xs text-slate-500">Filter periode hanya berlaku untuk arsip nota, bukan antrean request di atas.</p>
+                </div>
+                <form id="procurementFilters" method="GET" action="/hr/daftar-belanja" class="flex items-center gap-2">
+                    <x-period-filter-button :period="$period" />
+                    @if($period)<a href="/hr/daftar-belanja" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>@endif
+                </form>
+            </div>
             @if($notes->isEmpty())
                 <div class="p-10 text-center text-sm text-slate-500">Belum ada nota pengadaan.</div>
             @else
@@ -77,7 +76,10 @@
         </section>
     </div>
 
-    <x-slot:modals><x-hr-request-close-modal /></x-slot:modals>
+    <x-slot:modals>
+        <x-period-filter-modal :period="$period" form-id="procurementFilters" />
+        <x-hr-request-close-modal />
+    </x-slot:modals>
 
     <x-slot:scripts><script>
         const checkAll = document.querySelector('[data-check-all]');

@@ -10,6 +10,7 @@ use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProcurementNoteController;
 use App\Http\Controllers\RequestController;
+use App\Http\Controllers\StockPrintController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -35,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:gudang')->group(function () {
         Route::get('/gudang/dashboard', [DashboardController::class, 'gudangDashboard']);
         Route::get('/gudang/stock', [DashboardController::class, 'gudangStock']);
+        Route::get('/gudang/stock/print', StockPrintController::class);
 
         Route::get('/gudang/penerimaan', [GudangController::class, 'penerimaanIndex']);
         Route::post('/gudang/penerimaan', [GudangController::class, 'penerimaanStore'])->middleware('throttle:20,1');
@@ -66,6 +68,8 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:hr')->group(function () {
         Route::get('/hr/dashboard', [DashboardController::class, 'hrDashboard']);
         Route::get('/hr/stock', [DashboardController::class, 'hrStock']);
+        Route::get('/hr/stock/print', StockPrintController::class);
+        Route::get('/hr/movements', [DirectorController::class, 'movements'])->name('hr.movements');
         Route::get('/hr/approval', [RequestController::class, 'approvalIndex']);
         Route::get('/hr/approval/export/preview', [RequestController::class, 'previewApprovalExport']);
         Route::get('/hr/approval/export/pdf', [RequestController::class, 'exportApprovalPdf']);
@@ -170,6 +174,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/movements', [DirectorController::class, 'movements'])->name('movements');
         Route::get('/timeline', [DirectorController::class, 'timeline'])->name('timeline');
         Route::get('/stock', [DirectorController::class, 'stock'])->name('stock');
+        Route::get('/stock/print', StockPrintController::class)->name('stock.print');
         Route::get('/issues', [DirectorController::class, 'issues'])->name('issues');
     });
 });
