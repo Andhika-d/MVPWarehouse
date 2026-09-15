@@ -93,11 +93,19 @@ class OperationalFollowUpTest extends TestCase
             ]);
             Item::create([
                 'name' => 'Barang Cetak '.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+                'size' => $number === 1 ? 'Besar' : null,
                 'storage_location_id' => $location->id,
                 'unit' => 'Pcs',
                 'stock' => $number,
             ]);
         }
+
+        $this->actingAs($gudang)
+            ->get('/gudang/stock?rack=A')
+            ->assertOk()
+            ->assertSee('Hard Copy')
+            ->assertDontSee('Cetak Landscape')
+            ->assertDontSee('Cetak Portrait');
 
         $this->actingAs($gudang)
             ->get('/gudang/stock/print?rack=A')
@@ -115,6 +123,20 @@ class OperationalFollowUpTest extends TestCase
             ->assertSee('width: 78mm', false)
             ->assertSee('height: 28mm', false)
             ->assertSee('table-header-group', false);
+
+        $this->actingAs($gudang)
+            ->get('/gudang/stock/print?rack=A&orientation=portrait')
+            ->assertOk()
+            ->assertSee('size: A4 portrait', false)
+            ->assertSee('stock-table--portrait', false)
+            ->assertSee('<th>Lokasi</th>', false)
+            ->assertSee('RA-001')
+            ->assertSee('Rak A')
+            ->assertSee('Sub: a.1.01')
+            ->assertSee('Barang Cetak 01')
+            ->assertSee('Ukuran: Besar')
+            ->assertSee('Pcs')
+            ->assertSee('<th>Kode Tag</th>', false);
     }
 
     public function test_company_timeline_has_real_pagination(): void

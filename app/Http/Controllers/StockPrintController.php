@@ -9,6 +9,10 @@ class StockPrintController extends Controller
 {
     public function __invoke(Request $request)
     {
+        $validated = $request->validate([
+            'orientation' => ['nullable', 'in:landscape,portrait'],
+        ]);
+        $orientation = $validated['orientation'] ?? 'landscape';
         $locations = StockLocationQuery::fromRequest($request)->get();
         $items = $locations->flatMap->items;
         $statusLabels = [
@@ -39,7 +43,8 @@ class StockPrintController extends Controller
             'director' => '/director/stock',
             default => '/gudang/stock',
         };
-        $backUrl .= $request->getQueryString() ? '?'.$request->getQueryString() : '';
+        $backQuery = $request->except('orientation');
+        $backUrl .= $backQuery ? '?'.http_build_query($backQuery) : '';
 
         return view('stock.print', [
             'locations' => $locations,
@@ -49,6 +54,7 @@ class StockPrintController extends Controller
             'printedBy' => $request->user()->name,
             'role' => $roleLabels[$request->user()->role] ?? ucfirst($request->user()->role),
             'backUrl' => $backUrl,
+            'orientation' => $orientation,
         ]);
     }
 }
