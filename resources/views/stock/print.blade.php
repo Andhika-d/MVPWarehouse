@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hard Copy Stock Barang</title>
     <style>
-        @page { size: A4 landscape; margin: 10mm; }
+        @page { size: A4 {{ $orientation }}; margin: 10mm; }
         * { box-sizing: border-box; }
         body { margin: 0; color: #0f172a; background: #eef2f7; font: 12px Arial, sans-serif; }
         .toolbar { display: flex; justify-content: flex-end; gap: 8px; max-width: 297mm; margin: 16px auto 0; }
         .toolbar a, .toolbar button { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 14px; color: #334155; background: white; font-weight: 700; text-decoration: none; cursor: pointer; }
+        .toolbar a.active { border-color: #93c5fd; color: #1d4ed8; background: #eff6ff; }
         .toolbar button { border-color: #1d4ed8; color: white; background: #1d4ed8; }
-        .sheet { max-width: 297mm; min-height: 210mm; margin: 12px auto 24px; padding: 10mm; background: white; box-shadow: 0 8px 30px rgba(15, 23, 42, .1); }
+        .sheet { max-width: {{ $orientation === 'portrait' ? '210mm' : '297mm' }}; min-height: {{ $orientation === 'portrait' ? '297mm' : '210mm' }}; margin: 12px auto 24px; padding: 10mm; background: white; box-shadow: 0 8px 30px rgba(15, 23, 42, .1); }
         header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 12px; border-bottom: 3px solid #1d4ed8; }
         h1 { margin: 0 0 5px; font-size: 24px; letter-spacing: .02em; }
         .subtitle, .meta { color: #475569; }
@@ -36,6 +37,14 @@
         th { color: white; background: #1e3a8a; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
         td.number { text-align: right; }
         td.center { text-align: center; }
+        .cell-primary { display: block; font-weight: 700; color: #0f172a; }
+        .cell-meta { display: block; margin-top: 2px; color: #475569; font-size: 9px; }
+        .stock-table--portrait th, .stock-table--portrait td { padding: 6px; }
+        .stock-table--portrait th:first-child, .stock-table--portrait td:first-child { width: 9mm; }
+        .stock-table--portrait th:nth-child(2) { width: 25mm; }
+        .stock-table--portrait th:nth-child(3) { width: 35mm; }
+        .stock-table--portrait th:nth-child(5) { width: 25mm; }
+        .stock-table--portrait th:nth-child(6) { width: 35mm; }
         .empty { color: #64748b; font-style: italic; }
         footer { margin-top: 10px; color: #64748b; font-size: 9px; text-align: right; }
         @media print {
@@ -46,7 +55,12 @@
     </style>
 </head>
 <body>
-    <div class="toolbar"><a href="{{ $backUrl }}">Kembali</a><button type="button" onclick="window.print()">Cetak A4 Landscape</button></div>
+    <div class="toolbar">
+        <a href="{{ $backUrl }}">Kembali</a>
+        <a href="{{ request()->fullUrlWithQuery(['orientation' => 'landscape']) }}" class="{{ $orientation === 'landscape' ? 'active' : '' }}">Landscape</a>
+        <a href="{{ request()->fullUrlWithQuery(['orientation' => 'portrait']) }}" class="{{ $orientation === 'portrait' ? 'active' : '' }}">Portrait</a>
+        <button type="button" onclick="window.print()">Cetak A4 {{ ucfirst($orientation) }}</button>
+    </div>
     <main class="sheet">
         <header>
             <div><h1>STOCK BARANG</h1><div class="subtitle">THI-Cilegon Warehouse - Snapshot inventaris terfilter</div></div>
@@ -89,7 +103,8 @@
             @foreach($filters as $label => $value)<span><strong>{{ $label }}:</strong> {{ $value }}</span>@endforeach
         </div>
 
-        <table>
+        @if($orientation === 'landscape')
+        <table class="stock-table stock-table--landscape">
             <thead>
                 <tr>
                     <th>No.</th>
@@ -120,6 +135,58 @@
                 @endforelse
             </tbody>
         </table>
+        @else
+        <table class="stock-table stock-table--portrait">
+            <thead>
+                <tr>
+                    <th>No.</th>
+                    <th>Kode Tag</th>
+                    <th>Lokasi</th>
+                    <th>Barang</th>
+                    <th>Stok</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @php($row = 0)
+                @forelse($locations as $location)
+                    @forelse($location->items as $item)
+                    <tr>
+                        <td class="number">{{ ++$row }}</td>
+                        <td><span class="cell-primary">{{ $location->code }}</span></td>
+                        <td>
+                            <span class="cell-primary">Rak {{ $location->rack }}</span>
+                            <span class="cell-meta">Sub: {{ $location->sub_location ?: '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="cell-primary">{{ $item->name }}</span>
+                            <span class="cell-meta">Ukuran: {{ $item->size ?: '-' }}</span>
+                        </td>
+                        <td>
+                            <span class="cell-primary">{{ number_format($item->stock) }}</span>
+                            <span class="cell-meta">{{ $item->unit }}</span>
+                        </td>
+                        <td>{{ $item->stock === 0 ? 'Terisi (Barang Kosong)' : 'Terisi' }}</td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td class="number">{{ ++$row }}</td>
+                        <td><span class="cell-primary">{{ $location->code }}</span></td>
+                        <td>
+                            <span class="cell-primary">Rak {{ $location->rack }}</span>
+                            <span class="cell-meta">Sub: {{ $location->sub_location ?: '-' }}</span>
+                        </td>
+                        <td><span class="empty">Lokasi Kosong</span><span class="cell-meta">Ukuran: -</span></td>
+                        <td><span class="cell-primary">-</span><span class="cell-meta">-</span></td>
+                        <td>Kosong</td>
+                    </tr>
+                    @endforelse
+                @empty
+                    <tr><td colspan="6" class="center empty">Tidak ada data sesuai filter.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+        @endif
         <footer>Dokumen ini merupakan snapshot pada waktu cetak dan dapat berubah mengikuti transaksi stok.</footer>
     </main>
 </body>
