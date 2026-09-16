@@ -88,17 +88,17 @@
                         </p>
                         @endif
 
-                        <div class="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-slate-400">
+                        <div class="mt-3 flex flex-wrap gap-2">
                             @if($startedAt)
-                            <span class="whitespace-nowrap">Proses tertunda sejak&nbsp;<strong class="font-semibold text-slate-600">{{ $startedAt->translatedFormat('d M Y, H:i') }}</strong></span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">Proses tertunda sejak&nbsp;<strong class="font-semibold whitespace-nowrap text-slate-700">{{ $startedAt->translatedFormat('d M Y, H:i') }}</strong></span>
                             @endif
                             @if($issue->detected_at)
-                            <span class="whitespace-nowrap">Deteksi pertama&nbsp;<strong class="font-semibold text-slate-600">{{ $issue->detected_at->translatedFormat('d M Y') }}</strong></span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">Deteksi pertama&nbsp;<strong class="font-semibold whitespace-nowrap text-slate-700">{{ $issue->detected_at->translatedFormat('d M Y') }}</strong></span>
                             @endif
                             @if($issue->isActive())
-                            <span class="whitespace-nowrap">Terakhir terdeteksi&nbsp;<strong class="font-semibold text-slate-600">{{ $issue->last_seen_at?->locale('id')->diffForHumans() }}</strong></span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">Terakhir terdeteksi&nbsp;<strong class="font-semibold whitespace-nowrap text-slate-700">{{ $issue->last_seen_at?->locale('id')->diffForHumans() }}</strong></span>
                             @elseif($issue->resolved_at)
-                            <span class="whitespace-nowrap">Selesai&nbsp;<strong class="font-semibold text-slate-600">{{ $issue->resolved_at->translatedFormat('d M Y, H:i') }}</strong></span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs text-slate-500">Selesai&nbsp;<strong class="font-semibold whitespace-nowrap text-slate-700">{{ $issue->resolved_at->translatedFormat('d M Y, H:i') }}</strong></span>
                             @endif
                         </div>
                     </div>
