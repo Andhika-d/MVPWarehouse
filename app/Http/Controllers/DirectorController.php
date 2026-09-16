@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\LocationChangeRequest;
+use App\Models\MonitoringIssue;
 use App\Models\StockMovement;
 use App\Models\StockRequest;
 use App\Models\StorageLocation;
@@ -713,15 +714,42 @@ class DirectorController extends Controller
     public function issues()
     {
         $status = request('status');
+        $severity = request('severity');
 
-        $query = \App\Models\MonitoringIssue::with('stockRequest.item', 'user');
+        $query = MonitoringIssue::query()
+            ->with([
+                'subject' => fn ($morph) => $morph->morphWith([
+                    StockRequest::class => ['item', 'user'],
+                    LocationChangeRequest::class => ['item', 'fromLocation', 'toLocation'],
+                ]),
+            ]);
 
         if ($status && $status !== 'all') {
             $query->where('status', $status);
         }
+        if ($severity && $severity !== 'all') {
+            $query->where('severity', $severity);
+        }
 
-        $issues = $query->latest()->paginate(30)->appends(request()->query());
+        $query->orderByRaw("CASE WHEN status = 'Open' THEN 0 WHEN status = 'Dalam Tinjauan' THEN 1 ELSE 2 END")
+            ->latest('detected_at');
 
-        return view('director.issues', compact('issues', 'status'));
+        $issues = $query->paginate(30)->appends(request()->query());
+
+        $summary = [
+            'open' => MonitoringIssue::whereIn('status', [MonitoringIssue::STATUS_OPEN, MonitoringIssue::STATUS_IN_REVIEW])->count(),
+            'warning' => MonitoringIssue::where('severity', MonitoringIssue::SEVERITY_WARNING)
+                ->whereIn('status', [MonitoringIssue::STATUS_OPEN, MonitoringIssue::STATUS_IN_REVIEW])->count(),
+            'critical' => MonitoringIssue::where('severity', MonitoringIssue::SEVERITY_CRITICAL)
+                ->whereIn('status', [MonitoringIssue::STATUS_OPEN, MonitoringIssue::STATUS_IN_REVIEW])->count(),
+            'resolved' => MonitoringIssue::where('status', MonitoringIssue::STATUS_RESOLVED)->count(),
+            'by_rule' => MonitoringIssue::whereIn('status', [MonitoringIssue::STATUS_OPEN, MonitoringIssue::STATUS_IN_REVIEW])
+                ->selectRaw('rule_key, count(*) as total')
+                ->groupBy('rule_key')
+                ->pluck('total', 'rule_key')
+                ->all(),
+        ];
+
+        return view('director.issues', compact('issues', 'status', 'severity', 'summary'));
     }
 }
