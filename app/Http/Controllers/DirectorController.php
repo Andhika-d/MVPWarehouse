@@ -189,7 +189,9 @@ class DirectorController extends Controller
             $query->where('status', $status);
         }
         if ($priority && $priority !== 'all') {
-            $query->where('priority', $priority);
+            $priority === 'Normal'
+                ? $query->whereIn('priority', ['Biasa', 'Normal'])
+                : $query->where('priority', $priority);
         }
         if ($search) {
             $query->where(function ($q) use ($search) {

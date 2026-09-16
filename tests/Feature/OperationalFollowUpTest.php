@@ -66,6 +66,26 @@ class OperationalFollowUpTest extends TestCase
             ->assertSee('name="period_start" value="2026-08-07"', false);
     }
 
+    public function test_director_normal_priority_filter_includes_current_and_legacy_values(): void
+    {
+        $director = User::factory()->create(['role' => 'director']);
+        $requester = User::factory()->create(['role' => 'gudang']);
+        $regularItem = Item::create(['name' => 'Prioritas Biasa Terlihat', 'unit' => 'Pcs', 'stock' => 1]);
+        $legacyItem = Item::create(['name' => 'Prioritas Normal Legacy Terlihat', 'unit' => 'Pcs', 'stock' => 1]);
+        $urgentItem = Item::create(['name' => 'Prioritas Mendesak Tersembunyi', 'unit' => 'Pcs', 'stock' => 1]);
+
+        $this->stockRequest($requester, $regularItem, '2026-08-10 09:00:00');
+        $this->stockRequest($requester, $legacyItem, '2026-08-10 10:00:00')->update(['priority' => 'Normal']);
+        $this->stockRequest($requester, $urgentItem, '2026-08-10 11:00:00')->update(['priority' => 'Mendesak']);
+
+        $this->actingAs($director)
+            ->get('/director/requests?priority=Normal')
+            ->assertOk()
+            ->assertSee('Prioritas Biasa Terlihat')
+            ->assertSee('Prioritas Normal Legacy Terlihat')
+            ->assertDontSee('Prioritas Mendesak Tersembunyi');
+    }
+
     public function test_receipt_queue_does_not_hide_old_actionable_requests_by_month(): void
     {
         $gudang = User::factory()->create(['role' => 'gudang']);
