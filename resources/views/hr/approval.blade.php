@@ -66,7 +66,7 @@
 
             <!-- TABEL ITEM DALAM NOTA -->
             <div class="overflow-x-auto bg-white">
-                <table class="w-full text-left border-collapse text-xs">
+                <table class="w-full text-left border-collapse text-xs min-w-[820px]">
                     <thead>
                         <tr class="border-b border-slate-100 bg-slate-50/50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3 px-6">Barang</th>

@@ -79,7 +79,7 @@
         {{-- Table --}}
         <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm min-w-[900px]">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>

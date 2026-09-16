@@ -31,7 +31,7 @@
         {{-- Table --}}
         <div class="bg-white rounded-xl border border-slate-200">
             <div class="overflow-x-auto">
-                <table class="w-full text-sm">
+                <table class="w-full text-sm min-w-[760px]">
                     <thead>
                         <tr class="border-b border-slate-100">
                             <th class="px-5 py-3 text-left text-xs font-semibold text-slate-400 uppercase tracking-wider">Barang</th>

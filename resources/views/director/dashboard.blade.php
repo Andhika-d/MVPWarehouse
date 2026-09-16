@@ -39,7 +39,7 @@
         </div>
 
         {{-- ═══ MIDDLE ROW ═══ --}}
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:h-[340px]">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:max-h-[480px]">
 
             {{-- Process Bottleneck --}}
             <div class="bg-white rounded-2xl border border-slate-200 p-6 lg:h-full flex flex-col min-h-0">
