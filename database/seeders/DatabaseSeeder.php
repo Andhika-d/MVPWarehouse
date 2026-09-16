@@ -16,7 +16,7 @@ class DatabaseSeeder extends Seeder
     {
         // 1. Seed admin user
         User::updateOrCreate(
-            ['email' => 'admin@mvpwarehouse.com'],
+            ['email' => 'admin@thi2-warehouse.com'],
             [
                 'name' => 'Administrator',
                 'password' => Hash::make('password'),
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
 
         // 2. Seed HR user
         User::updateOrCreate(
-            ['email' => 'hr@mvpwarehouse.com'],
+            ['email' => 'hr@thi2-warehouse.com'],
             [
                 'name' => 'HRD',
                 'password' => Hash::make('password'),
@@ -40,7 +40,7 @@ class DatabaseSeeder extends Seeder
 
         // 3. Seed Gudang user
         User::updateOrCreate(
-            ['email' => 'gudang@mvpwarehouse.com'],
+            ['email' => 'gudang@thi2-warehouse.com'],
             [
                 'name' => 'Gudang Utama',
                 'password' => Hash::make('password'),
@@ -52,7 +52,7 @@ class DatabaseSeeder extends Seeder
 
         // 4. Seed Director user
         User::updateOrCreate(
-            ['email' => 'director@mvpwarehouse.com'],
+            ['email' => 'director@thi2-warehouse.com'],
             [
                 'name' => 'Mr. Yang',
                 'password' => Hash::make('password'),

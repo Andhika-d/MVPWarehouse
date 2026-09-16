@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Buat Permintaan — MVPWarehouse</x-slot:title>
+    <x-slot:title>Buat Permintaan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Buat Permintaan</x-slot:headerTitle>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">

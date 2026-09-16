@@ -1,4 +1,4 @@
-<x-layout :title="'Masalah & Analisis — MVPWarehouse'" :headerTitle="'Masalah & Analisis'">
+<x-layout :title="'Masalah & Analisis — THI2-WAREHOUSE'" :headerTitle="'Masalah & Analisis'">
     <div class="space-y-6">
 
         {{-- Summary --}}

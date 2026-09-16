@@ -1,4 +1,4 @@
-<x-layout :title="'Monitoring Stok — MVPWarehouse'" :headerTitle="'Monitoring Stok Barang'">
+<x-layout :title="'Monitoring Stok — THI2-WAREHOUSE'" :headerTitle="'Monitoring Stok Barang'">
     <div class="space-y-6">
 
         {{-- Summary Stats --}}

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>{{ $procurementNote->number }} - MVPWarehouse</x-slot:title>
+    <x-slot:title>{{ $procurementNote->number }} - THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Detail Nota Pengadaan</x-slot:headerTitle>
 
     <div class="space-y-6">
@@ -84,10 +84,10 @@
         function sendNoteToWhatsApp(button) {
             if (!guardNoteAction(button)) return;
             const items = @json($procurementNote->items->map(fn ($item) => ['name' => $item->item_name, 'quantity' => $item->quantity, 'unit' => $item->unit])->values());
-            let text = `*MVPWAREHOUSE - NOTA PENGADAAN*\nNomor: {{ $procurementNote->number }}\nTanggal Nota: {{ $procurementNote->issued_at?->translatedFormat('d F Y') }}\nDriver: {{ $procurementNote->driver_name ?: '-' }}\n\n`;
+            let text = `*THI2-WAREHOUSE - NOTA PENGADAAN*\nNomor: {{ $procurementNote->number }}\nTanggal Nota: {{ $procurementNote->issued_at?->translatedFormat('d F Y') }}\nDriver: {{ $procurementNote->driver_name ?: '-' }}\n\n`;
             items.forEach((item, index) => text += `${index + 1}. ${item.name} - *${item.quantity} ${item.unit}*\n`);
             text += '\n_Silakan beli sesuai nota dan serahkan ke Gudang saat tiba._';
-            window.open('https://wa.me/?text=' + encodeURIComponent(text), 'mvpwarehouse-procurement-whatsapp');
+            window.open('https://wa.me/?text=' + encodeURIComponent(text), 'thi2-warehouse-procurement-whatsapp');
         }
     </script></x-slot:scripts>
 </x-layout>

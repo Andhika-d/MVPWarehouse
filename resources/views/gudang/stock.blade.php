@@ -1,4 +1,4 @@
-<x-layout :title="'Stok Barang — MVPWarehouse'" :headerTitle="'Monitoring Stok Barang'">
+<x-layout :title="'Stok Barang — THI2-WAREHOUSE'" :headerTitle="'Monitoring Stok Barang'">
     <div class="space-y-6">
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">

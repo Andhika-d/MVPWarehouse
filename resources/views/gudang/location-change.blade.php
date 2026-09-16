@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Pengajuan Lokasi — MVPWarehouse</x-slot:title>
+    <x-slot:title>Pengajuan Lokasi — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Ajukan Pemindahan Lokasi</x-slot:headerTitle>
 
     <div class="max-w-5xl mx-auto space-y-6">

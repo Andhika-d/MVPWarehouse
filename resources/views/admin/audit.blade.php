@@ -1,4 +1,4 @@
-<x-layout :title="'Audit Log — MVPWarehouse'" :headerTitle="'Audit Log Global'">
+<x-layout :title="'Audit Log — THI2-WAREHOUSE'" :headerTitle="'Audit Log Global'">
     <div class="space-y-6">
 
         {{-- Filter --}}

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Bantuan — MVPWarehouse</x-slot:title>
+    <x-slot:title>Bantuan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Bantuan Sistem</x-slot:headerTitle>
     <div class="max-w-6xl mx-auto space-y-6">
         <div class="flex flex-wrap items-start justify-between gap-4"><div><p class="text-xs font-bold uppercase tracking-widest text-corpblue-500">User Guidance System</p><h2 class="mt-2 text-2xl font-bold text-slate-900">Panduan penggunaan</h2><p class="mt-1 text-sm text-slate-500">Ini adalah halaman panduan yang akan memperkenalkan fitur fitur utama pada system</p></div><button type="button" onclick="history.back()" class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:border-corpblue-300 hover:text-corpblue-700">← Kembali</button></div>

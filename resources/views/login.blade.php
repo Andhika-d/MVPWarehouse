@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — MVPWarehouse</title>
+    <title>Login — THI2-WAREHOUSE</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-corpblue-950 text-slate-800 antialiased">
@@ -68,7 +68,7 @@
                     <div class="w-10 h-px bg-white/20 mx-auto my-7"></div>
 
                     {{-- System name — prominent --}}
-                    <p class="typing-text text-lg font-bold text-white uppercase tracking-[0.2em]">MVPWAREHOUSE</p>
+                    <p class="typing-text text-lg font-bold text-white uppercase tracking-[0.2em]">THI2-WAREHOUSE</p>
                     <p class="text-xs text-corpblue-200/70 mt-1.5">Internal Warehouse Management System</p>
 
                     {{-- Divider 2 --}}

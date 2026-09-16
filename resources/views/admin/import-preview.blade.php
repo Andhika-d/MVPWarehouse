@@ -1,4 +1,4 @@
-<x-layout :title="'Preview Import — MVPWarehouse'" :headerTitle="'Preview Import Barang'">
+<x-layout :title="'Preview Import — THI2-WAREHOUSE'" :headerTitle="'Preview Import Barang'">
     <div class="max-w-4xl mx-auto space-y-6">
 
         <a href="{{ route('admin.import.index') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 font-medium">

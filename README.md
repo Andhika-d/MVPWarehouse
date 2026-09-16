@@ -1,4 +1,4 @@
-# MVPWarehouse
+# THI2-WAREHOUSE
 
 > An internal, role-based inventory and warehouse resource management system for controlled requests, procurement, stock movement, location management, and executive monitoring.
 
@@ -10,17 +10,17 @@
 
 ## Overview
 
-MVPWarehouse digitizes the operational flow between warehouse staff, HR, directors, and administrators. It replaces disconnected paper forms and manual status follow-up with a centralized workflow that records requests, approvals, procurement notes, partial receipts, stock balances, location changes, notifications, and management-level process monitoring.
+THI2-WAREHOUSE digitizes the operational flow between warehouse staff, HR, directors, and administrators. It replaces disconnected paper forms and manual status follow-up with a centralized workflow that records requests, approvals, procurement notes, partial receipts, stock balances, location changes, notifications, and management-level process monitoring.
 
 The application is intended for internal operational use. Authorization is based on four fixed roles rather than user-configurable permissions.
 
 ## Business Context and Outcome
 
-The original warehouse process depended on physical forms and direct coordination with HR. Staff could need to walk approximately 100 meters to submit or follow up on a request. MVPWarehouse removes that dependency from the primary request and approval flow while preserving HR approval authority and warehouse accountability.
+The original warehouse process depended on physical forms and direct coordination with HR. Staff could need to walk approximately 100 meters to submit or follow up on a request. THI2-WAREHOUSE removes that dependency from the primary request and approval flow while preserving HR approval authority and warehouse accountability.
 
 The repository does not contain production telemetry that supports a numeric efficiency claim. The impact below therefore describes observable process changes rather than an unverified percentage.
 
-| Operational Area | Previous Process | MVPWarehouse Output |
+| Operational Area | Previous Process | THI2-WAREHOUSE Output |
 |---|---|---|
 | Request submission | Paper form and physical delivery | Structured digital request with priority, reason, and optional attachment |
 | HR approval | Direct physical coordination | Individual or grouped digital approval, rejection, and delay |
@@ -341,7 +341,7 @@ Create an empty MySQL database and configure `.env`:
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=mvpwarehouse
+DB_DATABASE=thi2_warehouse
 DB_USERNAME=root
 DB_PASSWORD=
 ```
@@ -359,10 +359,10 @@ Running `php artisan db:seed` creates the following accounts:
 
 | Role | Email | Password |
 |---|---|---|
-| Administrator | `admin@mvpwarehouse.com` | `password` |
-| HR | `hr@mvpwarehouse.com` | `password` |
-| Warehouse | `gudang@mvpwarehouse.com` | `password` |
-| Director | `director@mvpwarehouse.com` | `password` |
+| Administrator | `admin@thi2-warehouse.com` | `password` |
+| HR | `hr@thi2-warehouse.com` | `password` |
+| Warehouse | `gudang@thi2-warehouse.com` | `password` |
+| Director | `director@thi2-warehouse.com` | `password` |
 
 These credentials are for development only. Change or remove every default account before deploying the application.
 
@@ -466,4 +466,4 @@ Before production deployment:
 
 ## Status
 
-MVPWarehouse is an actively developed internal application. Run the complete test suite and review environment-specific security, backup, and access requirements before each deployment.
+THI2-WAREHOUSE is an actively developed internal application. Run the complete test suite and review environment-specific security, backup, and access requirements before each deployment.

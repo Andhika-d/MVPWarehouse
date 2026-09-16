@@ -1,4 +1,4 @@
-<x-layout :title="'Executive Monitoring — MVPWarehouse'" :headerTitle="'Executive Monitoring'">
+<x-layout :title="'Executive Monitoring — THI2-WAREHOUSE'" :headerTitle="'Executive Monitoring'">
     <div class="space-y-6">
 
         {{-- ═══ TOP: KPI Strip ═══ --}}

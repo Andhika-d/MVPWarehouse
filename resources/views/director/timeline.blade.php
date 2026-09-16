@@ -1,4 +1,4 @@
-<x-layout :title="'Timeline Aktivitas — MVPWarehouse'" :headerTitle="'Timeline Aktivitas Perusahaan'">
+<x-layout :title="'Timeline Aktivitas — THI2-WAREHOUSE'" :headerTitle="'Timeline Aktivitas Perusahaan'">
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">

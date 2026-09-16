@@ -155,7 +155,7 @@
                     <div class="flex flex-col leading-none min-w-0">
                         <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider leading-none truncate">PT Taehang Indonesia</span>
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan 2</span>
-                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">MVPWarehouse</span>
+                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">THI2-WAREHOUSE</span>
                     </div>
                     @elseif($currentRole === 'gudang')
                     <div class="w-9 h-9 rounded-lg bg-corpblue-500 flex items-center justify-center shrink-0 shadow-sm">
@@ -164,7 +164,7 @@
                     <div class="flex flex-col leading-none min-w-0">
                         <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider leading-none truncate">PT Taehang Indonesia</span>
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan 2</span>
-                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">MVPWarehouse</span>
+                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">THI2-WAREHOUSE</span>
                     </div>
                     @elseif($currentRole === 'director')
                     <div class="w-9 h-9 rounded-lg bg-indigo-700 flex items-center justify-center shrink-0 shadow-sm">
@@ -173,13 +173,13 @@
                     <div class="flex flex-col leading-none min-w-0">
                         <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider leading-none truncate">PT Taehang Indonesia</span>
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan 2</span>
-                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">MVPWarehouse</span>
+                        <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">THI2-WAREHOUSE</span>
                     </div>
                     @else
                     <div class="flex flex-col leading-none">
                         <span class="text-[11px] font-bold text-slate-900 uppercase tracking-wider leading-none">PT Taehang Indonesia</span>
                         <span class="text-[10px] font-medium text-slate-500 leading-none mt-0.5">Plan 2</span>
-                        <span class="text-[10px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1">MVPWarehouse</span>
+                        <span class="text-[10px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1">THI2-WAREHOUSE</span>
                     </div>
                     @endif
                     <button type="button" onclick="closeSidebar()" class="touch-target ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 lg:hidden" aria-label="Tutup menu">

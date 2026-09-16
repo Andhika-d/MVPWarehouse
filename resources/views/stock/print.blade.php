@@ -63,7 +63,7 @@
     </div>
     <main class="sheet">
         <header>
-            <div><h1>STOCK BARANG</h1><div class="subtitle">THI-Cilegon Warehouse - Snapshot inventaris terfilter</div></div>
+            <div><h1>STOCK BARANG</h1><div class="subtitle">THI2-WAREHOUSE - Snapshot inventaris terfilter</div></div>
             <div class="header-approval">
                 <div class="meta"><strong>{{ $printedAt->translatedFormat('d F Y, H:i') }}</strong><br>Dicetak oleh {{ $printedBy }} ({{ $role }})</div>
                 <table class="approval-grid" aria-label="Approval">

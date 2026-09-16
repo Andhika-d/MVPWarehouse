@@ -1,4 +1,4 @@
-<x-layout :title="'Backup & Pemulihan — MVPWarehouse'" :headerTitle="'Backup & Pemulihan'">
+<x-layout :title="'Backup & Pemulihan — THI2-WAREHOUSE'" :headerTitle="'Backup & Pemulihan'">
     <div class="max-w-2xl mx-auto space-y-6">
 
         {{-- Create Backup --}}

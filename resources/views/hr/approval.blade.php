@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Verifikasi & Approval - MVPWarehouse</x-slot:title>
+    <x-slot:title>Verifikasi & Approval - THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Meja Verifikasi Permintaan Barang</x-slot:headerTitle>
 
     <div class="space-y-6">

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Kelola Bantuan — MVPWarehouse</x-slot:title>
+    <x-slot:title>Kelola Bantuan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Kelola Bantuan</x-slot:headerTitle>
     <div class="space-y-5">
         <div class="flex items-center justify-between"><div><p class="text-sm text-slate-500">Kelola panduan visual untuk semua role.</p></div><a href="{{ route('admin.help-guides.create') }}" class="rounded-lg bg-corpblue-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-corpblue-600">Tambah Panduan</a></div>

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Riwayat Permintaan — MVPWarehouse</x-slot:title>
+    <x-slot:title>Riwayat Permintaan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Riwayat Permintaan</x-slot:headerTitle>
 
     <div class="space-y-4">

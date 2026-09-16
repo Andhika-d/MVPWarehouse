@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Barang Keluar — MVPWarehouse</x-slot:title>
+    <x-slot:title>Barang Keluar — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Catat Barang Keluar</x-slot:headerTitle>
 
     <div class="space-y-4">

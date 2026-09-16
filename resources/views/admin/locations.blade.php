@@ -1,4 +1,4 @@
-<x-layout :title="'Lokasi Rak — MVPWarehouse'" :headerTitle="'Tata Letak Rak'">
+<x-layout :title="'Lokasi Rak — THI2-WAREHOUSE'" :headerTitle="'Tata Letak Rak'">
     <div class="space-y-6">
 
         {{-- Stats --}}

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Dashboard HRD - MVPWarehouse</x-slot:title>
+    <x-slot:title>Dashboard HRD - THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Dashboard Pantauan Permintaan</x-slot:headerTitle>
 
     <div class="flex flex-col gap-6">

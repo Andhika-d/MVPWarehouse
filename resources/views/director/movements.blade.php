@@ -1,4 +1,4 @@
-<x-layout :title="'Perubahan Stok — MVPWarehouse'" :headerTitle="'Riwayat Perubahan Stok'">
+<x-layout :title="'Perubahan Stok — THI2-WAREHOUSE'" :headerTitle="'Riwayat Perubahan Stok'">
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">

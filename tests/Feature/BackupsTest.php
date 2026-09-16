@@ -70,7 +70,7 @@ class BackupsTest extends TestCase
 
     protected function latestBackupName(): ?string
     {
-        $files = glob(storage_path('app/backups/backup_mvpwarehouse_*.zip')) ?: [];
+        $files = glob(storage_path('app/backups/backup_thi2-warehouse_*.zip')) ?: [];
 
         return $files === [] ? null : basename($files[0]);
     }
@@ -157,13 +157,17 @@ class BackupsTest extends TestCase
         foreach (range(1, 13) as $i) {
             $file = $dir.'/backup_mvpwarehouse_2020010'.$i.'000000.zip';
             file_put_contents($file, 'dummy');
+            touch($file, now()->subMinutes(30 + $i)->getTimestamp());
         }
 
         $this->actingAs($admin)->post('/admin/backups');
 
-        $backups = glob($dir.'/backup_mvpwarehouse_*.zip') ?: [];
+        $legacy = glob($dir.'/backup_mvpwarehouse_*.zip') ?: [];
+        $current = glob($dir.'/backup_thi2-warehouse_*.zip') ?: [];
 
-        $this->assertCount(10, $backups);
+        $this->assertCount(9, $legacy);
+        $this->assertCount(1, $current);
+        $this->assertSame(10, count($legacy) + count($current));
     }
 
     public function test_invalid_backup_name_is_rejected(): void
