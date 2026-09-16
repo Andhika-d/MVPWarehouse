@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Preview {{ $title }} — MVPWarehouse</x-slot:title>
+    <x-slot:title>Preview {{ $title }} — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Preview Export</x-slot:headerTitle>
 
     <div class="mx-auto max-w-7xl space-y-5">

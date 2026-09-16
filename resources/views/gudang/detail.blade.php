@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Detail Permintaan — MVPWarehouse</x-slot:title>
+    <x-slot:title>Detail Permintaan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Detail Permintaan</x-slot:headerTitle>
 
     <div class="space-y-4">

@@ -1,4 +1,4 @@
-<x-layout :title="'Import Barang — MVPWarehouse'" :headerTitle="'Import Barang dari Excel'">
+<x-layout :title="'Import Barang — THI2-WAREHOUSE'" :headerTitle="'Import Barang dari Excel'">
     <div class="max-w-2xl mx-auto space-y-6">
 
         <a href="{{ route('admin.items.index') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 font-medium">

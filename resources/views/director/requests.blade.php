@@ -1,4 +1,4 @@
-<x-layout :title="'Semua Request — MVPWarehouse'" :headerTitle="'Semua Permintaan Barang'">
+<x-layout :title="'Semua Request — THI2-WAREHOUSE'" :headerTitle="'Semua Permintaan Barang'">
     <div class="space-y-6">
 
         {{-- Filters --}}

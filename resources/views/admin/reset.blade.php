@@ -1,4 +1,4 @@
-<x-layout :title="'Reset Data — MVPWarehouse'" :headerTitle="'Maintenance Data'">
+<x-layout :title="'Reset Data — THI2-WAREHOUSE'" :headerTitle="'Maintenance Data'">
     <div class="max-w-3xl mx-auto space-y-6">
 
         <a href="{{ route('admin.dashboard') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 font-medium">

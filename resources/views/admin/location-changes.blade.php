@@ -1,4 +1,4 @@
-<x-layout :title="'Pengajuan Lokasi — MVPWarehouse'" :headerTitle="'Pengajuan Lokasi'">
+<x-layout :title="'Pengajuan Lokasi — THI2-WAREHOUSE'" :headerTitle="'Pengajuan Lokasi'">
     <div class="space-y-6">
 
         {{-- Filter --}}

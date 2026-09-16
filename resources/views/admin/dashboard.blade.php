@@ -1,4 +1,4 @@
-<x-layout :title="'Dashboard Admin — MVPWarehouse'" :headerTitle="'Dashboard Admin'">
+<x-layout :title="'Dashboard Admin — THI2-WAREHOUSE'" :headerTitle="'Dashboard Admin'">
     <div class="space-y-6">
 
         {{-- Stats Grid --}}

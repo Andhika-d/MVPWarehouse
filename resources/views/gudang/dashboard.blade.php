@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Dashboard — MVPWarehouse</x-slot:title>
+    <x-slot:title>Dashboard — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Dashboard</x-slot:headerTitle>
 
     <div class="space-y-4">

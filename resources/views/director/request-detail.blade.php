@@ -1,4 +1,4 @@
-<x-layout :title="'Detail Request — MVPWarehouse'" :headerTitle="'Detail Permintaan'">
+<x-layout :title="'Detail Request — THI2-WAREHOUSE'" :headerTitle="'Detail Permintaan'">
     <div class="space-y-6">
 
         <a href="{{ route('director.requests') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-corpblue-600 font-medium transition-colors">

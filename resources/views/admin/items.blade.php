@@ -1,4 +1,4 @@
-<x-layout :title="'Master Barang — MVPWarehouse'" :headerTitle="'Master Barang'">
+<x-layout :title="'Master Barang — THI2-WAREHOUSE'" :headerTitle="'Master Barang'">
     <div class="space-y-6">
 
         {{-- Stats --}}

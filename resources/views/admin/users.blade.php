@@ -1,4 +1,4 @@
-<x-layout :title="'Kelola Pengguna — MVPWarehouse'" :headerTitle="'Kelola Pengguna'">
+<x-layout :title="'Kelola Pengguna — THI2-WAREHOUSE'" :headerTitle="'Kelola Pengguna'">
     <div class="space-y-6">
 
         {{-- Toolbar --}}

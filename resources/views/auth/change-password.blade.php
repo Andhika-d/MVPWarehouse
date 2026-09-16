@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>Ubah Password — MVPWarehouse</x-slot:title>
+    <x-slot:title>Ubah Password — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Ubah Password</x-slot:headerTitle>
 
     <div class="max-w-md mx-auto">

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>{{ $guide->exists ? 'Edit' : 'Tambah' }} Panduan — MVPWarehouse</x-slot:title>
+    <x-slot:title>{{ $guide->exists ? 'Edit' : 'Tambah' }} Panduan — THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>{{ $guide->exists ? 'Edit' : 'Tambah' }} Panduan</x-slot:headerTitle>
     <div class="mx-auto max-w-6xl">
         <form method="POST" enctype="multipart/form-data" action="{{ $guide->exists ? route('admin.help-guides.update', $guide) : route('admin.help-guides.store') }}" class="space-y-5" id="guideForm">

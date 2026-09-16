@@ -1072,7 +1072,7 @@ class AdminController extends Controller
             mkdir($dir, 0755, true);
         }
 
-        $filename = 'backup_mvpwarehouse_'.now()->format('Y_m_d_His').'.zip';
+        $filename = 'backup_thi2-warehouse_'.now()->format('Y_m_d_His').'.zip';
         $zip = new \ZipArchive;
 
         if ($zip->open($dir.'/'.$filename, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
@@ -1415,7 +1415,8 @@ class AdminController extends Controller
 
     protected function pruneBackups(string $dir, int $keep = 10): void
     {
-        $files = collect(glob($dir.'/backup_mvpwarehouse_*.zip') ?: [])
+        $files = collect(glob($dir.'/backup_thi2-warehouse_*.zip') ?: [])
+            ->merge(glob($dir.'/backup_mvpwarehouse_*.zip') ?: [])
             ->merge(glob($dir.'/pre_restore_*.zip') ?: [])
             ->merge(glob($dir.'/pre_reset_*.zip') ?: [])
             ->sortByDesc(fn (string $path) => filemtime($path))
