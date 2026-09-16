@@ -55,7 +55,7 @@
                                         <button type="submit" class="action-link action-link--neutral">Reset PW</button>
                                     </form>
                                     @if($user->role !== 'admin' && $user->id !== auth()->id())
-                                    <form method="POST" action="{{ route('admin.users.login-as', $user) }}" class="inline">
+                                    <form method="POST" action="{{ route('admin.users.login-as', $user) }}" data-confirm="Login sebagai {{ $user->name }}? Anda akan berpindah ke sesi pengguna ini." data-confirm-title="Login Sebagai User" data-confirm-tone="warning" class="inline">
                                         @csrf
                                         <button type="submit" class="action-link action-link--primary">Login As</button>
                                     </form>
@@ -105,7 +105,7 @@
                     <div class="grid grid-cols-2 gap-3">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Password (opsional)</label>
-                            <input type="text" name="password" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none" placeholder="Otomatis jika kosong">
+                            <input type="password" name="password" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none" placeholder="Otomatis jika kosong">
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Role</label>

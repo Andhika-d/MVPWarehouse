@@ -149,9 +149,8 @@
         </div>
 
     </div>
-</x-layout>
 
-<script>
+    <x-slot:scripts><script>
     const itemsData = @json($itemOptions);
 
     const searchInput = document.getElementById('itemSearch');
@@ -348,4 +347,5 @@
             alert('Silakan pilih barang dari inventaris.');
         }
     });
-</script>
+    </script></x-slot:scripts>
+</x-layout>

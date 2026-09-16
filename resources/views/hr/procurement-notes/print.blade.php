@@ -12,7 +12,7 @@
         th, td { border: 1px solid #cbd5e1; padding: 8px; text-align: left; }
         th { background: #f1f5f9; font-size: 11px; text-transform: uppercase; }
         .signatures { display: flex; justify-content: space-between; margin-top: 55px; text-align: center; }
-        .signatures div { width: 190px; } .line { border-top: 1px solid #334155; margin-top: 65px; padding-top: 5px; }
+        .signatures div { flex: 1; min-width: 140px; } .signatures div + div { margin-left: 14px; } .line { border-top: 1px solid #334155; margin-top: 65px; padding-top: 5px; }
         .no-print { display: flex; gap: 8px; margin-bottom: 20px; } .no-print a, .no-print button { border: 1px solid #cbd5e1; border-radius: 6px; background: white; color: #334155; padding: 8px 12px; text-decoration: none; cursor: pointer; } .no-print button { background: #2563eb; color: white; border-color: #2563eb; } .no-print button:disabled { cursor: not-allowed; opacity: .6; } @media print { .no-print { display: none; } body { margin: 0; } }
     </style>
 </head>
