@@ -70,11 +70,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/hr/stock', [DashboardController::class, 'hrStock']);
         Route::get('/hr/stock/print', StockPrintController::class);
         Route::get('/hr/movements', [DirectorController::class, 'movements'])->name('hr.movements');
+        Route::get('/hr/issues', [DirectorController::class, 'issues'])->name('hr.issues');
         Route::get('/hr/approval', [RequestController::class, 'approvalIndex']);
         Route::get('/hr/approval/export/preview', [RequestController::class, 'previewApprovalExport']);
         Route::get('/hr/approval/export/pdf', [RequestController::class, 'exportApprovalPdf']);
         Route::get('/hr/approval/export/excel', [RequestController::class, 'exportApprovalExcel']);
-        Route::get('/hr/requests/{request}', [RequestController::class, 'approvalDetail']);
+        Route::get('/hr/requests/{request}', [RequestController::class, 'approvalDetail'])->name('hr.requests.show');
         Route::post('/hr/requests/{request}/approve', [RequestController::class, 'approve']);
         Route::post('/hr/requests/{request}/reject', [RequestController::class, 'reject']);
         Route::post('/hr/requests/{request}/delay', [RequestController::class, 'delay']);
