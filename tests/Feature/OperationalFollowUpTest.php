@@ -123,7 +123,7 @@ class OperationalFollowUpTest extends TestCase
         $this->actingAs($gudang)
             ->get('/gudang/stock?rack=A')
             ->assertOk()
-            ->assertSee('Hard Copy')
+            ->assertSee('Cetak')
             ->assertDontSee('Cetak Landscape')
             ->assertDontSee('Cetak Portrait');
 
