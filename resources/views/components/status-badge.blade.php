@@ -75,7 +75,11 @@
             'archived' => 'Diarsipkan',
             default => 'Draft',
         },
-        'priority' => $normalized === 'Mendesak' ? 'Mendesak' : 'Normal',
+        'issue' => match ($normalized) {
+            'Open' => 'Aktif',
+            default => $value,
+        },
+        'priority' => $normalized === 'Mendesak' ? 'Mendesak' : 'Biasa',
         'role' => match ($normalized) {
             'admin' => 'ADMIN',
             'hr' => 'HR',

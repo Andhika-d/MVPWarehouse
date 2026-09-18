@@ -7,7 +7,7 @@
         {{-- Back link --}}
         <a href="/gudang/history" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 transition-all">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
-            Kembali ke History
+            Kembali ke Riwayat
         </a>
 
         {{-- Header card --}}

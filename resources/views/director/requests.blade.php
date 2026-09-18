@@ -56,7 +56,7 @@
                                 <x-status-badge domain="request" :status="$req->status" />
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $req->received_quantity }}/{{ $req->quantity }}</td>
-                            <td class="px-5 py-3 text-slate-400 text-xs">{{ $req->created_at->format('d M Y') }}</td>
+                            <td class="px-5 py-3 text-slate-400 text-xs">{{ $req->created_at->translatedFormat('d M Y') }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400">Tidak ada request ditemukan.</td></tr>

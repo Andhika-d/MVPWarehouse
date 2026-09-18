@@ -72,7 +72,7 @@
                 @if(($search ?? '') !== '' || (($status ?? 'all') !== 'all'))
                 <a href="{{ $rack ? '/director/stock?rack='.urlencode($rack) : '/director/stock' }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
-                <a href="{{ route('director.stock.print', array_filter(['rack' => $rack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '' && $value !== 'all')) }}" class="btn btn--secondary whitespace-nowrap">Hard Copy</a>
+                <a href="{{ route('director.stock.print', array_filter(['rack' => $rack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '' && $value !== 'all')) }}" class="btn btn--secondary whitespace-nowrap">Cetak</a>
             </form>
         </div>
 

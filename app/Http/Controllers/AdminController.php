@@ -24,7 +24,7 @@ use Illuminate\Support\Str;
 
 class AdminController extends Controller
 {
-    // ── Dashboard ──────────────────────────────────────────────────
+    // â”€â”€ Dashboard â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function dashboard()
     {
@@ -55,7 +55,7 @@ class AdminController extends Controller
         ));
     }
 
-    // ── Master Items ───────────────────────────────────────────────
+    // â”€â”€ Master Items â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function itemsIndex(Request $request)
     {
@@ -130,11 +130,11 @@ class AdminController extends Controller
                 'action' => 'created_item',
                 'target_type' => Item::class,
                 'target_id' => $item->id,
-                'details' => 'Menambahkan item '.$item->name.' di '.$location->code,
+                'details' => 'Menambahkan barang '.$item->name.' di '.$location->code,
             ]);
         });
 
-        return redirect()->route('admin.items.index')->with('success', 'Item berhasil ditambahkan.');
+        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil ditambahkan.');
     }
 
     public function updateItem(Request $request, Item $item)
@@ -152,10 +152,10 @@ class AdminController extends Controller
             'action' => 'updated_item',
             'target_type' => Item::class,
             'target_id' => $item->id,
-            'details' => 'Mengubah data item '.$item->name,
+            'details' => 'Mengubah data barang '.$item->name,
         ]);
 
-        return redirect()->route('admin.items.index')->with('success', 'Item berhasil diperbarui.');
+        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil diperbarui.');
     }
 
     public function adjustStock(Request $request, Item $item)
@@ -216,13 +216,13 @@ class AdminController extends Controller
             'action' => 'deleted_item',
             'target_type' => Item::class,
             'target_id' => null,
-            'details' => 'Menghapus item '.$name,
+            'details' => 'Menghapus barang '.$name,
         ]);
 
-        return redirect()->route('admin.items.index')->with('success', 'Item berhasil dihapus.');
+        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil dihapus.');
     }
 
-    // ── Import Excel ───────────────────────────────────────────────
+    // â”€â”€ Import Excel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function importIndex()
     {
@@ -335,7 +335,7 @@ class AdminController extends Controller
     {
         $sessionData = session('import_preview');
         if (!$sessionData || !isset($sessionData['rack'], $sessionData['items'])) {
-            return redirect()->route('admin.import.index')->with('error', 'Session import expired. Silakan upload ulang.');
+            return redirect()->route('admin.import.index')->with('error', 'Sesi import kedaluwarsa. Silakan upload ulang.');
         }
 
         $rack = $sessionData['rack'];
@@ -422,10 +422,10 @@ class AdminController extends Controller
             'action' => 'imported_items',
             'target_type' => Item::class,
             'target_id' => null,
-            'details' => 'Mengimpor '.$imported.' item dan '.$locationsCreated.' lokasi kosong ke Rak '.$rack,
+            'details' => 'Mengimpor '.$imported.' barang dan '.$locationsCreated.' lokasi kosong ke Rak '.$rack,
         ]);
 
-        $message = $imported.' item berhasil diimpor ke Rak '.$rack.'.';
+        $message = $imported.' barang berhasil diimpor ke Rak '.$rack.'.';
         if ($locationsCreated > 0) {
             $message .= ' '.$locationsCreated.' lokasi kosong juga dibuat.';
         }
@@ -433,7 +433,7 @@ class AdminController extends Controller
         return redirect()->route('admin.items.index')->with('success', $message);
     }
 
-    // ── Storage Locations ──────────────────────────────────────────
+    // â”€â”€ Storage Locations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function locationsIndex(Request $request)
     {
@@ -482,7 +482,7 @@ class AdminController extends Controller
         return view('admin.locations', compact('locations', 'activeRack', 'racks', 'rackStats', 'totalLocations', 'totalOccupied', 'totalEmpty'));
     }
 
-    // ── Location Change Requests ───────────────────────────────────
+    // â”€â”€ Location Change Requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function locationChangesIndex(Request $request)
     {
@@ -500,7 +500,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $export = new LocationChangeExport($rows);
@@ -515,7 +515,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'admin')->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(
@@ -536,7 +536,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $pdf = Pdf::loadView('exports.location-changes', compact('rows'));
@@ -700,7 +700,7 @@ class AdminController extends Controller
         return back()->with('success', 'Perubahan lokasi ditolak.');
     }
 
-    // ── Users ──────────────────────────────────────────────────────
+    // â”€â”€ Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function usersIndex(Request $request)
     {
@@ -809,11 +809,11 @@ class AdminController extends Controller
         ]);
 
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Tidak bisa mengubah role akun sendiri.');
+            return back()->with('error', 'Tidak bisa mengubah peran akun sendiri.');
         }
 
         if ($user->role === 'admin' && $user->is_active && $data['role'] !== 'admin' && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Tidak bisa mengubah role admin aktif terakhir.');
+            return back()->with('error', 'Tidak bisa mengubah peran admin aktif terakhir.');
         }
 
         $user->update(['role' => $data['role']]);
@@ -823,10 +823,12 @@ class AdminController extends Controller
             'action' => 'updated_user_role',
             'target_type' => User::class,
             'target_id' => $user->id,
-            'details' => 'Mengubah role akun '.$user->email.' menjadi '.$data['role'],
+            'details' => 'Mengubah peran akun '.$user->email.' menjadi '.match ($data['role']) {
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $data['role'],
+            },
         ]);
 
-        return back()->with('success', 'Role pengguna berhasil diperbarui.');
+        return back()->with('success', 'Peran pengguna berhasil diperbarui.');
     }
 
     public function deleteUser(User $user)
@@ -862,7 +864,7 @@ class AdminController extends Controller
         }
 
         if ($user->role === 'admin') {
-            return back()->with('error', 'Login As hanya untuk akun non-admin.');
+            return back()->with('error', 'Login sebagai hanya untuk akun non-admin.');
         }
 
         if (! $user->is_active) {
@@ -876,7 +878,9 @@ class AdminController extends Controller
             'action' => 'impersonated_user',
             'target_type' => User::class,
             'target_id' => $user->id,
-            'details' => 'Admin login sebagai '.$user->email.' ('.$user->role.')',
+            'details' => 'Admin login sebagai '.$user->email.' ('.match ($user->role) {
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
+            }.')',
         ]);
 
         Auth::login($user);
@@ -915,7 +919,7 @@ class AdminController extends Controller
         return redirect()->route('admin.dashboard');
     }
 
-    // ── Audit Log ──────────────────────────────────────────────────
+    // â”€â”€ Audit Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function auditIndex(Request $request)
     {
@@ -950,7 +954,7 @@ class AdminController extends Controller
         $rows = $this->buildAuditExportRows($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $export = new AuditLogExport($rows);
@@ -965,7 +969,7 @@ class AdminController extends Controller
         $rows = $this->buildAuditExportRows($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(
@@ -999,12 +1003,10 @@ class AdminController extends Controller
 
         return $query->latest()->get()->map(function (AuditLog $log) {
             return [
-                'waktu' => $log->created_at?->format('d M Y, H:i') ?? '—',
-                'user' => $log->user?->name ?? 'System',
-                'aksi' => $log->action,
-                'target' => $log->target_type
-                    ? class_basename($log->target_type) . ($log->target_id ? ' #' . $log->target_id : '')
-                    : '—',
+                'waktu' => $log->created_at?->translatedFormat('d M Y, H:i') ?? '—',
+                'user' => $log->user?->name ?? 'Sistem',
+                'aksi' => $log->labelForAction(),
+                'target' => $log->target_type ? $log->labelForTarget() : '—',
                 'detail' => $log->details ?? '—',
             ];
         })->all();
@@ -1015,7 +1017,7 @@ class AdminController extends Controller
         return url($path).($request->getQueryString() ? '?'.$request->getQueryString() : '');
     }
 
-    // ── Developer Mode ─────────────────────────────────────────────
+    // â”€â”€ Developer Mode â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function toggleDevMode()
     {
@@ -1038,7 +1040,7 @@ class AdminController extends Controller
         );
     }
 
-    // ── Backup & Restore ───────────────────────────────────────────
+    // â”€â”€ Backup & Restore â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function backupIndex()
     {
@@ -1203,7 +1205,7 @@ class AdminController extends Controller
         return redirect()->route('admin.backups.index')->with('success', 'Database berhasil dipulihkan dari '.$file.'.');
     }
 
-    // ── Reset Maintenance ──────────────────────────────────────────
+    // â”€â”€ Reset Maintenance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public function resetIndex()
     {
@@ -1312,7 +1314,7 @@ class AdminController extends Controller
         return back()->with('success', 'Pengajuan Lokasi berhasil di-reset. '.$count.' pengajuan dihapus.');
     }
 
-    // ── Helpers ────────────────────────────────────────────────────
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected function createSafetyBackup(): void
     {

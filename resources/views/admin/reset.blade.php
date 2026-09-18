@@ -27,7 +27,7 @@
                 <div class="flex items-center gap-3">
                     <div class="text-right">
                         <p class="text-lg font-bold text-slate-900">{{ $stats['items'] }}</p>
-                        <p class="text-[10px] text-slate-400">item</p>
+                        <p class="text-[10px] text-slate-400">barang</p>
                     </div>
                     <div class="text-right">
                         <p class="text-lg font-bold text-slate-900">{{ $stats['storage_locations'] }}</p>

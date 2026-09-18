@@ -57,7 +57,7 @@
                 <div class="p-10 text-center text-sm text-slate-500">Belum ada nota pengadaan.</div>
             @else
                 <div class="overflow-x-auto"><table class="w-full text-left text-sm">
-                    <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Nomor</th><th class="px-5 py-3">Tanggal Nota</th><th class="px-5 py-3">Item</th><th class="px-5 py-3">Driver</th><th class="px-5 py-3">Status</th><th class="px-5 py-3"></th></tr></thead>
+                    <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase tracking-wider text-slate-500"><tr><th class="px-5 py-3">Nomor</th><th class="px-5 py-3">Tanggal Nota</th><th class="px-5 py-3">Barang</th><th class="px-5 py-3">Driver</th><th class="px-5 py-3">Status</th><th class="px-5 py-3"></th></tr></thead>
                     <tbody class="divide-y divide-slate-100">
                         @foreach($notes as $note)
                             <tr class="hover:bg-slate-50/60">

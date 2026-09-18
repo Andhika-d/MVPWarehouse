@@ -37,7 +37,9 @@ class AuthController extends Controller
                 'action' => 'user_login',
                 'target_type' => User::class,
                 'target_id' => $user->id,
-                'details' => 'User ' . $user->name . ' (' . strtoupper($user->role) . ') berhasil login',
+                'details' => 'Pengguna ' . $user->name . ' ('.match ($user->role) {
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
+            }.') berhasil login',
             ]);
 
             if ($user->must_change_password) {
@@ -71,7 +73,9 @@ class AuthController extends Controller
                 'action' => 'user_logout',
                 'target_type' => User::class,
                 'target_id' => $user->id,
-                'details' => 'User ' . $user->name . ' (' . strtoupper($user->role) . ') logged out',
+                'details' => 'Pengguna ' . $user->name . ' ('.match ($user->role) {
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
+            }.') berhasil logout',
             ]);
         }
 

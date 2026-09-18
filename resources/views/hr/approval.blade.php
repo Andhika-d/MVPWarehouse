@@ -55,10 +55,10 @@
                             ✓ Terima Semua
                         </button>
                     </form>
-                    <button type="button" data-action="/hr/nota/{{ $date }}/reject-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->format('d F Y') }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="/hr/nota/{{ $date }}/reject-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         Tolak Semua
                     </button>
-                    <button type="button" data-action="/hr/nota/{{ $date }}/delay-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->format('d F Y') }}" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="/hr/nota/{{ $date }}/delay-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         Tunda Semua
                     </button>
                 </div>

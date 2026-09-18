@@ -48,7 +48,7 @@
             </a>
             <a href="/gudang/history" class="bg-white text-slate-700 border border-slate-200 px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 transition-all shadow-sm inline-flex items-center gap-2">
                 <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                History
+                Riwayat
             </a>
         </div>
 
@@ -61,7 +61,7 @@
             <div class="min-w-0 flex-1">
                 <p class="text-sm font-semibold text-slate-900">Permintaan Mendesak</p>
                 <p class="text-xs text-slate-500 mt-0.5">{{ $urgentRequests }} permintaan aktif sedang diproses.</p>
-                <a href="/gudang/history" class="inline-block mt-2 text-xs font-medium text-corpblue-500 hover:underline">Lihat History</a>
+                <a href="/gudang/history" class="inline-block mt-2 text-xs font-medium text-corpblue-500 hover:underline">Lihat Riwayat</a>
             </div>
             <button type="button" onclick="closeUrgentToast()" class="shrink-0 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
                 <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>

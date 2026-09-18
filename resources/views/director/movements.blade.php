@@ -34,7 +34,7 @@
                     <tbody class="divide-y divide-slate-50">
                         @forelse($movements as $mov)
                         <tr>
-                            <td class="px-5 py-3 text-slate-400 text-xs whitespace-nowrap">{{ ($mov->occurred_at ?? $mov->created_at)->format('d M Y, H:i') }}</td>
+                            <td class="px-5 py-3 text-slate-400 text-xs whitespace-nowrap">{{ ($mov->occurred_at ?? $mov->created_at)->translatedFormat('d M Y, H:i') }}</td>
                             <td class="px-5 py-3 font-medium text-slate-900">{{ $mov->item?->name ?? '—' }}</td>
                             <td class="px-5 py-3">
                                 @if($mov->type === 'IN')

@@ -10,7 +10,7 @@
                 <select name="action" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="">Semua Aksi</option>
                     @foreach($actions as $action)
-                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ $action }}</option>
+                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ \App\Models\AuditLog::actionLabels()[$action] ?? $action }}</option>
                     @endforeach
                 </select>
                 <x-period-filter-button :period="$period" />
@@ -28,7 +28,7 @@
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Waktu</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">User</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Pengguna</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Aksi</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Detail</th>
                         </tr>
@@ -36,10 +36,10 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse($logs as $log)
                         <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ $log->created_at->format('d M Y, H:i') }}</td>
-                            <td class="px-4 py-3 font-medium text-slate-700">{{ $log->user?->name ?? 'System' }}</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ $log->created_at->translatedFormat('d M Y, H:i') }}</td>
+                            <td class="px-4 py-3 font-medium text-slate-700">{{ $log->user?->name ?? 'Sistem' }}</td>
                             <td class="px-4 py-3">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-mono">{{ $log->action }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-mono">{{ $log->labelForAction() }}</span>
                             </td>
                             <td class="px-4 py-3 text-slate-600 text-xs max-w-md truncate">{{ $log->details }}</td>
                         </tr>

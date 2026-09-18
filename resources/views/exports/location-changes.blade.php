@@ -15,7 +15,7 @@
 </head>
 <body>
     <h2>Riwayat Pengajuan Lokasi</h2>
-    <div class="meta">Dibuat: {{ now()->format('d M Y, H:i') }}</div>
+    <div class="meta">Dibuat: {{ now()->translatedFormat('d M Y, H:i') }}</div>
     <table>
         <thead>
             <tr>

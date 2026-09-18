@@ -395,7 +395,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(

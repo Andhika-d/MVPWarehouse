@@ -361,7 +361,7 @@ class GudangController extends Controller
         [, $rows, $filename] = $this->movementExportData($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $export = new StockMovementExport($rows);
@@ -376,7 +376,7 @@ class GudangController extends Controller
         [, $rows] = $this->movementExportData($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(
@@ -425,7 +425,7 @@ class GudangController extends Controller
                     default => $m->type,
                 };
                 $rows[] = [
-                    $m->occurred_at?->format('d M Y, H:i'),
+                    $m->occurred_at?->translatedFormat('d M Y, H:i'),
                     $m->item?->name ?? '—',
                     $typeLabel,
                     $m->type === 'OUT' ? '-' . $m->quantity : '+' . $m->quantity,
@@ -456,7 +456,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'gudang')->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(
@@ -477,7 +477,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $export = new LocationChangeExport($rows);
@@ -493,7 +493,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         $pdf = Pdf::loadView('exports.location-changes', compact('rows'));

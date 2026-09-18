@@ -39,7 +39,7 @@
                 <div>
                     <label class="block text-xs font-semibold text-slate-600 mb-1">File Excel (.xlsx)</label>
                     <input type="file" name="file" accept=".xlsx" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-corpblue-50 file:text-corpblue-600 hover:file:bg-corpblue-100 file:cursor-pointer">
-                    <p class="text-xs text-slate-400 mt-1">Format: Nama Barang | Size | Qty | Sub Lokasi</p>
+                    <p class="text-xs text-slate-400 mt-1">Format: Nama Barang | Ukuran | Jumlah | Sub Lokasi</p>
                     <p class="text-[11px] text-slate-400 mt-0.5">Baris kosong (lokasi tanpa barang) tetap akan dibuat jika kolom Sub Lokasi terisi.</p>
                 </div>
 

@@ -42,7 +42,7 @@
                             <th class="py-3 px-5 text-center">Jumlah</th>
                             <th class="py-3 px-5">Stok</th>
                             <th class="py-3 px-5">Keterangan</th>
-                            <th class="py-3 px-5">User</th>
+                            <th class="py-3 px-5">Pengguna</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -169,7 +169,7 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <h3 id="exportModalTitle" class="text-base font-bold text-slate-900">Export Perubahan Stok</h3>
-                        <p class="text-sm text-slate-500 mt-1">Pilih data yang ingin di-export ke Excel.</p>
+                        <p class="text-sm text-slate-500 mt-1">Pilih data yang ingin diekspor ke Excel.</p>
                     </div>
                 </div>
                 <div class="px-6 pb-5">

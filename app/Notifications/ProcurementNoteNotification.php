@@ -24,7 +24,7 @@ class ProcurementNoteNotification extends Notification
             'title' => $cancelled ? 'Nota Pengadaan Dibatalkan' : 'Nota Pengadaan Diterbitkan',
             'message' => $cancelled
                 ? $this->note->number.' dibatalkan oleh HR dan tidak perlu diproses.'
-                : $this->note->number.' telah diterbitkan dengan '.$this->note->items()->count().' item dan siap diterima.',
+                : $this->note->number.' telah diterbitkan dengan '.$this->note->items()->count().' barang dan siap diterima.',
             'type' => $cancelled ? 'warning' : 'approved',
             'url' => '/gudang/penerimaan',
         ];

@@ -1,5 +1,5 @@
 <x-layout>
-    <x-slot:title>History HRD - THI2-WAREHOUSE</x-slot:title>
+    <x-slot:title>Riwayat HRD - THI2-WAREHOUSE</x-slot:title>
     <x-slot:headerTitle>Arsip Historis Pengadaan Barang</x-slot:headerTitle>
 
     <div class="space-y-6">

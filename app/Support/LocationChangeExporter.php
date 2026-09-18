@@ -60,8 +60,8 @@ class LocationChangeExporter
                 'pemohon' => $change->requestedBy?->name ?? '—',
                 'status' => $change->status,
                 'aksi' => $label($change->resolution_action),
-                'diajukan' => $change->created_at?->format('d M Y, H:i') ?? '—',
-                'diputuskan' => $change->decided_at?->format('d M Y, H:i') ?? '—',
+                'diajukan' => $change->created_at?->translatedFormat('d M Y, H:i') ?? '—',
+                'diputuskan' => $change->decided_at?->translatedFormat('d M Y, H:i') ?? '—',
                 'alasan' => $change->reason ?? '—',
                 'catatan' => $change->admin_note ?? '—',
             ];

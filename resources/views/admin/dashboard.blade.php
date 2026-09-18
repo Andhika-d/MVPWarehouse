@@ -49,7 +49,7 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-sm font-semibold text-slate-900">Developer Mode</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Membuka seluruh pembatasan role untuk testing</p>
+                    <p class="text-xs text-slate-500 mt-0.5">Membuka seluruh pembatasan peran untuk testing</p>
                 </div>
                 <form method="POST" action="{{ route('admin.settings.dev-mode.toggle') }}">
                     @csrf
@@ -60,7 +60,7 @@
             </div>
             @if(setting('dev_mode'))
                 <div class="mt-3 p-2 bg-red-50 rounded-lg border border-red-200">
-                    <p class="text-xs text-red-600 font-medium">Developer Mode aktif. Seluruh pembatasan role dibuka.</p>
+                    <p class="text-xs text-red-600 font-medium">Developer Mode aktif. Seluruh pembatasan peran dibuka.</p>
                 </div>
             @endif
         </div>
@@ -130,7 +130,7 @@
                     </div>
                     <div class="min-w-0 flex-1">
                         <p class="text-sm text-slate-700 truncate">{{ $log->details ?? $log->action }}</p>
-                        <p class="text-xs text-slate-400">{{ $log->user?->name ?? 'System' }} &middot; {{ $log->created_at->diffForHumans() }}</p>
+                        <p class="text-xs text-slate-400">{{ $log->user?->name ?? 'Sistem' }} &middot; {{ $log->created_at->diffForHumans() }}</p>
                     </div>
                 </div>
                 @empty

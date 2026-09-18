@@ -83,7 +83,7 @@
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     @if($urgentRequests > 0)
-                    <x-status-badge domain="priority" status="Mendesak" label="Urgent" />
+                    <x-status-badge domain="priority" status="Mendesak" label="Mendesak" />
                     @endif
                 </div>
                 <div>
@@ -198,7 +198,7 @@
                             <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; Stok {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</p>
                         </div>
                         @if($request->priority === 'Mendesak')
-                        <x-status-badge domain="priority" status="Mendesak" label="Urgent" class="shrink-0" />
+                        <x-status-badge domain="priority" status="Mendesak" label="Mendesak" class="shrink-0" />
                         @endif
                     </div>
                     <div class="flex items-center gap-3 text-xs text-slate-500">
