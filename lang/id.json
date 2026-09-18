@@ -1,0 +1,17 @@
+{
+    "Forbidden": "Akses Ditolak",
+    "Not Found": "Tidak Ditemukan",
+    "Page Expired": "Halaman Kedaluwarsa",
+    "Server Error": "Kesalahan Server",
+    "Too Many Requests": "Terlalu Banyak Permintaan",
+    "Service Unavailable": "Layanan Tidak Tersedia",
+    "Unauthorized": "Tidak Diizinkan",
+    "Payment Required": "Pembayaran Diperlukan",
+    "Pagination Navigation": "Navigasi Halaman",
+    "Showing": "Menampilkan",
+    "to": "sampai",
+    "of": "dari",
+    "results": "hasil",
+    "Go to page :page": "Halaman :page",
+    "Page :page": "Halaman :page"
+}
