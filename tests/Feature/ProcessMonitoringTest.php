@@ -269,6 +269,70 @@ class ProcessMonitoringTest extends TestCase
             ->assertSee('Barang Peringatan');
     }
 
+    public function test_hr_issues_page_shows_summary_and_links_to_hr_detail(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $requester = User::factory()->create(['role' => 'gudang']);
+        $item = $this->item('Sarung Tangan');
+        $request = $this->request($requester, $item, 80, 'Menunggu Review');
+
+        (new MonitoringIssueSynchronizer())->sync();
+
+        $issuedAt = MonitoringIssue::first();
+
+        $this->actingAs($hr)
+            ->get('/hr/issues')
+            ->assertOk()
+            ->assertSee('Issue Aktif')
+            ->assertSee('Masalah & Analisis')
+            ->assertSee('Sarung Tangan')
+            ->assertSee('Lihat detail request')
+            ->assertSee('/hr/requests/' . $request->id)
+            ->assertDontSee('/director/requests/')
+            ->assertSee($issuedAt->description);
+    }
+
+    public function test_hr_issues_page_reset_link_returns_to_hr(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $requester = User::factory()->create(['role' => 'gudang']);
+        $item = $this->item('Sarung Tangan');
+        $this->request($requester, $item, 80, 'Menunggu Review');
+
+        (new MonitoringIssueSynchronizer())->sync();
+
+        $this->actingAs($hr)
+            ->get('/hr/issues?status=Open')
+            ->assertOk()
+            ->assertSee('Reset')
+            ->assertDontSee('/director/issues');
+    }
+
+    public function test_director_issues_detail_link_points_to_director(): void
+    {
+        $director = User::factory()->create(['role' => 'director']);
+        $requester = User::factory()->create(['role' => 'gudang']);
+        $item = $this->item('Sarung Tangan');
+        $request = $this->request($requester, $item, 80, 'Menunggu Review');
+
+        (new MonitoringIssueSynchronizer())->sync();
+
+        $this->actingAs($director)
+            ->get('/director/issues')
+            ->assertOk()
+            ->assertSee('Lihat detail request')
+            ->assertSee('/director/requests/' . $request->id)
+            ->assertDontSee('/hr/requests/');
+    }
+
+    public function test_gudang_cannot_access_issues_pages(): void
+    {
+        $gudang = User::factory()->create(['role' => 'gudang']);
+
+        $this->actingAs($gudang)->get('/hr/issues')->assertForbidden();
+        $this->actingAs($gudang)->get('/director/issues')->assertForbidden();
+    }
+
     private function item(string $name = 'Sarung Tangan'): Item
     {
         return Item::create(['name' => $name, 'unit' => 'Pcs', 'stock' => 100]);

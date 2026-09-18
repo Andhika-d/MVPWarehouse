@@ -1,4 +1,5 @@
 <x-layout :title="'Masalah & Analisis — THI2-WAREHOUSE'" :headerTitle="'Masalah & Analisis'">
+    @php $isHr = auth()->user()?->role === 'hr'; @endphp
     <div class="space-y-6">
 
         {{-- Summary --}}
@@ -49,7 +50,7 @@
                     <option value="Kritis" {{ ($severity ?? '') === 'Kritis' ? 'selected' : '' }}>Kritis</option>
                 </select>
                 @if((request()->filled('status') && request('status') !== 'all') || (request()->filled('severity') && request('severity') !== 'all'))
-                <a href="/director/issues" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="{{ route($isHr ? 'hr.issues' : 'director.issues') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
             </form>
         </div>
@@ -78,7 +79,7 @@
                         <p class="mt-1 text-xs text-slate-500">
                             Terkait: {{ $subject->item_name }} — {{ $subject->quantity }} {{ $subject->unit }} — {{ $subject->user?->name ?? '—' }}
                         </p>
-                        <a href="{{ route('director.request-detail', $subject) }}" class="mt-1 inline-flex text-xs font-medium text-corpblue-600 hover:text-corpblue-800">
+                        <a href="{{ route($isHr ? 'hr.requests.show' : 'director.request-detail', $subject) }}" class="mt-1 inline-flex text-xs font-medium text-corpblue-600 hover:text-corpblue-800">
                             Lihat detail request →
                         </a>
                         @elseif($subject instanceof \App\Models\LocationChangeRequest)
