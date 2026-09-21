@@ -61,6 +61,9 @@
                         <tr>
                             <th class="px-4 py-3">Nomor Nota</th>
                             <th class="px-4 py-3">Tanggal</th>
+                            @if($searchActive)
+                            <th class="px-4 py-3">Barang Ditemukan<span class="block text-[9px] font-normal normal-case">Cocok dengan kata kunci</span></th>
+                            @endif
                             <th class="px-4 py-3 text-center">Request</th>
                             <th class="px-4 py-3">Progres<span class="block text-[9px] font-normal normal-case">Menunggu / Proses / Selesai</span></th>
                             <th class="px-4 py-3">Status</th>
@@ -76,16 +79,45 @@
                         <tr id="note-{{ $note->id }}" class="align-middle hover:bg-slate-50/60">
                             <td class="px-4 py-4"><a href="{{ route('procurement-notes.show', $note) }}" class="font-mono text-sm font-bold text-slate-900 hover:text-corpblue-700">{{ $note->number }}</a></td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-600">{{ $note->request_date->translatedFormat('d F Y') }}</td>
+                            @if($searchActive)
+                            @php
+                                $matches = $matchingRequestsByNote[$note->id] ?? collect();
+                                $numberMatched = str_contains(strtolower($note->number), strtolower($search));
+                                $firstMatch = $matches->first();
+                            @endphp
+                            <td class="px-4 py-4">
+                                @if($matches->isEmpty() && $numberMatched)
+                                <span class="text-xs font-semibold text-corpblue-600">Nomor Nota cocok</span>
+                                @else
+                                <ul class="space-y-1.5">
+                                    @foreach($matches->take(3) as $matched)
+                                    <li class="text-xs">
+                                        <a href="{{ route('procurement-notes.show', $note).'#request-'.$matched->id }}" class="font-semibold text-slate-900 hover:text-corpblue-700">{{ $matched->item?->name ?? $matched->item_name }}</a>
+                                        <span class="mx-1 text-slate-300">·</span>
+                                        <span class="text-slate-600">{{ $matched->quantity }} {{ $matched->unit }}</span>
+                                        <span class="mx-1 text-slate-300">·</span>
+                                        <span class="text-slate-600">{{ $matched->user?->name ?? '—' }}</span>
+                                        <span class="mx-1 text-slate-300">·</span>
+                                        <span class="text-slate-500">{{ $matched->status }}</span>
+                                    </li>
+                                    @endforeach
+                                </ul>
+                                @if($matches->count() > 3)
+                                <p class="mt-1 text-[11px] text-slate-400">+{{ $matches->count() - 3 }} hasil lainnya</p>
+                                @endif
+                                @endif
+                            </td>
+                            @endif
                             <td class="px-4 py-4 text-center font-semibold text-slate-900">{{ $note->requests_count }}</td>
                             <td class="whitespace-nowrap px-4 py-4 text-center">
                                 <span><b class="text-amber-600">{{ ($counts['Menunggu Review'] ?? 0) + ($counts['Pending'] ?? 0) }}</b> <span class="mx-1 text-slate-300">/</span><b class="text-blue-600">{{ ($counts['Disetujui'] ?? 0) + ($counts['Sebagian Diterima'] ?? 0) }}</b> <span class="mx-1 text-slate-300">/</span><b class="text-emerald-600">{{ $completed }}</b></span>
                             </td>
                             <td class="px-4 py-4"><x-status-badge domain="procurement" :status="$note->statusLabel()" dot /></td>
-                            <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.show', $note) }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">Buka &rarr;</a></td>
+                            <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.show', $note).($searchActive && $firstMatch ? '#request-'.$firstMatch->id : '') }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">Buka Nota &rarr;</a></td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-500">Belum ada Nota yang sesuai dengan filter.</td>
+                            <td colspan="{{ $searchActive ? 7 : 6 }}" class="px-4 py-12 text-center text-sm text-slate-500">Belum ada Nota yang sesuai dengan filter.</td>
                         </tr>
                         @endforelse
                     </tbody>
