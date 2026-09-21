@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProcurementNote;
 use App\Exports\LocationChangeExport;
 use App\Exports\StockMovementExport;
 use App\Models\Item;
@@ -22,7 +21,7 @@ class GudangController extends Controller
 {
     public function penerimaanIndex()
     {
-        $query = StockRequest::with('item.storageLocation')
+        $query = StockRequest::with(['item.storageLocation', 'procurementNote', 'user'])
             ->whereIn('status', ['Disetujui', 'Sebagian Diterima'])
             ->whereColumn('received_quantity', '<', 'quantity');
 
@@ -72,8 +71,6 @@ class GudangController extends Controller
             } else {
                 $stockRequest->update(['status' => 'Sebagian Diterima']);
             }
-
-            ProcurementNote::syncFromRequest($stockRequest->fresh());
 
             $balanceBefore = $item->stock;
             $item->increment('stock', $receiveQty);

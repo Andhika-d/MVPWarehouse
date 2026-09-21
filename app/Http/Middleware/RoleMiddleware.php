@@ -9,11 +9,11 @@ use Illuminate\Support\Facades\Auth;
 
 class RoleMiddleware
 {
-    public function handle(Request $request, Closure $next, string $role): mixed
+    public function handle(Request $request, Closure $next, string ...$roles): mixed
     {
         $isDevMode = Auth::check() && app()->environment('local', 'testing') && Setting::enabled('dev_mode');
 
-        if (! Auth::check() || (Auth::user()->role !== $role && ! $isDevMode)) {
+        if (! Auth::check() || (! in_array(Auth::user()->role, $roles, true) && ! $isDevMode)) {
             abort(403);
         }
 

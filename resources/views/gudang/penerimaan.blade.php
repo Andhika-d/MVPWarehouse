@@ -15,6 +15,7 @@
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
                             <th class="py-3 px-5">Barang</th>
+                            <th class="py-3 px-5">Nota</th>
                             <th class="py-3 px-5 text-center">Diminta</th>
                             <th class="py-3 px-5 text-center">Diterima</th>
                             <th class="py-3 px-5 text-center">Sisa</th>
@@ -28,6 +29,13 @@
                             <td class="py-3 px-5">
                                 <p class="font-semibold text-slate-900">{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}</p>
                                 <p class="mt-0.5 whitespace-nowrap text-xs text-slate-500">{{ $req->item?->storageLocation?->rack ?? '—' }} · {{ $req->item?->storageLocation?->code ?? '' }} · {{ $req->unit }}</p>
+                            </td>
+                            <td class="py-3 px-5 whitespace-nowrap">
+                                @if($req->procurementNote)
+                                    <a href="{{ route('procurement-notes.show', $req->procurementNote) }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">{{ $req->procurementNote->number }}</a>
+                                @else
+                                    <span class="text-xs text-slate-400">—</span>
+                                @endif
                             </td>
                             <td class="py-3 px-5 text-center font-bold text-blue-600">{{ $req->quantity }}</td>
                             <td class="py-3 px-5 text-center font-semibold text-emerald-600">{{ $req->received_quantity }}</td>
@@ -58,7 +66,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="py-10 text-center text-sm text-slate-500">Tidak ada request yang menunggu penerimaan.</td>
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">Tidak ada request yang menunggu penerimaan.</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -21,11 +21,8 @@
             default => 'neutral',
         },
         'procurement' => match ($normalized) {
-            'Draft' => 'warning',
-            'Diterbitkan' => 'info',
-            'Sebagian Diterima' => 'progress',
+            'Aktif' => 'info',
             'Selesai' => 'success',
-            'Dibatalkan' => 'muted',
             default => 'neutral',
         },
         'receipt' => match ($normalized) {

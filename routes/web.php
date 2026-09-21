@@ -33,6 +33,15 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/admin/impersonation/stop', [AdminController::class, 'stopImpersonation']);
 
+    Route::middleware('role:hr,gudang,director,admin')->group(function () {
+        Route::get('/riwayat-pengadaan', [ProcurementNoteController::class, 'index'])->name('procurement-notes.index');
+        Route::get('/riwayat-pengadaan/cetak', [ProcurementNoteController::class, 'printPeriod'])->name('procurement-notes.print-period');
+        Route::get('/riwayat-pengadaan/export/excel', [ProcurementNoteController::class, 'excelPeriod'])->name('procurement-notes.excel-period');
+        Route::get('/riwayat-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'show'])->name('procurement-notes.show');
+        Route::get('/riwayat-pengadaan/{procurementNote}/cetak', [ProcurementNoteController::class, 'print'])->name('procurement-notes.print');
+        Route::get('/riwayat-pengadaan/{procurementNote}/excel', [ProcurementNoteController::class, 'excel'])->name('procurement-notes.excel');
+    });
+
     Route::middleware('role:gudang')->group(function () {
         Route::get('/gudang/dashboard', [DashboardController::class, 'gudangDashboard']);
         Route::get('/gudang/stock', [DashboardController::class, 'gudangStock']);
@@ -81,24 +90,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/hr/requests/{request}/delay', [RequestController::class, 'delay']);
         Route::post('/hr/requests/{request}/close', [RequestController::class, 'hrCloseSisa'])->middleware('throttle:20,1')->name('hr.requests.close');
 
-        Route::post('/hr/nota/{date}/approve-all', [RequestController::class, 'approveAll']);
-        Route::post('/hr/nota/{date}/reject-all', [RequestController::class, 'rejectAll']);
-        Route::post('/hr/nota/{date}/delay-all', [RequestController::class, 'delayAll']);
+        Route::post('/hr/requests/bulk-approve', [RequestController::class, 'approveAll'])->name('hr.requests.bulk-approve');
+        Route::post('/hr/requests/bulk-reject', [RequestController::class, 'rejectAll'])->name('hr.requests.bulk-reject');
+        Route::post('/hr/requests/bulk-delay', [RequestController::class, 'delayAll'])->name('hr.requests.bulk-delay');
 
-        Route::get('/hr/daftar-belanja', [RequestController::class, 'shoppingList']);
-        Route::get('/hr/daftar-belanja/export/excel', [RequestController::class, 'exportShoppingListExcel']);
-        Route::post('/hr/nota-pengadaan', [ProcurementNoteController::class, 'store'])->name('hr.procurement-notes.store');
-        Route::get('/hr/nota-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'show'])->name('hr.procurement-notes.show');
-        Route::put('/hr/nota-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'update'])->name('hr.procurement-notes.update');
-        Route::post('/hr/nota-pengadaan/{procurementNote}/issue', [ProcurementNoteController::class, 'issue'])->name('hr.procurement-notes.issue');
-        Route::post('/hr/nota-pengadaan/{procurementNote}/cancel', [ProcurementNoteController::class, 'cancel'])->name('hr.procurement-notes.cancel');
-        Route::get('/hr/nota-pengadaan/{procurementNote}/print', [ProcurementNoteController::class, 'print'])->name('hr.procurement-notes.print');
-        Route::get('/hr/nota-pengadaan/{procurementNote}/excel', [ProcurementNoteController::class, 'excel'])->name('hr.procurement-notes.excel');
-
-        Route::get('/hr/history', [RequestController::class, 'hrHistory']);
-        Route::get('/hr/history/export/preview', [RequestController::class, 'previewHrHistoryExport']);
-        Route::get('/hr/history/export/pdf', [RequestController::class, 'exportHrHistoryPdf']);
-        Route::get('/hr/history/export/excel', [RequestController::class, 'exportHrHistoryExcel']);
+        Route::redirect('/hr/daftar-belanja', '/riwayat-pengadaan');
+        Route::redirect('/hr/history', '/riwayat-pengadaan');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

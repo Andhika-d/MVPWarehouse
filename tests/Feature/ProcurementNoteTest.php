@@ -7,218 +7,147 @@ use App\Models\ProcurementNote;
 use App\Models\StockRequest;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class ProcurementNoteTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_hr_can_create_edit_and_issue_a_permanent_note_snapshot(): void
+    public function test_requests_created_on_the_same_day_share_an_automatic_note(): void
     {
-        [$hr, $warehouse, $firstRequest, $secondRequest] = $this->fixtures();
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $firstItem = $this->item('Mouse Wireless');
+        $secondItem = $this->item('Keyboard');
 
-        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), [
-            'request_ids' => [$firstRequest->id],
-            'driver_name' => 'Budi',
-            'notes' => 'Belanja pagi',
-        ])->assertRedirect();
+        $this->travelTo(now()->setDate(2026, 9, 21)->startOfDay()->addHours(9));
+        $this->submitRequest($warehouse, $firstItem, 2);
+        $this->submitRequest($warehouse, $secondItem, 3);
 
-        $note = ProcurementNote::with('items')->firstOrFail();
-        $this->assertSame('NOTA-'.now()->format('Ymd').'-001', $note->number);
-        $this->assertSame(ProcurementNote::STATUS_DRAFT, $note->status);
-        $this->assertSame('Mouse Wireless', $note->items->first()->item_name);
-        $this->assertSame($note->id, $firstRequest->fresh()->procurement_note_id);
+        $note = ProcurementNote::with('requests')->sole();
 
-        $this->actingAs($hr)->put(route('hr.procurement-notes.update', $note), [
-            'request_ids' => [$firstRequest->id, $secondRequest->id],
-            'driver_name' => 'Agus',
-        ])->assertRedirect();
-        $this->assertCount(2, $note->fresh()->items);
-
-        $this->actingAs($hr)->post(route('hr.procurement-notes.issue', $note))->assertRedirect();
-        $note->refresh();
-        $this->assertSame(ProcurementNote::STATUS_ISSUED, $note->status);
-        $this->assertNotNull($note->issued_at);
-        $this->assertDatabaseHas('notifications', [
-            'notifiable_id' => $warehouse->id,
-            'notifiable_type' => User::class,
-        ]);
-
-        $this->actingAs($hr)->put(route('hr.procurement-notes.update', $note), [
-            'request_ids' => [$firstRequest->id],
-        ])->assertStatus(422);
-
-        $this->actingAs($hr)->get(route('hr.procurement-notes.print', $note))
-            ->assertOk()->assertSee('Mouse Wireless')->assertSee('Agus')->assertSee('Belum Diterima');
-        $this->assertNotNull($note->fresh()->last_printed_at);
-
-        $this->actingAs($hr)->get('/hr/nota-pengadaan/'.$note->id.'/pdf')->assertNotFound();
-        $this->actingAs($hr)->get('/hr/daftar-belanja/export/preview')->assertNotFound();
-        $this->actingAs($hr)->get(route('hr.procurement-notes.show', $note))
-            ->assertOk()->assertDontSee('>PDF<', false)->assertDontSee('target="_blank"', false);
+        $this->assertSame('NOTA-20260921', $note->number);
+        $this->assertSame('2026-09-21', $note->request_date->toDateString());
+        $this->assertCount(2, $note->requests);
+        $this->assertSame(ProcurementNote::STATUS_ACTIVE, $note->statusLabel());
     }
 
-    public function test_receipt_updates_note_progress_until_completed(): void
+    public function test_note_status_follows_request_receipt_progress(): void
     {
-        [$hr, $warehouse, $firstRequest] = $this->fixtures();
-        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), ['request_ids' => [$firstRequest->id]]);
-        $note = ProcurementNote::firstOrFail();
-        $this->actingAs($hr)->post(route('hr.procurement-notes.issue', $note));
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Kertas A4'), 2);
+
+        $request = StockRequest::firstOrFail();
+        $note = $request->procurementNote;
+
+        $this->actingAs($hr)->post('/hr/requests/'.$request->id.'/approve')->assertRedirect('/hr/approval');
+        $this->assertSame(ProcurementNote::STATUS_ACTIVE, $note->fresh()->statusLabel());
 
         $this->actingAs($warehouse)->post('/gudang/penerimaan', [
-            'stock_request_id' => $firstRequest->id,
+            'stock_request_id' => $request->id,
             'received_quantity' => 1,
         ])->assertRedirect();
-        $this->assertSame(ProcurementNote::STATUS_PARTIAL, $note->fresh()->status);
-        $this->assertSame(1, $note->items()->first()->received_quantity);
-        $this->actingAs($hr)->get(route('hr.procurement-notes.print', $note))
-            ->assertOk()->assertSee('Diterima Sebagian (1/2 Pcs)');
+        $this->assertSame('Sebagian Diterima', $request->fresh()->status);
+        $this->assertSame(ProcurementNote::STATUS_ACTIVE, $note->fresh()->statusLabel());
 
         $this->actingAs($warehouse)->post('/gudang/penerimaan', [
-            'stock_request_id' => $firstRequest->id,
+            'stock_request_id' => $request->id,
             'received_quantity' => 1,
         ])->assertRedirect();
-        $note->refresh();
-        $this->assertSame(ProcurementNote::STATUS_COMPLETED, $note->status);
-        $this->assertNotNull($note->completed_at);
-        $this->actingAs($hr)->get(route('hr.procurement-notes.print', $note))
-            ->assertOk()->assertSee('Diterima Penuh (2/2 Pcs)');
+        $this->assertSame('Diterima Penuh', $request->fresh()->status);
+        $this->assertSame(ProcurementNote::STATUS_COMPLETED, $note->fresh()->statusLabel());
     }
 
-    public function test_hr_can_close_partial_and_cancel_unreceived_requests_from_an_issued_note(): void
+    public function test_hr_bulk_actions_only_update_submitted_request_ids(): void
     {
-        [$hr, $warehouse, $partialRequest, $unreceivedRequest] = $this->fixtures();
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Mouse'), 1);
+        $this->submitRequest($warehouse, $this->item('Keyboard'), 1);
+        [$first, $second] = StockRequest::orderBy('id')->get();
 
-        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), [
-            'request_ids' => [$partialRequest->id, $unreceivedRequest->id],
-        ]);
-        $note = ProcurementNote::firstOrFail();
-        $this->actingAs($hr)->post(route('hr.procurement-notes.issue', $note));
-        $this->actingAs($warehouse)->post('/gudang/penerimaan', [
-            'stock_request_id' => $partialRequest->id,
-            'received_quantity' => 1,
-        ]);
+        $this->actingAs($hr)->post(route('hr.requests.bulk-approve'), [
+            'request_ids' => [$first->id],
+        ])->assertRedirect('/hr/approval');
 
-        $this->actingAs($hr)->get(route('hr.procurement-notes.show', $note))
+        $this->assertSame('Disetujui', $first->fresh()->status);
+        $this->assertSame('Menunggu Review', $second->fresh()->status);
+        $this->actingAs($hr)->post(route('hr.requests.bulk-approve'), [])
+            ->assertSessionHasErrors('request_ids');
+    }
+
+    public function test_hr_can_cancel_an_unreceived_request_from_note_detail(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Toner'), 1);
+        $request = StockRequest::firstOrFail();
+
+        $this->actingAs($hr)->post('/hr/requests/'.$request->id.'/approve');
+        $this->actingAs($hr)->get(route('procurement-notes.show', $request->procurementNote))
             ->assertOk()
-            ->assertSee('Tutup Sisa')
             ->assertSee('Batalkan Request');
 
-        $this->actingAs($hr)->post(route('hr.requests.close', $partialRequest), [
-            'note' => 'Supplier hanya mengirim sebagian',
-        ])->assertSessionHas('success');
-
-        $this->assertSame('Ditutup Sebagian', $partialRequest->fresh()->status);
-        $this->assertSame('Ditutup Sebagian', $note->items()->where('stock_request_id', $partialRequest->id)->value('request_status'));
-        $this->assertSame(ProcurementNote::STATUS_PARTIAL, $note->fresh()->status);
-
-        $this->actingAs($hr)->post(route('hr.requests.close', $unreceivedRequest), [
+        $this->actingAs($hr)->post(route('hr.requests.close', $request), [
             'note' => 'Kebutuhan dibatalkan',
         ])->assertSessionHas('success');
 
-        $this->assertSame('Dibatalkan', $unreceivedRequest->fresh()->status);
-        $this->assertSame('Dibatalkan', $note->items()->where('stock_request_id', $unreceivedRequest->id)->value('request_status'));
-        $this->assertSame(ProcurementNote::STATUS_COMPLETED, $note->fresh()->status);
+        $this->assertSame('Dibatalkan', $request->fresh()->status);
+        $this->assertSame(ProcurementNote::STATUS_COMPLETED, $request->procurementNote->statusLabel());
     }
 
-    public function test_hr_queue_exposes_cancel_action_but_draft_note_blocks_request_closure(): void
+    public function test_procurement_history_is_available_to_operational_roles_only(): void
     {
-        [$hr, , $request] = $this->fixtures();
-
-        $this->actingAs($hr)->get('/hr/daftar-belanja')
-            ->assertOk()
-            ->assertSee('Batalkan Request')
-            ->assertSee(route('hr.requests.close', $request), false);
-
-        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), [
-            'request_ids' => [$request->id],
-        ]);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Label'), 1);
         $note = ProcurementNote::firstOrFail();
 
-        $this->actingAs($hr)->get(route('hr.procurement-notes.show', $note))
-            ->assertOk()
-            ->assertDontSee('data-mode="cancel"', false);
+        foreach (['hr', 'gudang', 'director', 'admin'] as $role) {
+            $user = $role === 'gudang' ? $warehouse : User::factory()->create(['role' => $role]);
+            $this->actingAs($user)->get(route('procurement-notes.index'))->assertOk();
+            $this->actingAs($user)->get(route('procurement-notes.show', $note))->assertOk();
+        }
 
-        $this->actingAs($hr)->post(route('hr.requests.close', $request), [
-            'note' => 'Tidak jadi dibeli',
-        ])->assertSessionHas('error', 'Request masih berada dalam draft nota. Keluarkan request dari draft sebelum membatalkannya.');
-
-        $this->assertSame('Disetujui', $request->fresh()->status);
-        $this->assertSame($note->id, $request->fresh()->procurement_note_id);
+        $employee = User::factory()->create(['role' => 'karyawan']);
+        $this->actingAs($employee)->get(route('procurement-notes.index'))->assertForbidden();
     }
 
-    public function test_cancelling_note_releases_requests_back_to_queue(): void
+    public function test_note_can_be_printed_and_exported_to_excel(): void
     {
-        [$hr, , $firstRequest] = $this->fixtures();
-        $this->actingAs($hr)->post(route('hr.procurement-notes.store'), ['request_ids' => [$firstRequest->id]]);
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Pulpen'), 4);
         $note = ProcurementNote::firstOrFail();
 
-        $this->actingAs($hr)->post(route('hr.procurement-notes.cancel', $note), ['reason' => 'Vendor tidak tersedia'])
-            ->assertRedirect();
-
-        $this->assertSame(ProcurementNote::STATUS_CANCELLED, $note->fresh()->status);
-        $this->assertNull($firstRequest->fresh()->procurement_note_id);
-        $this->assertSame('Dibatalkan', $note->items()->first()->receiptStatusLabel());
-        $this->actingAs($hr)->get('/hr/daftar-belanja')->assertOk()->assertSee('Mouse Wireless');
-    }
-
-    public function test_exact_date_filter_only_applies_to_permanent_note_history(): void
-    {
-        [$hr, , $firstRequest, $secondRequest] = $this->fixtures();
-        $firstRequest->update(['approved_at' => '2026-09-08 09:00:00']);
-        $secondRequest->update(['approved_at' => '2026-09-09 09:00:00']);
-        ProcurementNote::create([
-            'number' => 'NOTA-20260908-099',
-            'status' => ProcurementNote::STATUS_ISSUED,
-            'created_by' => $hr->id,
-            'issued_at' => '2026-09-08 10:00:00',
-        ]);
-        ProcurementNote::create([
-            'number' => 'NOTA-20260909-099',
-            'status' => ProcurementNote::STATUS_ISSUED,
-            'created_by' => $hr->id,
-            'issued_at' => '2026-09-09 10:00:00',
-        ]);
-
-        $this->actingAs($hr)->get('/hr/daftar-belanja?date=2026-09-08')
+        $this->actingAs($hr)->get(route('procurement-notes.print', $note))
             ->assertOk()
-            ->assertDontSee('type="month"', false)
-            ->assertSee('Mouse Wireless')
-            ->assertSee('Keyboard')
-            ->assertSee('NOTA-20260908-099')
-            ->assertDontSee('NOTA-20260909-099');
+            ->assertSee($note->number)
+            ->assertSee('Pulpen');
+        $this->assertNotNull($note->fresh()->last_printed_at);
+
+        $this->actingAs($hr)->get(route('procurement-notes.excel', $note))
+            ->assertOk()
+            ->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->assertHeader('Content-Disposition', 'attachment; filename="'.strtolower($note->number).'.xlsx"');
     }
 
-    private function fixtures(): array
+    private function submitRequest(User $warehouse, Item $item, int $quantity): void
     {
-        $hr = $this->user('HR', 'hr', 'hr-note@example.com');
-        $warehouse = $this->user('Gudang', 'gudang', 'warehouse-note@example.com');
-        $requester = $this->user('Pemohon', 'karyawan', 'requester-note@example.com');
-        $first = $this->approvedRequest($requester, 'Mouse Wireless', 2);
-        $second = $this->approvedRequest($requester, 'Keyboard', 3);
-
-        return [$hr, $warehouse, $first, $second];
-    }
-
-    private function user(string $name, string $role, string $email): User
-    {
-        return User::create(['name' => $name, 'email' => $email, 'password' => Hash::make('password'), 'role' => $role]);
-    }
-
-    private function approvedRequest(User $requester, string $name, int $quantity): StockRequest
-    {
-        $item = Item::create(['name' => $name, 'rack_location' => 'A', 'stock' => 0, 'unit' => 'Pcs']);
-
-        return StockRequest::create([
-            'user_id' => $requester->id,
+        $this->actingAs($warehouse)->post('/gudang/request-barang', [
             'item_id' => $item->id,
             'quantity' => $quantity,
-            'unit' => 'Pcs',
             'priority' => 'Biasa',
-            'reason' => 'Operasional',
-            'status' => 'Disetujui',
-            'approved_at' => now(),
+            'reason' => 'Kebutuhan operasional',
+        ])->assertRedirect('/gudang/history');
+    }
+
+    private function item(string $name): Item
+    {
+        return Item::create([
+            'name' => $name,
+            'rack_location' => 'A',
+            'stock' => 0,
+            'unit' => 'Pcs',
         ]);
     }
 }

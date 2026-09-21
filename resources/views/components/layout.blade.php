@@ -237,6 +237,12 @@
                         <!-- Group: Monitoring & Sistem -->
                         <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monitoring & Sistem</div>
 
+                        <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <span>Riwayat Pengadaan</span>
+                        </a>
+
                         <a href="{{ route('admin.audit.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.audit.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.audit.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.audit.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -279,12 +285,6 @@
                             <span>Verifikasi & Approval</span>
                         </a>
 
-                        <a href="/hr/daftar-belanja" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('hr/daftar-belanja*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
-                            @if(request()->is('hr/daftar-belanja*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
-                            <svg class="shrink-0 {{ request()->is('hr/daftar-belanja*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                            <span>Daftar Belanja Driver</span>
-                        </a>
-
                         <!-- Divider -->
                         <div class="my-2 mx-4 border-t border-slate-100"></div>
 
@@ -303,10 +303,10 @@
                             <span>Perubahan Stok</span>
                         </a>
 
-                        <a href="/hr/history" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('hr/history*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
-                            @if(request()->is('hr/history*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
-                            <svg class="shrink-0 {{ request()->is('hr/history*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Riwayat Pengadaan Barang</span>
+                        <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Riwayat Pengadaan</span>
                         </a>
 
                         <a href="{{ route('hr.issues') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('hr.issues') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
@@ -373,6 +373,12 @@
                             <svg class="shrink-0 {{ request()->is('gudang/history*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span>Riwayat Permintaan</span>
                         </a>
+
+                        <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <span>Riwayat Pengadaan</span>
+                        </a>
                     @elseif($currentRole === 'director')
                         <!-- ================= MENU UNTUK DIREKTUR ================= -->
 
@@ -408,6 +414,12 @@
                             @if(request()->routeIs('director.timeline*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.timeline*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             <span>Timeline Aktivitas</span>
+                        </a>
+
+                        <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                            <span>Riwayat Pengadaan</span>
                         </a>
 
                         <a href="{{ route('director.issues') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.issues*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">

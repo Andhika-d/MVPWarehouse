@@ -118,10 +118,13 @@ class NotificationTest extends TestCase
         $gudang = $this->makeUser('gudang');
         $hr = $this->makeUser('hr');
         $item = $this->makeItem();
-        $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 09:00:00']);
-        $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 10:00:00']);
+        $first = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 09:00:00']);
+        $second = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 10:00:00']);
 
-        $this->actingAs($hr)->post('/hr/nota/2026-08-01/approve-all', ['note' => 'OK']);
+        $this->actingAs($hr)->post(route('hr.requests.bulk-approve'), [
+            'request_ids' => [$first->id, $second->id],
+            'note' => 'OK',
+        ]);
 
         $this->assertSame(2, $gudang->notifications()->where('type', RequestApprovedNotification::class)->count());
     }

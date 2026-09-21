@@ -12,7 +12,7 @@
 
             <div class="flex flex-wrap items-center gap-2 shrink-0">
                 <a href="/hr/approval/export/preview{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 min-h-[44px] inline-flex items-center">Preview Export</a>
-                <input type="date" name="date" value="{{ request('date') }}" aria-label="Tanggal nota" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 min-h-[44px]">
+                <input type="date" name="date" value="{{ request('date') }}" aria-label="Tanggal request" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 min-h-[44px]">
                 <select name="status" class="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 min-h-[44px]">
                     <option value="all" {{ request('status') === 'all' || !request('status') ? 'selected' : '' }}>Semua</option>
                     <option value="Menunggu Review" {{ request('status') === 'Menunggu Review' ? 'selected' : '' }}>Menunggu Review</option>
@@ -23,10 +23,13 @@
             </div>
         </form>
 
-        <!-- ================= 2. KARTU NOTA (DIGABUNG PER TANGGAL) ================= -->
-        @forelse($notas as $date => $notaItems)
+        <!-- ================= 2. KARTU NOTA OTOMATIS ================= -->
+        @forelse($notas as $noteId => $notaItems)
         @php
             $first = $notaItems->first();
+            $note = $first?->procurementNote;
+            $requestDate = $note?->request_date ?? $first?->created_at;
+            $requestIds = $notaItems->pluck('id')->values();
         @endphp
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden transition-all duration-300">
 
@@ -34,31 +37,32 @@
             <div class="p-4 bg-slate-50 border-b border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
                 <div class="flex items-center space-x-3">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-500 text-xs font-bold text-white">
-                        {{ \Carbon\Carbon::parse($date)->format('d') }}
+                        {{ $requestDate->format('d') }}
                     </div>
                     <div>
                         <div class="flex items-center space-x-2">
-                            <span class="font-bold text-slate-900 text-sm">#NOTA-{{ str_replace('-', '', $date) }}</span>
-                            <span class="status-badge status-badge--info">{{ $notaItems->count() }} item</span>
+                            <a href="{{ $note ? route('procurement-notes.show', $note) : '#' }}" class="font-bold text-slate-900 text-sm hover:text-corpblue-700">{{ $note?->number ?? 'Nota belum tersedia' }}</a>
+                            <span class="status-badge status-badge--info">{{ $notaItems->count() }} request</span>
                         </div>
                         <p class="text-xs text-slate-500 mt-0.5">
-                            {{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }} • Pemohon: {{ $first->user?->name ?? 'Gudang' }}
+                            {{ $requestDate->translatedFormat('l, d F Y') }} · Bagian yang perlu keputusan HR
                         </p>
                     </div>
                 </div>
 
                 <!-- AKSI BULK SELURUH NOTA -->
                 <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
-                    <form action="/hr/nota/{{ $date }}/approve-all" method="POST" class="inline">
+                    <form action="{{ route('hr.requests.bulk-approve') }}" method="POST" class="inline" data-confirm="Setujui {{ $notaItems->count() }} request yang ditampilkan?" data-confirm-title="Setujui Request" data-confirm-tone="success" data-confirm-button="Setujui">
                         @csrf
+                        @foreach($requestIds as $requestId)<input type="hidden" name="request_ids[]" value="{{ $requestId }}">@endforeach
                         <button type="submit" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
-                            ✓ Terima Semua
+                            Setujui Semua yang Ditampilkan
                         </button>
                     </form>
-                    <button type="button" data-action="/hr/nota/{{ $date }}/reject-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="{{ route('hr.requests.bulk-reject') }}" data-request-ids='@json($requestIds)' data-label="{{ $notaItems->count() }} request yang ditampilkan" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         Tolak Semua
                     </button>
-                    <button type="button" data-action="/hr/nota/{{ $date }}/delay-all" data-label="Seluruh item nota {{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="{{ route('hr.requests.bulk-delay') }}" data-request-ids='@json($requestIds)' data-label="{{ $notaItems->count() }} request yang ditampilkan" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         Tunda Semua
                     </button>
                 </div>
@@ -92,7 +96,7 @@
                                     <a href="/hr/requests/{{ $request->id }}" title="Lihat detail & lampiran" class="action-link action-link--neutral">Detail</a>
                                     <form action="/hr/requests/{{ $request->id }}/approve" method="POST" class="inline">
                                         @csrf
-                                        <button type="submit" title="Terima item ini" class="action-link action-link--success">Terima</button>
+                                        <button type="submit" title="Setujui request ini" class="action-link action-link--success">Setujui</button>
                                     </form>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openRejectModal(this)" title="Tolak item ini" class="action-link action-link--danger">Tolak</button>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}" onclick="openDelayModal(this)" title="Tunda item ini" class="action-link action-link--warning">Tunda</button>
@@ -182,9 +186,24 @@
             return button.getAttribute('data-name') || 'Barang';
         }
 
+        function setBulkRequestIds(form, button) {
+            form.querySelectorAll('[data-bulk-request-id]').forEach(function (input) { input.remove(); });
+            var ids = JSON.parse(button.getAttribute('data-request-ids') || '[]');
+            ids.forEach(function (id) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'request_ids[]';
+                input.value = id;
+                input.setAttribute('data-bulk-request-id', 'true');
+                form.appendChild(input);
+            });
+        }
+
         function openRejectModal(button) {
-            document.getElementById('rejectForm').action = button.getAttribute('data-action');
-            document.getElementById('rejectModalTarget').innerText = 'Mencoret: ' + modalLabel(button);
+            var form = document.getElementById('rejectForm');
+            form.action = button.getAttribute('data-action');
+            setBulkRequestIds(form, button);
+            document.getElementById('rejectModalTarget').innerText = 'Menolak: ' + modalLabel(button);
             document.getElementById('rejectReasonText').value = '';
             openModal('rejectModal');
         }
@@ -194,7 +213,9 @@
         }
 
         function openDelayModal(button) {
-            document.getElementById('delayForm').action = button.getAttribute('data-action');
+            var form = document.getElementById('delayForm');
+            form.action = button.getAttribute('data-action');
+            setBulkRequestIds(form, button);
             document.getElementById('delayModalTarget').innerText = 'Menunda: ' + modalLabel(button);
             document.getElementById('delayReasonText').value = '';
             openModal('delayModal');

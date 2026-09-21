@@ -108,7 +108,10 @@ class HrWorkflowTest extends TestCase
         $r1 = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 09:00:00']);
         $r2 = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 10:00:00']);
 
-        $this->actingAs($hr)->post('/hr/nota/2026-08-01/reject-all', ['note' => 'Stok tidak tersedia']);
+        $this->actingAs($hr)->post(route('hr.requests.bulk-reject'), [
+            'request_ids' => [$r1->id, $r2->id],
+            'note' => 'Stok tidak tersedia',
+        ]);
 
         $this->assertSame('Ditolak', $r1->fresh()->status);
         $this->assertSame('Ditolak', $r2->fresh()->status);
@@ -123,7 +126,10 @@ class HrWorkflowTest extends TestCase
         $r1 = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 09:00:00']);
         $r2 = $this->makeRequest($gudang, $item, ['created_at' => '2026-08-01 10:00:00']);
 
-        $this->actingAs($hr)->post('/hr/nota/2026-08-01/delay-all', ['note' => 'Tunda semua']);
+        $this->actingAs($hr)->post(route('hr.requests.bulk-delay'), [
+            'request_ids' => [$r1->id, $r2->id],
+            'note' => 'Tunda semua',
+        ]);
 
         $this->assertSame('Pending', $r1->fresh()->status);
         $this->assertSame('Pending', $r2->fresh()->status);
@@ -213,9 +219,9 @@ class HrWorkflowTest extends TestCase
     {
         $hr = $this->makeUser('hr');
 
-        $response = $this->actingAs($hr)->get('/hr/history');
+        $response = $this->actingAs($hr)->get(route('procurement-notes.index'));
         $response->assertOk();
-        $response->assertSee('Arsip Historis Pengadaan Barang');
+        $response->assertSee('Riwayat Pengadaan');
     }
 
     public function test_hr_history_filter_by_status(): void
@@ -224,10 +230,11 @@ class HrWorkflowTest extends TestCase
         $gudang = $this->makeUser('gudang');
         $item = $this->makeItem();
 
-        $this->makeRequest($gudang, $item, ['status' => 'Ditolak']);
-        $this->makeRequest($gudang, $item, ['status' => 'Disetujui']);
+        $note = \App\Models\ProcurementNote::findOrCreateForDate(now());
+        $this->makeRequest($gudang, $item, ['status' => 'Ditolak', 'procurement_note_id' => $note->id]);
+        $this->makeRequest($gudang, $item, ['status' => 'Disetujui', 'procurement_note_id' => $note->id]);
 
-        $response = $this->actingAs($hr)->get('/hr/history?status=Ditolak');
+        $response = $this->actingAs($hr)->get(route('procurement-notes.index', ['request_status' => 'Ditolak']));
         $response->assertOk();
     }
 
@@ -244,11 +251,12 @@ class HrWorkflowTest extends TestCase
             ->assertSessionHasErrors('note');
     }
 
-    public function test_export_daftar_belanja_accepts_date_filter(): void
+    public function test_procurement_export_accepts_date_filter(): void
     {
         $hr = $this->makeUser('hr');
+        \App\Models\ProcurementNote::findOrCreateForDate('2026-08-07');
 
-        $response = $this->actingAs($hr)->get('/hr/daftar-belanja/export/excel?date=2026-08-07');
+        $response = $this->actingAs($hr)->get(route('procurement-notes.excel-period', ['date' => '2026-08-07']));
         $response->assertOk();
     }
 

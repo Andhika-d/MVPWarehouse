@@ -98,7 +98,7 @@
                     <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg">
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     </div>
-                    <a href="/hr/daftar-belanja" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-700">Nota</a>
+                    <a href="{{ route('procurement-notes.index') }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-700">Nota</a>
                 </div>
                 <div>
                     <p class="text-2xl font-bold text-slate-900">{{ $approvedRequests }}</p>
