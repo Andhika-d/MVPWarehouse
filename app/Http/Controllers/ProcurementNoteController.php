@@ -24,6 +24,19 @@ class ProcurementNoteController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $search = trim((string) $request->input('search', ''));
+        $searchActive = $search !== '';
+        $matchingRequestsByNote = $searchActive
+            ? $notes->getCollection()->mapWithKeys(function (ProcurementNote $note) use ($request, $search) {
+                $matched = $note->requests->filter(function (StockRequest $stockRequest) use ($request, $search) {
+                    return $this->requestMatchesSearch($stockRequest, $search)
+                        && $this->requestMatchesFilters($stockRequest, $request);
+                })->values();
+
+                return [$note->id => $matched];
+            })
+            : collect();
+
         $activeBuilder = (clone $base)->whereHas(
             'requests',
             fn (Builder $requestQuery) => $requestQuery->whereNotIn('status', ProcurementNote::TERMINAL_REQUEST_STATUSES),
@@ -39,6 +52,9 @@ class ProcurementNoteController extends Controller
             'activeCount' => $activeCount,
             'completedCount' => $totalNotes - $activeCount,
             'requestCount' => $requestCount,
+            'searchActive' => $searchActive,
+            'search' => $search,
+            'matchingRequestsByNote' => $matchingRequestsByNote,
         ]);
     }
 
@@ -153,6 +169,30 @@ class ProcurementNoteController extends Controller
         }
 
         return $query;
+    }
+
+    private function requestMatchesSearch(StockRequest $stockRequest, string $search): bool
+    {
+        $itemName = $stockRequest->item?->name ?? $stockRequest->item_name;
+        $requester = $stockRequest->user?->name;
+
+        return (is_string($itemName) && mb_stripos($itemName, $search) !== false)
+            || (is_string($requester) && mb_stripos($requester, $search) !== false);
+    }
+
+    private function requestMatchesFilters(StockRequest $stockRequest, Request $request): bool
+    {
+        if ($request->filled('request_status') && $request->input('request_status') !== 'all'
+            && $stockRequest->status !== $request->input('request_status')) {
+            return false;
+        }
+
+        if ($request->filled('priority') && $request->input('priority') !== 'all'
+            && $stockRequest->priority !== $request->input('priority')) {
+            return false;
+        }
+
+        return true;
     }
 
     private function printRelations(): array
