@@ -5,7 +5,7 @@
         {{-- Summary --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl border border-slate-200 p-4">
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Issue Aktif</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Masalah Aktif</p>
                 <p class="mt-1 text-2xl font-bold text-slate-900">{{ $summary['open'] }}</p>
             </div>
             <div class="bg-white rounded-xl border border-amber-200 p-4">
@@ -24,7 +24,7 @@
 
         @if(count($summary['by_rule']) > 0)
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Distribusi Issue Aktif per Tahap</p>
+            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Distribusi Masalah Aktif per Tahap</p>
             <div class="flex flex-wrap gap-2">
                 @foreach($summary['by_rule'] as $ruleKey => $total)
                 <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-700">
@@ -40,12 +40,12 @@
             <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Status</option>
-                    <option value="Open" {{ ($status ?? '') === 'Open' ? 'selected' : '' }}>Open</option>
+                    <option value="Open" {{ ($status ?? '') === 'Open' ? 'selected' : '' }}>Aktif</option>
                     <option value="Dalam Tinjauan" {{ ($status ?? '') === 'Dalam Tinjauan' ? 'selected' : '' }}>Dalam Tinjauan</option>
                     <option value="Selesai" {{ ($status ?? '') === 'Selesai' ? 'selected' : '' }}>Selesai</option>
                 </select>
                 <select name="severity" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Severity</option>
+                    <option value="all">Semua Tingkat Keparahan</option>
                     <option value="Peringatan" {{ ($severity ?? '') === 'Peringatan' ? 'selected' : '' }}>Peringatan</option>
                     <option value="Kritis" {{ ($severity ?? '') === 'Kritis' ? 'selected' : '' }}>Kritis</option>
                 </select>

@@ -131,14 +131,6 @@ class StockRequest extends Model
                 ];
             }
 
-            if ($locked->procurementNote?->isDraft()) {
-                return [
-                    'success' => false,
-                    'message' => 'Request masih berada dalam draft nota. Keluarkan request dari draft sebelum membatalkannya.',
-                    'status' => null,
-                ];
-            }
-
             if (! $locked->canClose()) {
                 return [
                     'success' => false,
@@ -165,8 +157,6 @@ class StockRequest extends Model
                 'closed_by' => $closingUserId,
                 'close_note' => $note,
             ]);
-
-            ProcurementNote::syncFromRequest($locked->fresh());
 
             $locked->requestHistories()->create([
                 'user_id' => $closingUserId,

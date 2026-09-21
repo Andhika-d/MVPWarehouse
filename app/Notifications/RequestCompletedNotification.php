@@ -22,7 +22,7 @@ class RequestCompletedNotification extends Notification
             'title' => 'Belanja Selesai',
             'message' => 'Barang ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
                 . ' ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' sudah dibelanjakan Driver dan diterima Gudang.',
+                . ' telah diterima Gudang.',
             'type' => 'completed',
             'url' => '/gudang/history/' . $this->stockRequest->id,
         ];

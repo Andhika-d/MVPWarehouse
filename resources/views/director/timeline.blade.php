@@ -46,7 +46,7 @@
                                 <span class="text-xs text-slate-400">oleh {{ $event['user'] }}</span>
                             </div>
                             <p class="text-xs text-slate-500 mt-0.5">{{ $event['detail'] }}</p>
-                            <p class="text-xs text-slate-400 mt-0.5">{{ $event['time'] ? \Carbon\Carbon::parse($event['time'])->format('d M Y, H:i') : '—' }}</p>
+                            <p class="text-xs text-slate-400 mt-0.5">{{ $event['time'] ? \Carbon\Carbon::parse($event['time'])->translatedFormat('d M Y, H:i') : '—' }}</p>
                         </div>
                     </div>
                     @empty

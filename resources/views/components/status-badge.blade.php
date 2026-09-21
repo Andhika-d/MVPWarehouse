@@ -21,11 +21,8 @@
             default => 'neutral',
         },
         'procurement' => match ($normalized) {
-            'Draft' => 'warning',
-            'Diterbitkan' => 'info',
-            'Sebagian Diterima' => 'progress',
+            'Aktif' => 'info',
             'Selesai' => 'success',
-            'Dibatalkan' => 'muted',
             default => 'neutral',
         },
         'receipt' => match ($normalized) {
@@ -75,7 +72,11 @@
             'archived' => 'Diarsipkan',
             default => 'Draft',
         },
-        'priority' => $normalized === 'Mendesak' ? 'Mendesak' : 'Normal',
+        'issue' => match ($normalized) {
+            'Open' => 'Aktif',
+            default => $value,
+        },
+        'priority' => $normalized === 'Mendesak' ? 'Mendesak' : 'Biasa',
         'role' => match ($normalized) {
             'admin' => 'ADMIN',
             'hr' => 'HR',

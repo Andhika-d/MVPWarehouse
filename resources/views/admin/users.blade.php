@@ -8,7 +8,7 @@
                     <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama atau email..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="role" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Role</option>
+                    <option value="all">Semua Peran</option>
                     <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="hr" {{ request('role') === 'hr' ? 'selected' : '' }}>HR</option>
                     <option value="gudang" {{ request('role') === 'gudang' ? 'selected' : '' }}>Gudang</option>
@@ -28,7 +28,7 @@
                         <tr class="bg-slate-50 border-b border-slate-200">
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Email</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Role</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Peran</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600">Aksi</th>
                         </tr>
@@ -46,22 +46,22 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1 flex-wrap">
-                                    <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" data-confirm="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} user {{ $user->name }}?" data-confirm-title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} User" data-confirm-tone="{{ $user->is_active ? 'warning' : 'success' }}" class="inline">
+                                    <form method="POST" action="{{ route('admin.users.toggle-status', $user) }}" data-confirm="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} pengguna {{ $user->name }}?" data-confirm-title="{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }} Pengguna" data-confirm-tone="{{ $user->is_active ? 'warning' : 'success' }}" class="inline">
                                         @csrf
                                         <button type="submit" class="action-link {{ $user->is_active ? 'action-link--warning' : 'action-link--success' }}">{{ $user->is_active ? 'Nonaktifkan' : 'Aktifkan' }}</button>
                                     </form>
-                                    <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" data-confirm="Reset password user {{ $user->name }}? Password baru akan dibuat otomatis." data-confirm-title="Reset Password" data-confirm-tone="warning" class="inline">
+                                    <form method="POST" action="{{ route('admin.users.reset-password', $user) }}" data-confirm="Reset password pengguna {{ $user->name }}? Password baru akan dibuat otomatis." data-confirm-title="Reset Password" data-confirm-tone="warning" class="inline">
                                         @csrf
-                                        <button type="submit" class="action-link action-link--neutral">Reset PW</button>
+                                        <button type="submit" class="action-link action-link--neutral">Reset Password</button>
                                     </form>
                                     @if($user->role !== 'admin' && $user->id !== auth()->id())
-                                    <form method="POST" action="{{ route('admin.users.login-as', $user) }}" data-confirm="Login sebagai {{ $user->name }}? Anda akan berpindah ke sesi pengguna ini." data-confirm-title="Login Sebagai User" data-confirm-tone="warning" class="inline">
+                                    <form method="POST" action="{{ route('admin.users.login-as', $user) }}" data-confirm="Login sebagai {{ $user->name }}? Anda akan berpindah ke sesi pengguna ini." data-confirm-title="Login Sebagai Pengguna" data-confirm-tone="warning" class="inline">
                                         @csrf
-                                        <button type="submit" class="action-link action-link--primary">Login As</button>
+                                        <button type="submit" class="action-link action-link--primary">Login sebagai</button>
                                     </form>
                                     @endif
                                     @if($user->id !== auth()->id())
-                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Hapus user {{ $user->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus User" data-confirm-tone="danger" class="inline">
+                                    <form method="POST" action="{{ route('admin.users.destroy', $user) }}" data-confirm="Hapus pengguna {{ $user->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus Pengguna" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="action-link action-link--danger">Hapus</button>
                                     </form>
@@ -108,7 +108,7 @@
                             <input type="password" name="password" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none" placeholder="Otomatis jika kosong">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Role</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Peran</label>
                             <select name="role" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                                 <option value="gudang">Gudang</option>
                                 <option value="hr">HR</option>

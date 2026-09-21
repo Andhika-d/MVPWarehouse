@@ -8,9 +8,9 @@ class ProcurementNoteExport extends SimpleXlsx
     {
         parent::__construct(
             $rows,
-            ['No', 'Barang', 'Jumlah', 'Diterima', 'Satuan', 'Prioritas', 'Pemohon', 'Status', 'Catatan HR'],
+            ['Nota', 'ID Request', 'Waktu Request', 'Barang', 'Pemohon', 'Diminta', 'Satuan', 'Prioritas', 'Status', 'Tanggal Keputusan', 'Diterima', 'Ditutup', 'Sisa Aktif', 'Selesai/Ditutup', 'Catatan HR', 'Alasan Penutupan', 'Ditutup Oleh'],
             'procurement-note',
-            'Nota Pengadaan'
+            'Riwayat Pengadaan'
         );
     }
 }

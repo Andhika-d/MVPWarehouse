@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\AuditLog;
 use App\Models\Item;
+use App\Models\ProcurementNote;
 use App\Models\StockMovement;
 use App\Models\StockRequest;
 use App\Models\User;
@@ -87,12 +88,14 @@ class ExportPreviewTest extends TestCase
             ->assertForbidden();
     }
 
-    public function test_hr_history_and_exports_can_be_separated_by_nota_date(): void
+    public function test_procurement_history_and_exports_can_be_filtered_by_note_date(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);
         $gudang = User::factory()->create(['role' => 'gudang']);
         $targetItem = Item::create(['name' => 'Barang Nota September', 'unit' => 'Pcs', 'stock' => 20]);
         $otherItem = Item::create(['name' => 'Barang Nota Agustus', 'unit' => 'Pcs', 'stock' => 20]);
+        $targetNote = ProcurementNote::findOrCreateForDate('2026-09-07');
+        $otherNote = ProcurementNote::findOrCreateForDate('2026-08-31');
 
         foreach (range(1, 4) as $index) {
             $stockRequest = StockRequest::create([
@@ -103,6 +106,7 @@ class ExportPreviewTest extends TestCase
                 'priority' => 'Biasa',
                 'reason' => 'Nota September '.$index,
                 'status' => 'Disetujui',
+                'procurement_note_id' => $targetNote->id,
             ]);
             $stockRequest->forceFill([
                 'created_at' => '2026-09-07 '.str_pad((string) $index, 2, '0', STR_PAD_LEFT).':00:00',
@@ -118,6 +122,7 @@ class ExportPreviewTest extends TestCase
             'priority' => 'Biasa',
             'reason' => 'Nota Agustus',
             'status' => 'Disetujui',
+            'procurement_note_id' => $otherNote->id,
         ]);
         $otherRequest->forceFill([
             'created_at' => '2026-08-31 10:00:00',
@@ -125,27 +130,20 @@ class ExportPreviewTest extends TestCase
         ])->saveQuietly();
 
         $this->actingAs($hr)
-            ->get('/hr/history?date=2026-09-07')
+            ->get(route('procurement-notes.index', ['date' => '2026-09-07']))
             ->assertOk()
-            ->assertSee('#NOTA-20260907')
+            ->assertSee('NOTA-20260907')
+            ->assertDontSee('NOTA-20260831');
+
+        $this->get(route('procurement-notes.print-period', ['date' => '2026-09-07']))
+            ->assertOk()
+            ->assertSee('NOTA-20260907')
             ->assertSee('Barang Nota September')
             ->assertDontSee('Barang Nota Agustus');
 
-        $this->get('/hr/history/export/preview?date=2026-09-07')
+        $this->get(route('procurement-notes.excel-period', ['date' => '2026-09-07']))
             ->assertOk()
-            ->assertSee('Nota Pengadaan #NOTA-20260907')
-            ->assertSee('Menampilkan 4 dari 4 baris.')
-            ->assertDontSee('Barang Nota Agustus')
-            ->assertSee('/hr/history/export/pdf?date=2026-09-07', false)
-            ->assertSee('/hr/history/export/excel?date=2026-09-07', false);
-
-        $this->get('/hr/history/export/pdf?date=2026-09-07')
-            ->assertOk()
-            ->assertHeader('Content-Disposition', 'attachment; filename=nota-pengadaan-20260907.pdf');
-
-        $this->get('/hr/history/export/excel?date=2026-09-07')
-            ->assertOk()
-            ->assertHeader('Content-Disposition', 'attachment; filename="nota-pengadaan-20260907.xlsx"');
+            ->assertHeader('Content-Disposition', 'attachment; filename="riwayat-pengadaan.xlsx"');
     }
 
     public function test_hr_approval_and_exports_can_be_filtered_by_nota_date(): void
@@ -154,6 +152,8 @@ class ExportPreviewTest extends TestCase
         $gudang = User::factory()->create(['role' => 'gudang']);
         $targetItem = Item::create(['name' => 'Approval Nota September', 'unit' => 'Pcs', 'stock' => 10]);
         $otherItem = Item::create(['name' => 'Approval Nota Agustus', 'unit' => 'Pcs', 'stock' => 10]);
+        $targetNote = ProcurementNote::findOrCreateForDate('2026-09-07');
+        $otherNote = ProcurementNote::findOrCreateForDate('2026-08-31');
 
         $targetRequest = StockRequest::create([
             'user_id' => $gudang->id,
@@ -163,6 +163,7 @@ class ExportPreviewTest extends TestCase
             'priority' => 'Biasa',
             'reason' => 'Approval September',
             'status' => 'Menunggu Review',
+            'procurement_note_id' => $targetNote->id,
         ]);
         $targetRequest->forceFill([
             'created_at' => '2026-09-07 09:00:00',
@@ -177,6 +178,7 @@ class ExportPreviewTest extends TestCase
             'priority' => 'Biasa',
             'reason' => 'Approval Agustus',
             'status' => 'Menunggu Review',
+            'procurement_note_id' => $otherNote->id,
         ]);
         $otherRequest->forceFill([
             'created_at' => '2026-08-31 09:00:00',
@@ -186,7 +188,7 @@ class ExportPreviewTest extends TestCase
         $this->actingAs($hr)
             ->get('/hr/approval?date=2026-09-07')
             ->assertOk()
-            ->assertSee('#NOTA-20260907')
+            ->assertSee('NOTA-20260907')
             ->assertSee('Approval Nota September')
             ->assertDontSee('Approval Nota Agustus');
 

@@ -13,7 +13,7 @@ class RequestWorkflowEnhancementTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_approved_request_shows_review_note_in_shopping_list(): void
+    public function test_approved_request_shows_review_note_in_procurement_history(): void
     {
         $hr = User::create([
             'name' => 'HR Review',
@@ -29,7 +29,8 @@ class RequestWorkflowEnhancementTest extends TestCase
             'unit' => 'Pcs',
         ]);
 
-        $request = StockRequest::create([
+        $note = \App\Models\ProcurementNote::findOrCreateForDate(now());
+        StockRequest::create([
             'user_id' => 1,
             'item_id' => $item->id,
             'quantity' => 2,
@@ -38,9 +39,10 @@ class RequestWorkflowEnhancementTest extends TestCase
             'reason' => 'Butuh cepat',
             'status' => 'Disetujui',
             'review_note' => 'Disetujui sesuai kebutuhan',
+            'procurement_note_id' => $note->id,
         ]);
 
-        $response = $this->actingAs($hr)->get('/hr/daftar-belanja');
+        $response = $this->actingAs($hr)->get(route('procurement-notes.show', $note));
 
         $response->assertSee('Disetujui sesuai kebutuhan');
     }

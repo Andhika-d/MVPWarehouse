@@ -1,4 +1,4 @@
-<x-layout :title="'Executive Monitoring — THI2-WAREHOUSE'" :headerTitle="'Executive Monitoring'">
+<x-layout :title="'Monitoring Eksekutif — THI2-WAREHOUSE'" :headerTitle="'Monitoring Eksekutif'">
     <div class="space-y-6">
 
         {{-- ═══ TOP: KPI Strip ═══ --}}

@@ -37,7 +37,7 @@
                         @endif
                         <div>
                             <h2 class="text-lg font-bold text-slate-900">{{ $request->item_name }}</h2>
-                            <p class="text-xs text-slate-500">{{ $request->created_at->format('d M Y, H:i') }}</p>
+                            <p class="text-xs text-slate-500">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</p>
                         </div>
                     </div>
 
@@ -63,7 +63,7 @@
                         @if($request->isClosed() && $request->closed_at)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
                             <span class="text-xs text-slate-500">Ditutup oleh</span>
-                            <span class="text-sm font-medium text-slate-700">{{ $request->closedBy?->name ?? '—' }} · {{ $request->closed_at->format('d M Y, H:i') }}</span>
+                            <span class="text-sm font-medium text-slate-700">{{ $request->closedBy?->name ?? '—' }} · {{ $request->closed_at->translatedFormat('d M Y, H:i') }}</span>
                         </div>
                         @endif
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
@@ -201,7 +201,7 @@
                                 <div class="flex-1 min-w-0 {{ !$isLast ? 'pb-3' : '' }}">
                                     <div class="flex items-center gap-2 flex-wrap">
                                         <span class="text-sm font-semibold text-slate-900">{{ $event['label'] }}</span>
-                                        <span class="text-xs font-medium uppercase text-slate-500">{{ $event['time']?->format('d M H:i') ?? '—' }}</span>
+                                        <span class="text-xs font-medium uppercase text-slate-500">{{ $event['time']?->translatedFormat('d M H:i') ?? '—' }}</span>
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">oleh <span class="font-medium text-slate-600">{{ $event['user'] }}</span></p>
                                     @if(isset($event['decision']))

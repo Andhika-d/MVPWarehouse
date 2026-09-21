@@ -36,7 +36,7 @@
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form method="GET" action="{{ route('admin.items.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, size, atau sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, ukuran, atau sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="rack" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="all">Semua Rak</option>
@@ -74,7 +74,7 @@
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Sub Lokasi</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama Barang</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Size</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Ukuran</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Satuan</th>
                             <th class="px-4 py-3 text-right font-semibold text-slate-600">Stok</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Rak</th>
@@ -114,8 +114,8 @@
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">Edit</button>
-                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">Adjust</button>
-                                    <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="Hapus item {{ $item->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus Item" data-confirm-tone="danger" class="inline">
+                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">Sesuaikan</button>
+                                    <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="Hapus barang {{ $item->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus Barang" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="action-link action-link--danger">Hapus</button>
                                     </form>
@@ -176,7 +176,7 @@
         <div id="editItemModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 id="editItemModalTitle" class="text-base font-semibold text-slate-900">Edit Item</h3>
+                    <h3 id="editItemModalTitle" class="text-base font-semibold text-slate-900">Edit Barang</h3>
                     <button onclick="closeModal('editItemModal')" aria-label="Tutup" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
@@ -189,7 +189,7 @@
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Size</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ukuran</label>
                             <input type="text" name="size" id="edit_size" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                         </div>
                         <div>

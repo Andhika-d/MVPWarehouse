@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hard Copy Stock Barang</title>
+    <title>Cetak Stok Barang</title>
     <style>
         @page { size: A4 {{ $orientation }}; margin: 10mm; }
         * { box-sizing: border-box; }
@@ -63,7 +63,7 @@
     </div>
     <main class="sheet">
         <header>
-            <div><h1>STOCK BARANG</h1><div class="subtitle">THI2-WAREHOUSE - Snapshot inventaris terfilter</div></div>
+            <div><h1>STOK BARANG</h1><div class="subtitle">THI2-WAREHOUSE - Cuplikan inventaris terfilter</div></div>
             <div class="header-approval">
                 <div class="meta"><strong>{{ $printedAt->translatedFormat('d F Y, H:i') }}</strong><br>Dicetak oleh {{ $printedBy }} ({{ $role }})</div>
                 <table class="approval-grid" aria-label="Approval">
@@ -187,7 +187,7 @@
             </tbody>
         </table>
         @endif
-        <footer>Dokumen ini merupakan snapshot pada waktu cetak dan dapat berubah mengikuti transaksi stok.</footer>
+        <footer>Dokumen ini merupakan cuplikan pada waktu cetak dan dapat berubah mengikuti transaksi stok.</footer>
     </main>
 </body>
 </html>

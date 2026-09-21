@@ -2,97 +2,67 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class ProcurementNote extends Model
 {
-    public const STATUS_DRAFT = 'Draft';
-    public const STATUS_ISSUED = 'Diterbitkan';
-    public const STATUS_PARTIAL = 'Sebagian Diterima';
+    public const STATUS_ACTIVE = 'Aktif';
+
     public const STATUS_COMPLETED = 'Selesai';
-    public const STATUS_CANCELLED = 'Dibatalkan';
+
+    public const TERMINAL_REQUEST_STATUSES = [
+        'Ditolak',
+        'Diterima Penuh',
+        'Ditutup Sebagian',
+        'Dibatalkan',
+    ];
 
     protected $fillable = [
         'number',
-        'status',
-        'created_by',
-        'driver_name',
-        'notes',
-        'issued_at',
-        'completed_at',
-        'cancelled_at',
-        'cancelled_by',
-        'cancellation_reason',
+        'request_date',
         'last_printed_at',
     ];
 
     protected $casts = [
-        'issued_at' => 'datetime',
-        'completed_at' => 'datetime',
-        'cancelled_at' => 'datetime',
+        'request_date' => 'date',
         'last_printed_at' => 'datetime',
     ];
 
-    public function items()
-    {
-        return $this->hasMany(ProcurementNoteItem::class)->orderBy('sort_order');
-    }
-
     public function requests()
     {
-        return $this->hasMany(StockRequest::class);
+        return $this->hasMany(StockRequest::class)->orderBy('created_at')->orderBy('id');
     }
 
-    public function creator()
+    public static function findOrCreateForDate(CarbonInterface|string $date): self
     {
-        return $this->belongsTo(User::class, 'created_by');
+        $requestDate = $date instanceof CarbonInterface ? $date->toDateString() : $date;
+
+        DB::table('procurement_notes')->insertOrIgnore([
+            'number' => 'NOTA-'.str_replace('-', '', $requestDate),
+            'request_date' => $requestDate,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        return self::where('request_date', $requestDate)->firstOrFail();
     }
 
-    public function canceller()
+    public function statusLabel(): string
     {
-        return $this->belongsTo(User::class, 'cancelled_by');
+        $requests = $this->relationLoaded('requests') ? $this->requests : $this->requests()->get();
+
+        return $requests->isNotEmpty()
+            && $requests->every(fn (StockRequest $request) => in_array($request->status, self::TERMINAL_REQUEST_STATUSES, true))
+                ? self::STATUS_COMPLETED
+                : self::STATUS_ACTIVE;
     }
 
-    public function isDraft(): bool
+    public function statusCounts(): array
     {
-        return $this->status === self::STATUS_DRAFT;
-    }
+        $requests = $this->relationLoaded('requests') ? $this->requests : $this->requests()->get();
 
-    public function recalculateStatus(): void
-    {
-        if ($this->isDraft() || $this->status === self::STATUS_CANCELLED) {
-            return;
-        }
-
-        $items = $this->items()->get();
-        if ($items->isEmpty()) {
-            return;
-        }
-
-        $terminal = ['Diterima Penuh', 'Ditutup Sebagian', 'Dibatalkan'];
-        if ($items->every(fn ($item) => in_array($item->request_status, $terminal, true))) {
-            $this->update(['status' => self::STATUS_COMPLETED, 'completed_at' => $this->completed_at ?: now()]);
-        } elseif ($items->contains(fn ($item) => $item->received_quantity > 0 || $item->request_status === 'Sebagian Diterima')) {
-            $this->update(['status' => self::STATUS_PARTIAL, 'completed_at' => null]);
-        } else {
-            $this->update(['status' => self::STATUS_ISSUED, 'completed_at' => null]);
-        }
-    }
-
-    public static function syncFromRequest(StockRequest $request): void
-    {
-        if (! $request->procurement_note_id) {
-            return;
-        }
-
-        ProcurementNoteItem::where('procurement_note_id', $request->procurement_note_id)
-            ->where('stock_request_id', $request->id)
-            ->update([
-                'received_quantity' => $request->received_quantity,
-                'request_status' => $request->status,
-                'updated_at' => now(),
-            ]);
-
-        self::find($request->procurement_note_id)?->recalculateStatus();
+        return $requests->countBy('status')->all();
     }
 }

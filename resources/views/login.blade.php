@@ -29,7 +29,7 @@
         <div class="lg:hidden text-center mb-6">
             <img src="{{ asset('img/logo.png') }}" alt="Logo" class="h-12 w-auto mx-auto mb-4">
             <h1 class="text-base font-bold tracking-[0.15em] uppercase text-white">PT Taehang Indonesia</h1>
-            <p class="text-xs font-medium text-corpblue-300 tracking-[0.08em] mt-0.5">Plan 2</p>
+            <p class="text-xs font-medium text-corpblue-300 tracking-[0.08em] mt-0.5">Plan Dua</p>
         </div>
 
         {{-- ===== Login card ===== --}}
@@ -69,7 +69,7 @@
 
                     {{-- System name — prominent --}}
                     <p class="typing-text text-lg font-bold text-white uppercase tracking-[0.2em]">THI2-WAREHOUSE</p>
-                    <p class="text-xs text-corpblue-200/70 mt-1.5">Internal Warehouse Management System</p>
+                    <p class="text-xs text-corpblue-200/70 mt-1.5">Sistem Manajemen Gudang Internal</p>
 
                     {{-- Divider 2 --}}
                     <div class="w-10 h-px bg-white/20 mx-auto my-7"></div>
@@ -82,11 +82,11 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
-                            <span>Stock Monitoring</span>
+                            <span>Monitoring Stok</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
-                            <span>Warehouse History</span>
+                            <span>Riwayat Gudang</span>
                         </div>
                     </div>
                 </div>
@@ -162,7 +162,7 @@
 
         {{-- Footer --}}
         <p class="mt-8 text-xs text-white/30">
-            &copy; 2026 PT Taehang Indonesia Plan 2. Hak Cipta Dilindungi.
+            &copy; 2026 PT Taehang Indonesia Plan Dua. Hak Cipta Dilindungi.
         </p>
     </div>
 

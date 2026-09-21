@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Throwable;
 
-#[Signature('db:migrate-sqlite-to-mysql {--source= : Path to the SQLite database} {--chunk=500 : Number of rows per insert batch} {--truncate : Empty destination tables before importing}')]
-#[Description('Copy SQLite data into the configured MySQL database and compare row counts')]
+#[Signature('db:migrate-sqlite-to-mysql {--source= : Path menuju database SQLite} {--chunk=500 : Jumlah baris per batch insert} {--truncate : Kosongkan tabel tujuan sebelum import}')]
+#[Description('Salin data SQLite ke database MySQL yang dikonfigurasi dan bandingkan jumlah baris')]
 class MigrateSqliteToMysql extends Command
 {
     private const TABLES = [
@@ -24,10 +24,8 @@ class MigrateSqliteToMysql extends Command
         'failed_jobs',
         'items',
         'audit_logs',
-        'procurement_note_sequences',
         'procurement_notes',
         'stock_requests',
-        'procurement_note_items',
         'request_histories',
         'notifications',
         'settings',
@@ -40,13 +38,13 @@ class MigrateSqliteToMysql extends Command
     public function handle(): int
     {
         if (DB::connection()->getDriverName() !== 'mysql') {
-            $this->error('Destination connection must be MySQL. Check DB_CONNECTION in .env.');
+            $this->error('Koneksi tujuan harus MySQL. Periksa DB_CONNECTION di .env.');
             return self::FAILURE;
         }
 
         $source = $this->option('source') ?: database_path('database.sqlite');
         if (! is_file($source)) {
-            $this->error("SQLite source database not found: {$source}");
+            $this->error("Database SQLite sumber tidak ditemukan: {$source}");
             return self::FAILURE;
         }
 
@@ -63,11 +61,11 @@ class MigrateSqliteToMysql extends Command
         $missingTables = array_values(array_diff(self::TABLES, $availableTables));
 
         if ($missingTables !== []) {
-            $this->warn('Tables missing from SQLite source: '.implode(', ', $missingTables));
+            $this->warn('Tabel hilang dari SQLite sumber: '.implode(', ', $missingTables));
         }
 
         if ($this->option('truncate') && ! $this->confirm('This will delete destination data in the imported tables. Continue?', false)) {
-            $this->info('Migration cancelled.');
+            $this->info('Migrasi dibatalkan.');
             return self::SUCCESS;
         }
 
@@ -85,7 +83,7 @@ class MigrateSqliteToMysql extends Command
                     }
 
                     foreach ($availableTables as $table) {
-                        $this->output->write("Importing {$table}... ");
+                        $this->output->write("Mengimpor {$table}... ");
                         $inserted = 0;
 
                         $sqlite->table($table)->orderBy('rowid')->chunk($chunk, function ($rows) use ($table, &$inserted): void {
@@ -110,7 +108,7 @@ class MigrateSqliteToMysql extends Command
             });
         } catch (Throwable $exception) {
             $this->newLine();
-            $this->error('Migration failed and the destination transaction was rolled back.');
+            $this->error('Migrasi gagal dan transaksi tujuan telah di-rollback.');
             $this->error($exception->getMessage());
             return self::FAILURE;
         } finally {
@@ -118,23 +116,23 @@ class MigrateSqliteToMysql extends Command
         }
 
         $this->newLine();
-        $this->table(['Table', 'SQLite', 'MySQL', 'Status'], array_map(
+        $this->table(['Tabel', 'SQLite', 'MySQL', 'Status'], array_map(
             static fn (string $table): array => [
                 $table,
                 $counts[$table]['source'] ?? 0,
                 $counts[$table]['destination'] ?? 0,
-                ($counts[$table]['source'] ?? 0) === ($counts[$table]['destination'] ?? 0) ? 'MATCH' : 'MISMATCH',
+                ($counts[$table]['source'] ?? 0) === ($counts[$table]['destination'] ?? 0) ? 'COCOK' : 'TIDAK COCOK',
             ],
             $availableTables,
         ));
 
         $mismatches = array_filter($counts, static fn (array $count): bool => $count['source'] !== $count['destination']);
         if ($mismatches !== []) {
-            $this->error('Migration completed with row-count mismatches.');
+            $this->error('Migrasi selesai dengan ketidaksesuaian jumlah baris.');
             return self::FAILURE;
         }
 
-        $this->info('Migration completed successfully. All imported table counts match.');
+        $this->info('Migrasi selesai. Seluruh jumlah baris yang diimpor cocok.');
         return self::SUCCESS;
     }
 

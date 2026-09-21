@@ -6,7 +6,6 @@ use App\Exports\StockRequestExport;
 use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\ProcurementNote;
-use App\Models\RequestHistory;
 use App\Models\StockRequest;
 use App\Models\User;
 use App\Notifications\NewRequestNotification;
@@ -92,31 +91,37 @@ class RequestController extends Controller
             $attachmentPath = $request->file('attachment')->store('attachments', 'public');
         }
 
-        $stockRequest = StockRequest::create([
-            'user_id' => Auth::id(),
-            'item_id' => $item?->id,
-            'item_name' => $item?->name ?? $data['item_name'],
-            'quantity' => $data['quantity'],
-            'unit' => $unit,
-            'priority' => $data['priority'],
-            'reason' => $data['reason'],
-            'attachment_path' => $attachmentPath,
-            'status' => 'Menunggu Review',
-        ]);
+        $stockRequest = DB::transaction(function () use ($data, $item, $unit, $attachmentPath) {
+            $note = ProcurementNote::findOrCreateForDate(now());
+            $stockRequest = StockRequest::create([
+                'user_id' => Auth::id(),
+                'item_id' => $item?->id,
+                'item_name' => $item?->name ?? $data['item_name'],
+                'quantity' => $data['quantity'],
+                'unit' => $unit,
+                'priority' => $data['priority'],
+                'reason' => $data['reason'],
+                'attachment_path' => $attachmentPath,
+                'status' => 'Menunggu Review',
+                'procurement_note_id' => $note->id,
+            ]);
 
-        $stockRequest->requestHistories()->create([
-            'user_id' => Auth::id(),
-            'status' => 'Menunggu Review',
-            'note' => 'Permintaan dibuat oleh gudang',
-        ]);
+            $stockRequest->requestHistories()->create([
+                'user_id' => Auth::id(),
+                'status' => 'Menunggu Review',
+                'note' => 'Permintaan dibuat oleh gudang',
+            ]);
 
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'action' => 'created_request',
-            'target_type' => StockRequest::class,
-            'target_id' => $stockRequest->id,
-            'details' => 'Gudang membuat permintaan ' . $stockRequest->quantity . ' ' . $stockRequest->unit . ' ' . ($item?->name ?? $data['item_name']),
-        ]);
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'created_request',
+                'target_type' => StockRequest::class,
+                'target_id' => $stockRequest->id,
+                'details' => 'Gudang membuat permintaan ' . $stockRequest->quantity . ' ' . $stockRequest->unit . ' ' . ($item?->name ?? $data['item_name']),
+            ]);
+
+            return $stockRequest;
+        });
 
         $hrUsers = User::where('role', 'hr')->where('is_active', true)->get();
         if ($hrUsers->isNotEmpty()) {
@@ -147,14 +152,14 @@ class RequestController extends Controller
 
     public function approvalIndex(Request $request)
     {
-        $query = $this->buildExportQuery($request, 'approval')->with('requestHistories.user');
+        $query = $this->buildExportQuery($request, 'approval')->with(['requestHistories.user', 'procurementNote']);
 
         $requests = $query->latest()->paginate(20)->withQueryString();
 
         $notas = $requests->getCollection()
             ->sortBy('created_at')
-            ->groupBy(fn ($stockRequest) => $stockRequest->created_at->format('Y-m-d'))
-            ->sortKeysDesc();
+            ->groupBy('procurement_note_id')
+            ->sortByDesc(fn ($group) => $group->first()?->procurementNote?->request_date);
 
         return view('hr.approval', compact('notas', 'requests'));
     }
@@ -168,55 +173,6 @@ class RequestController extends Controller
         return view('hr.approval-detail', compact('request'));
     }
 
-    public function shoppingList(Request $request)
-    {
-        $queueQuery = StockRequest::with(['item.storageLocation', 'user'])
-            ->where('status', 'Disetujui')
-            ->whereNull('procurement_note_id');
-        $notesQuery = ProcurementNote::with('creator')->withCount('items');
-
-        $period = PeriodRange::fromRequest($request);
-        $period?->applyWithFallback($notesQuery, 'issued_at', 'created_at');
-
-        $requests = $queueQuery->latest('approved_at')->latest()->get();
-        $notes = $notesQuery->latest()->paginate(20)->withQueryString();
-
-        return view('hr.daftar-belanja', compact('requests', 'notes', 'period'));
-    }
-
-    public function exportShoppingListExcel(Request $request)
-    {
-        $rows = $this->buildShoppingListExportRows($request);
-        $export = new StockRequestExport(array_map('array_values', $rows));
-
-        return response($export->toXlsx(), 200)
-            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="daftar-belanja-driver.xlsx"');
-    }
-
-    protected function buildShoppingListExportRows(Request $request): array
-    {
-        $query = StockRequest::with('item.storageLocation')
-            ->where('status', 'Disetujui')
-            ->whereNull('procurement_note_id');
-
-        $requests = $query->latest()->get();
-
-        return $requests->map(function ($stockRequest) {
-            return [
-                $stockRequest->id,
-                $stockRequest->user?->name,
-                $stockRequest->item?->name,
-                $stockRequest->quantity,
-                $stockRequest->unit,
-                $stockRequest->priority,
-                $stockRequest->status,
-                $stockRequest->created_at?->translatedFormat('d M Y, H:i'),
-                $stockRequest->review_note,
-            ];
-        })->toArray();
-    }
-
     public function previewHistoryExport(Request $request)
     {
         return $this->previewRequestExport($request, 'gudang', 'Riwayat Permintaan', '/gudang/history');
@@ -228,14 +184,6 @@ class RequestController extends Controller
         $title = $date ? 'Approval Nota #NOTA-'.$date->format('Ymd') : 'Approval Permintaan';
 
         return $this->previewRequestExport($request, 'approval', $title, '/hr/approval');
-    }
-
-    public function previewHrHistoryExport(Request $request)
-    {
-        $date = $this->safeDate($request->input('date'));
-        $title = $date ? 'Nota Pengadaan #NOTA-'.$date->format('Ymd') : 'Riwayat Permintaan HR';
-
-        return $this->previewRequestExport($request, 'hr', $title, '/hr/history');
     }
 
     public function exportHistoryPdf(Request $request)
@@ -271,37 +219,6 @@ class RequestController extends Controller
         $rows = array_map('array_values', $this->buildExportRows($requests));
         $date = $this->safeDate($request->input('date'));
         $filename = $date ? 'approval-nota-'.$date->format('Ymd').'.xlsx' : 'approval-permintaan.xlsx';
-
-        return $this->downloadXlsx($filename, $rows);
-    }
-
-    public function hrHistory(Request $request)
-    {
-        $period = PeriodRange::fromRequest($request);
-        $query = $this->buildExportQuery($request, 'hr')->with(['requestHistories.user', 'procurementNote']);
-
-        $requests = $query->latest()->paginate(20)->withQueryString();
-
-        return view('hr.history', compact('requests', 'period'));
-    }
-
-    public function exportHrHistoryPdf(Request $request)
-    {
-        $requests = $this->buildExportQuery($request, 'hr')->latest()->get();
-        $rows = $this->buildExportRows($requests);
-        $date = $this->safeDate($request->input('date'));
-        $filename = $date ? 'nota-pengadaan-'.$date->format('Ymd').'.pdf' : 'riwayat-hr.pdf';
-        $title = $date ? 'Nota Pengadaan #NOTA-'.$date->format('Ymd') : 'Daftar Permintaan Barang';
-
-        return $this->downloadPdf($filename, $rows, $title);
-    }
-
-    public function exportHrHistoryExcel(Request $request)
-    {
-        $requests = $this->buildExportQuery($request, 'hr')->latest()->get();
-        $rows = array_map('array_values', $this->buildExportRows($requests));
-        $date = $this->safeDate($request->input('date'));
-        $filename = $date ? 'nota-pengadaan-'.$date->format('Ymd').'.xlsx' : 'riwayat-hr.xlsx';
 
         return $this->downloadXlsx($filename, $rows);
     }
@@ -395,7 +312,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk di-export dengan filter yang dipilih.');
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
         return $this->exportPreview(
@@ -432,7 +349,7 @@ class RequestController extends Controller
             return redirect()->back()->with('error', 'Permintaan sudah diproses, tidak bisa diulang.');
         }
 
-        return redirect('/hr/approval')->with('success', 'Permintaan disetujui dan masuk ke daftar belanja.');
+        return redirect('/hr/approval')->with('success', 'Permintaan disetujui dan menunggu penerimaan Gudang.');
     }
 
     public function reject(StockRequest $request, Request $httpRequest)
@@ -465,15 +382,17 @@ class RequestController extends Controller
         return redirect('/hr/approval')->with('success', 'Permintaan ditunda (Pending).');
     }
 
-    public function approveAll(string $date, Request $httpRequest)
+    public function approveAll(Request $httpRequest)
     {
         $data = $httpRequest->validate([
+            'request_ids' => ['required', 'array', 'min:1'],
+            'request_ids.*' => ['integer', 'distinct', 'exists:stock_requests,id'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $count = DB::transaction(function () use ($date, $data) {
+        $count = DB::transaction(function () use ($data) {
             $requests = StockRequest::with('item')
-                ->whereDate('created_at', $date)
+                ->whereIn('id', $data['request_ids'])
                 ->whereIn('status', ['Menunggu Review', 'Pending'])
                 ->get();
 
@@ -487,18 +406,20 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' item dalam nota berhasil disetujui.');
+        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan berhasil disetujui.');
     }
 
-    public function rejectAll(string $date, Request $httpRequest)
+    public function rejectAll(Request $httpRequest)
     {
         $data = $httpRequest->validate([
+            'request_ids' => ['required', 'array', 'min:1'],
+            'request_ids.*' => ['integer', 'distinct', 'exists:stock_requests,id'],
             'note' => ['required', 'string', 'max:1000'],
         ]);
 
-        $count = DB::transaction(function () use ($date, $data) {
+        $count = DB::transaction(function () use ($data) {
             $requests = StockRequest::with('item')
-                ->whereDate('created_at', $date)
+                ->whereIn('id', $data['request_ids'])
                 ->whereIn('status', ['Menunggu Review', 'Pending'])
                 ->get();
 
@@ -512,18 +433,20 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' item dalam nota berhasil ditolak.');
+        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan berhasil ditolak.');
     }
 
-    public function delayAll(string $date, Request $httpRequest)
+    public function delayAll(Request $httpRequest)
     {
         $data = $httpRequest->validate([
+            'request_ids' => ['required', 'array', 'min:1'],
+            'request_ids.*' => ['integer', 'distinct', 'exists:stock_requests,id'],
             'note' => ['nullable', 'string', 'max:1000'],
         ]);
 
-        $count = DB::transaction(function () use ($date, $data) {
+        $count = DB::transaction(function () use ($data) {
             $requests = StockRequest::with('item')
-                ->whereDate('created_at', $date)
+                ->whereIn('id', $data['request_ids'])
                 ->whereIn('status', ['Menunggu Review', 'Pending'])
                 ->get();
 
@@ -537,7 +460,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' item dalam nota ditunda (Pending).');
+        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan ditunda (Pending).');
     }
 
     protected function applyApproval(StockRequest $request, int $userId, ?string $note): bool

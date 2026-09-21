@@ -47,7 +47,7 @@
                 @if(($search ?? '') !== '' || ($status ?? '') !== '')
                 <a href="{{ $activeRack ? $basePath.'?rack='.urlencode($activeRack) : $basePath }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
                 @endif
-                <a href="{{ $basePath }}/print?{{ http_build_query(array_filter(['rack' => $activeRack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '')) }}" class="btn btn--secondary whitespace-nowrap">Hard Copy</a>
+                <a href="{{ $basePath }}/print?{{ http_build_query(array_filter(['rack' => $activeRack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '')) }}" class="btn btn--secondary whitespace-nowrap">Cetak</a>
             </form>
         </div>
 

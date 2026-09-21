@@ -34,8 +34,8 @@
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Sub Lokasi</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama Barang</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Size</th>
-                            <th class="px-4 py-3 text-right font-semibold text-slate-600">Qty</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Ukuran</th>
+                            <th class="px-4 py-3 text-right font-semibold text-slate-600">Jumlah</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">Satuan</th>
                         </tr>
                     </thead>
