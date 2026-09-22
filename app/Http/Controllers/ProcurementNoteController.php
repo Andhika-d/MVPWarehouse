@@ -65,10 +65,44 @@ class ProcurementNoteController extends Controller
             'requests.user',
             'requests.reviewedBy',
             'requests.closedBy',
-            'requests.requestHistories.user',
         ]);
 
         return view('procurement.show', compact('procurementNote'));
+    }
+
+    public function requestDetail(ProcurementNote $procurementNote, StockRequest $request)
+    {
+        abort_unless($request->procurement_note_id === $procurementNote->id, 404);
+
+        $request->load([
+            'item.storageLocation',
+            'user',
+            'reviewedBy',
+            'closedBy',
+            'requestHistories.user',
+        ]);
+
+        $timeline = $request->requestHistories
+            ->sortBy('created_at')
+            ->map(fn ($history) => [
+                'status' => $history->status,
+                'user' => $history->user?->name ?? 'Sistem',
+                'time' => $history->created_at,
+                'note' => $history->note,
+            ]);
+
+        if (! $timeline->contains('status', 'Menunggu Review')) {
+            $timeline->push([
+                'status' => 'Menunggu Review',
+                'user' => $request->user?->name ?? '—',
+                'time' => $request->created_at,
+                'note' => 'Barang: '.($request->item?->name ?? $request->item_name ?? 'Barang').' — '.$request->quantity.' '.$request->unit,
+            ]);
+        }
+
+        $timeline = $timeline->sortBy(fn ($event) => $event['time'])->values();
+
+        return view('procurement.request-detail', compact('procurementNote', 'request', 'timeline'));
     }
 
     public function print(ProcurementNote $procurementNote)
