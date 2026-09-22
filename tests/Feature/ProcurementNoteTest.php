@@ -196,6 +196,90 @@ class ProcurementNoteTest extends TestCase
         $this->assertStringNotContainsString('#request-'.$rejected->id, $response->getContent());
     }
 
+    public function test_request_detail_is_available_in_note_context_and_guards_relation(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Karet Sabuk'), 2);
+        $request = StockRequest::firstOrFail();
+        $note = $request->procurementNote;
+
+        foreach (['hr', 'gudang', 'director', 'admin'] as $role) {
+            $user = $role === 'gudang' ? $warehouse : User::factory()->create(['role' => $role]);
+            $this->actingAs($user)
+                ->get(route('procurement-notes.requests.show', [$note, $request]))
+                ->assertOk()
+                ->assertSee('Karet Sabuk')
+                ->assertSee('Permintaan Dibuat');
+        }
+
+        $otherNote = ProcurementNote::findOrCreateForDate('2026-08-15');
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$otherNote, $request]))
+            ->assertNotFound();
+    }
+
+    public function test_request_detail_shows_full_timeline_and_contextual_hr_actions(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Mur Baut'), 3);
+        $request = StockRequest::firstOrFail();
+        $note = $request->procurementNote;
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $request]))
+            ->assertOk()
+            ->assertSee('Permintaan Dibuat')
+            ->assertSee('Terima')
+            ->assertSee('Tolak')
+            ->assertSee('Tunda');
+
+        $this->actingAs($hr)->post('/hr/requests/'.$request->id.'/approve')->assertRedirect('/hr/approval');
+        $this->actingAs($warehouse)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 1,
+        ])->assertRedirect();
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $request]))
+            ->assertOk()
+            ->assertSee('Disetujui HR')
+            ->assertSee('Penerimaan Sebagian')
+            ->assertSee('Tutup Sisa')
+            ->assertDontSee('Terima');
+
+        $content = $response->getContent();
+        $this->assertLessThan(strpos($content, 'Disetujui HR'), strpos($content, 'Permintaan Dibuat'));
+        $this->assertLessThan(strpos($content, 'Penerimaan Sebagian'), strpos($content, 'Disetujui HR'));
+    }
+
+    public function test_request_detail_falls_back_to_creation_event_without_history(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-03');
+        $item = $this->item('Amplas');
+        $request = StockRequest::create([
+            'user_id' => $warehouse->id,
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Pcs',
+            'priority' => 'Biasa',
+            'reason' => 'Kebutuhan operasional',
+            'status' => 'Disetujui',
+            'procurement_note_id' => $note->id,
+        ]);
+        $request->created_at = '2026-09-03 08:00:00';
+        $request->save();
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $request]))
+            ->assertOk()
+            ->assertSee('Amplas')
+            ->assertSee('Permintaan Dibuat');
+    }
+
     private function submitRequest(User $warehouse, Item $item, int $quantity): void
     {
         $this->actingAs($warehouse)->post('/gudang/request-barang', [
