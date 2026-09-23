@@ -11,8 +11,10 @@ use App\Models\StockRequest;
 use App\Models\StorageLocation;
 use App\Support\ItemLocationSorter;
 use App\Support\LocationChangeExporter;
+use App\Support\LocationChangePdf;
 use App\Support\PeriodRange;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Support\PrintOrientation;
+use App\Support\RoleLabel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -53,13 +55,13 @@ class GudangController extends Controller
             $receiveQty = (int) $data['received_quantity'];
 
             if ($receiveQty > $remaining) {
-                return back()->with('error', 'Jumlah diterima (' . $receiveQty . ') melebihi sisa yang belum diterima (' . $remaining . ' ' . $stockRequest->unit . ').');
+                return back()->with('error', 'Jumlah diterima ('.$receiveQty.') melebihi sisa yang belum diterima ('.$remaining.' '.$stockRequest->unit.').');
             }
 
             $item = Item::lockForUpdate()->find($stockRequest->item_id);
 
             if ($item->unit !== $stockRequest->unit) {
-                return back()->with('error', 'Satuan tidak cocok: item menggunakan satuan "' . $item->unit . '" sedangkan permintaan menggunakan "' . $stockRequest->unit . '". Hubungi admin untuk memperbaiki data.');
+                return back()->with('error', 'Satuan tidak cocok: item menggunakan satuan "'.$item->unit.'" sedangkan permintaan menggunakan "'.$stockRequest->unit.'". Hubungi admin untuk memperbaiki data.');
             }
 
             $stockRequest->increment('received_quantity', $receiveQty);
@@ -94,10 +96,10 @@ class GudangController extends Controller
             $stockRequest->requestHistories()->create([
                 'user_id' => Auth::id(),
                 'status' => $stockRequest->status,
-                'note' => 'Diterima ' . $receiveQty . ' ' . $stockRequest->unit . (($data['note'] ?? null) ? ' — ' . $data['note'] : ''),
+                'note' => 'Diterima '.$receiveQty.' '.$stockRequest->unit.(($data['note'] ?? null) ? ' — '.$data['note'] : ''),
             ]);
 
-            return back()->with('success', $receiveQty . ' ' . $stockRequest->unit . ' berhasil diterima dan stok telah bertambah.');
+            return back()->with('success', $receiveQty.' '.$stockRequest->unit.' berhasil diterima dan stok telah bertambah.');
         });
     }
 
@@ -157,7 +159,7 @@ class GudangController extends Controller
             $item = Item::lockForUpdate()->find($data['item_id']);
 
             if ($item->stock < $data['quantity']) {
-                return back()->with('error', 'Stok tidak mencukupi. Stok saat ini: ' . $item->stock . ' ' . $item->unit);
+                return back()->with('error', 'Stok tidak mencukupi. Stok saat ini: '.$item->stock.' '.$item->unit);
             }
 
             $balanceBefore = $item->stock;
@@ -178,7 +180,7 @@ class GudangController extends Controller
                 'occurred_at' => now(),
             ]);
 
-            return back()->with('success', $data['quantity'] . ' ' . $item->unit . ' ' . $item->name . ' berhasil dicatat keluar. Stok tersisa: ' . $item->stock);
+            return back()->with('success', $data['quantity'].' '.$item->unit.' '.$item->name.' berhasil dicatat keluar. Stok tersisa: '.$item->stock);
         });
     }
 
@@ -192,11 +194,11 @@ class GudangController extends Controller
 
         $query = StockMovement::with('item', 'stockRequest', 'user')->orderByDesc('occurred_at');
 
-        if (!empty($validated['type'])) {
+        if (! empty($validated['type'])) {
             $query->where('type', $validated['type']);
         }
 
-        if (!empty($validated['item_id'])) {
+        if (! empty($validated['item_id'])) {
             $query->where('item_id', $validated['item_id']);
         }
 
@@ -365,7 +367,7 @@ class GudangController extends Controller
 
         return response($export->toXlsx(), 200)
             ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+            ->header('Content-Disposition', 'attachment; filename="'.$filename.'"');
     }
 
     public function previewMovementExport(Request $request)
@@ -406,7 +408,7 @@ class GudangController extends Controller
 
         $query->whereIn('type', $types);
 
-        if (!empty($validated['item_id'])) {
+        if (! empty($validated['item_id'])) {
             $query->where('item_id', $validated['item_id']);
         }
 
@@ -425,7 +427,7 @@ class GudangController extends Controller
                     $m->occurred_at?->translatedFormat('d M Y, H:i'),
                     $m->item?->name ?? '—',
                     $typeLabel,
-                    $m->type === 'OUT' ? '-' . $m->quantity : '+' . $m->quantity,
+                    $m->type === 'OUT' ? '-'.$m->quantity : '+'.$m->quantity,
                     $m->unit,
                     $m->balance_before,
                     $m->balance_after,
@@ -461,10 +463,10 @@ class GudangController extends Controller
             ['ID', 'Barang', 'Kode Asal', 'Sub Asal', 'Kode Tujuan', 'Sub Tujuan', 'Pemohon', 'Status', 'Aksi', 'Diajukan', 'Diputuskan', 'Alasan', 'Catatan'],
             $rows,
             $this->exportUrl('/gudang/location-change', $request),
-            [
-                ['format' => 'PDF', 'url' => $this->exportUrl('/gudang/location-change/export/pdf', $request)],
-                ['format' => 'Excel', 'url' => $this->exportUrl('/gudang/location-change/export/excel', $request)],
-            ]
+            array_merge(
+                $this->pdfVersions('/gudang/location-change/export/pdf', $request->except('orientation')),
+                [['format' => 'Excel', 'url' => $this->exportUrl('/gudang/location-change/export/excel', $request)]],
+            )
         );
     }
 
@@ -493,9 +495,14 @@ class GudangController extends Controller
             return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
-        $pdf = Pdf::loadView('exports.location-changes', compact('rows'));
-
-        return $pdf->download('riwayat-pengajuan-lokasi.pdf');
+        return LocationChangePdf::render(
+            $request,
+            'riwayat-pengajuan-lokasi.pdf',
+            $rows,
+            Auth::user()->name,
+            RoleLabel::of(Auth::user()->role),
+            PrintOrientation::resolve($request, 'landscape'),
+        );
     }
 
     protected function exportUrl(string $path, Request $request, array $except = []): string

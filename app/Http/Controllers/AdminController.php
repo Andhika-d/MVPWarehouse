@@ -13,9 +13,11 @@ use App\Models\StockRequest;
 use App\Models\StorageLocation;
 use App\Models\User;
 use App\Support\LocationChangeExporter;
+use App\Support\LocationChangePdf;
 use App\Support\PeriodRange;
+use App\Support\PrintOrientation;
+use App\Support\RoleLabel;
 use App\Support\XlsxParser;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -65,11 +67,11 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('sub_location', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhereHas('items', function ($iq) use ($search) {
-                      $iq->where('name', 'like', "%{$search}%")
-                         ->orWhere('size', 'like', "%{$search}%");
-                  });
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%")
+                            ->orWhere('size', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -280,8 +282,9 @@ class AdminController extends Controller
 
             $isEmptyLocation = ($name === '' && $subLocation !== '');
 
-            if ($name === '' && !$isEmptyLocation) {
+            if ($name === '' && ! $isEmptyLocation) {
                 $skipped++;
+
                 continue;
             }
 
@@ -322,7 +325,7 @@ class AdminController extends Controller
                 $locationCodes[] = $existingSlots[$i];
             } else {
                 $num = $maxNumber + ($i - count($existingSlots)) + 1;
-                $locationCodes[] = $prefix . '-' . str_pad($num, 3, '0', STR_PAD_LEFT);
+                $locationCodes[] = $prefix.'-'.str_pad($num, 3, '0', STR_PAD_LEFT);
             }
         }
 
@@ -334,7 +337,7 @@ class AdminController extends Controller
     public function importExecute(Request $request)
     {
         $sessionData = session('import_preview');
-        if (!$sessionData || !isset($sessionData['rack'], $sessionData['items'])) {
+        if (! $sessionData || ! isset($sessionData['rack'], $sessionData['items'])) {
             return redirect()->route('admin.import.index')->with('error', 'Sesi import kedaluwarsa. Silakan upload ulang.');
         }
 
@@ -364,7 +367,7 @@ class AdminController extends Controller
                 for ($i = 1; $i <= $needed; $i++) {
                     $num = $maxNumber + $i;
                     $locations->push(StorageLocation::create([
-                        'code' => $prefix . '-' . str_pad($num, 3, '0', STR_PAD_LEFT),
+                        'code' => $prefix.'-'.str_pad($num, 3, '0', STR_PAD_LEFT),
                         'rack' => $rack,
                         'number' => $num,
                         'status' => StorageLocation::STATUS_EMPTY,
@@ -374,7 +377,7 @@ class AdminController extends Controller
 
             foreach ($data['items'] as $index => $itemData) {
                 $location = $locations[$index];
-                $isEmptyLocation = !empty($itemData['is_empty_location']);
+                $isEmptyLocation = ! empty($itemData['is_empty_location']);
 
                 $subLocation = $itemData['sub_location'] ?? null;
                 if ($subLocation !== null) {
@@ -384,6 +387,7 @@ class AdminController extends Controller
                 if ($isEmptyLocation) {
                     $location->update(['status' => StorageLocation::STATUS_EMPTY]);
                     $locationsCreated++;
+
                     continue;
                 }
 
@@ -450,10 +454,10 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('code', 'like', "%{$search}%")
-                  ->orWhere('sub_location', 'like', "%{$search}%")
-                  ->orWhereHas('items', function ($iq) use ($search) {
-                      $iq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('sub_location', 'like', "%{$search}%")
+                    ->orWhereHas('items', function ($iq) use ($search) {
+                        $iq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -523,10 +527,10 @@ class AdminController extends Controller
             ['ID', 'Barang', 'Kode Asal', 'Sub Asal', 'Kode Tujuan', 'Sub Tujuan', 'Pemohon', 'Status', 'Aksi', 'Diajukan', 'Diputuskan', 'Alasan', 'Catatan'],
             $rows,
             $this->exportUrl('/admin/location-changes', $request),
-            [
-                ['format' => 'PDF', 'url' => $this->exportUrl('/admin/location-changes/export/pdf', $request)],
-                ['format' => 'Excel', 'url' => $this->exportUrl('/admin/location-changes/export/excel', $request)],
-            ]
+            array_merge(
+                $this->pdfVersions('/admin/location-changes/export/pdf', $request->except('orientation')),
+                [['format' => 'Excel', 'url' => $this->exportUrl('/admin/location-changes/export/excel', $request)]],
+            )
         );
     }
 
@@ -539,9 +543,14 @@ class AdminController extends Controller
             return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
         }
 
-        $pdf = Pdf::loadView('exports.location-changes', compact('rows'));
-
-        return $pdf->download('riwayat-pengajuan-lokasi.pdf');
+        return LocationChangePdf::render(
+            $request,
+            'riwayat-pengajuan-lokasi.pdf',
+            $rows,
+            Auth::user()->name,
+            RoleLabel::of(Auth::user()->role),
+            PrintOrientation::resolve($request, 'landscape'),
+        );
     }
 
     public function approveLocationChange(LocationChangeRequest $change, Request $httpRequest)
@@ -710,7 +719,7 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -934,10 +943,10 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('details', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
         $period?->apply($query, 'created_at');
@@ -993,10 +1002,10 @@ class AdminController extends Controller
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('details', 'like', "%{$search}%")
-                  ->orWhere('action', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($uq) use ($search) {
-                      $uq->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('action', 'like', "%{$search}%")
+                    ->orWhereHas('user', function ($uq) use ($search) {
+                        $uq->where('name', 'like', "%{$search}%");
+                    });
             });
         }
         PeriodRange::fromRequest($request)?->apply($query, 'created_at');
@@ -1158,6 +1167,7 @@ class AdminController extends Controller
         $zip = new \ZipArchive;
         if ($zip->open($path) !== true) {
             $this->deleteDir($tmpDir);
+
             return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: arsip backup rusak.');
         }
 
@@ -1167,11 +1177,13 @@ class AdminController extends Controller
         $extracted = $tmpDir.'/database.sqlite';
         if (! is_file($extracted)) {
             $this->deleteDir($tmpDir);
+
             return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: isi arsip tidak valid.');
         }
 
         if (! $this->isValidSqlite($extracted)) {
             $this->deleteDir($tmpDir);
+
             return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: database backup rusak.');
         }
 
@@ -1351,6 +1363,7 @@ class AdminController extends Controller
         if ($bytes >= 1024) {
             return round($bytes / 1024, 1).' KB';
         }
+
         return $bytes.' B';
     }
 
@@ -1362,6 +1375,7 @@ class AdminController extends Controller
                 return [$row, array_slice($rows, $index + 1)];
             }
         }
+
         return [[], []];
     }
 
@@ -1409,6 +1423,7 @@ class AdminController extends Controller
             $pdo = new \PDO('sqlite:'.$path);
             $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
             $integrity = $pdo->query('PRAGMA integrity_check')->fetchColumn();
+
             return $integrity === 'ok';
         } catch (\Throwable) {
             return false;
@@ -1435,6 +1450,7 @@ class AdminController extends Controller
             return null;
         }
         $path = storage_path('app/backups/'.$file);
+
         return is_file($path) ? $path : null;
     }
 

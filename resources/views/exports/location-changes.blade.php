@@ -1,62 +1,74 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>Export Pengajuan Lokasi</title>
-    <style>
-        body { font-family: Arial, sans-serif; font-size: 10px; color: #111827; }
-        h2 { margin: 0; }
-        .meta { color: #6b7280; font-size: 10px; margin-top: 4px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th, td { border: 1px solid #d1d5db; padding: 5px; text-align: left; vertical-align: top; }
-        th { background: #f3f4f6; white-space: nowrap; }
-        td { word-break: break-word; }
-    </style>
-</head>
-<body>
-    <h2>Riwayat Pengajuan Lokasi</h2>
-    <div class="meta">Dibuat: {{ now()->translatedFormat('d M Y, H:i') }}</div>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Barang</th>
-                <th>Kode Asal</th>
-                <th>Sub Asal</th>
-                <th>Kode Tujuan</th>
-                <th>Sub Tujuan</th>
-                <th>Pemohon</th>
-                <th>Status</th>
-                <th>Aksi</th>
-                <th>Diajukan</th>
-                <th>Diputuskan</th>
-                <th>Alasan</th>
-                <th>Catatan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse($rows as $row)
+<x-print-shell
+    :title="$title"
+    :orientation="$orientation"
+    :styles="'prints.styles.locations'"
+>
+    <main class="sheet">
+        @include('prints.document-header', [
+            'title' => 'RIWAYAT PENGAJUAN LOKASI',
+            'subtitle' => 'THI2-WAREHOUSE · Dokumen rekap pengajuan perubahan lokasi barang',
+            'printedAt' => $printedAt,
+            'printedBy' => $printedBy,
+            'printedRole' => $printedRole,
+        ])
+
+        <div class="filters">
+            <span><strong>Periode:</strong> {{ $periodLabel }}</span>
+            <span><strong>Baris:</strong> {{ count($rows) }}</span>
+            @foreach($filters as $label => $value)<span><strong>{{ $label }}:</strong> {{ $value }}</span>@endforeach
+        </div>
+
+        @if($orientation === 'portrait')
+        <table class="data location-table--portrait">
+            <thead>
                 <tr>
-                    <td>{{ $row['id'] ?? '' }}</td>
-                    <td>{{ $row['barang'] ?? '' }}</td>
-                    <td>{{ $row['kode_asal'] ?? '' }}</td>
-                    <td>{{ $row['sub_asal'] ?? '' }}</td>
-                    <td>{{ $row['kode_tujuan'] ?? '' }}</td>
-                    <td>{{ $row['sub_tujuan'] ?? '' }}</td>
-                    <td>{{ $row['pemohon'] ?? '' }}</td>
-                    <td>{{ $row['status'] ?? '' }}</td>
-                    <td>{{ $row['aksi'] ?? '' }}</td>
-                    <td>{{ $row['diajukan'] ?? '' }}</td>
-                    <td>{{ $row['diputuskan'] ?? '' }}</td>
-                    <td>{{ $row['alasan'] ?? '' }}</td>
-                    <td>{{ $row['catatan'] ?? '' }}</td>
+                    <th>No.</th><th>Barang</th><th>Asal</th><th>Tujuan</th><th>Pemohon</th><th>Status</th><th>Aksi</th><th>Diajukan</th>
                 </tr>
-            @empty
+            </thead>
+            <tbody>
+                @foreach($rows as $index => $row)
                 <tr>
-                    <td colspan="13">Tidak ada data.</td>
+                    <td><span class="cell-primary">{{ $index + 1 }}</span></td>
+                    <td><span class="cell-primary">{{ $row['barang'] ?? '—' }}</span></td>
+                    <td><span class="cell-primary">{{ $row['kode_asal'] ?? '—' }}</span><span class="cell-meta">Sub: {{ $row['sub_asal'] ?? '—' }}</span></td>
+                    <td><span class="cell-primary">{{ $row['kode_tujuan'] ?? '—' }}</span><span class="cell-meta">Sub: {{ $row['sub_tujuan'] ?? '—' }}</span></td>
+                    <td>{{ $row['pemohon'] ?? '—' }}</td>
+                    <td><span class="status">{{ $row['status'] ?? '—' }}</span></td>
+                    <td>{{ $row['aksi'] ?? '—' }}</td>
+                    <td>{{ $row['diajukan'] ?? '—' }}</td>
                 </tr>
-            @endforelse
-        </tbody>
-    </table>
-</body>
-</html>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>No.</th><th>Barang</th><th>Kode Asal</th><th>Sub Asal</th><th>Kode Tujuan</th><th>Sub Tujuan</th><th>Pemohon</th><th>Status</th><th>Aksi</th><th>Diajukan</th><th>Diputuskan</th><th>Alasan</th><th>Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($rows as $index => $row)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $row['barang'] ?? '—' }}</td>
+                    <td>{{ $row['kode_asal'] ?? '—' }}</td>
+                    <td>{{ $row['sub_asal'] ?? '—' }}</td>
+                    <td>{{ $row['kode_tujuan'] ?? '—' }}</td>
+                    <td>{{ $row['sub_tujuan'] ?? '—' }}</td>
+                    <td>{{ $row['pemohon'] ?? '—' }}</td>
+                    <td><span class="status">{{ $row['status'] ?? '—' }}</span></td>
+                    <td>{{ $row['aksi'] ?? '—' }}</td>
+                    <td>{{ $row['diajukan'] ?? '—' }}</td>
+                    <td>{{ $row['diputuskan'] ?? '—' }}</td>
+                    <td>{{ $row['alasan'] ?? '—' }}</td>
+                    <td>{{ $row['catatan'] ?? '—' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        <footer class="doc-footer">THI2-WAREHOUSE · Dokumen rekap otomatis dari data pengajuan lokasi barang.</footer>
+    </main>
+</x-print-shell>

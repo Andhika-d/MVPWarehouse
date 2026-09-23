@@ -22,4 +22,15 @@ abstract class Controller
             'downloads' => $downloads,
         ]);
     }
+
+    protected function pdfVersions(string $path, array $query): array
+    {
+        $url = url($path).($query ? '?'.http_build_query($query) : '');
+        $glue = str_contains($url, '?') ? '&' : '?';
+
+        return [
+            ['format' => 'PDF', 'label' => 'PDF Landscape', 'url' => $url.$glue.'orientation=landscape'],
+            ['format' => 'PDF', 'label' => 'PDF Portrait', 'url' => $url.$glue.'orientation=portrait'],
+        ];
+    }
 }

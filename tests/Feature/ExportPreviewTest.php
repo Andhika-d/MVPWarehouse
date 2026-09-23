@@ -38,7 +38,10 @@ class ExportPreviewTest extends TestCase
 
         $response->assertOk()
             ->assertSee('Menampilkan 100 dari 101 baris.')
-            ->assertSee('/gudang/history/export/pdf?status=Disetujui', false)
+            ->assertSee('/gudang/history/export/pdf?status=Disetujui&amp;orientation=landscape', false)
+            ->assertSee('/gudang/history/export/pdf?status=Disetujui&amp;orientation=portrait', false)
+            ->assertSee('Unduh PDF Landscape', false)
+            ->assertSee('Unduh PDF Portrait', false)
             ->assertSee('/gudang/history/export/excel?status=Disetujui', false);
 
         $this->assertSame(100, substr_count($response->getContent(), '<tr class="align-top'));
@@ -197,7 +200,8 @@ class ExportPreviewTest extends TestCase
             ->assertSee('Approval Nota #NOTA-20260907')
             ->assertSee('Menampilkan 1 dari 1 baris.')
             ->assertDontSee('Approval Nota Agustus')
-            ->assertSee('/hr/approval/export/pdf?date=2026-09-07', false)
+            ->assertSee('/hr/approval/export/pdf?date=2026-09-07&amp;orientation=landscape', false)
+            ->assertSee('/hr/approval/export/pdf?date=2026-09-07&amp;orientation=portrait', false)
             ->assertSee('/hr/approval/export/excel?date=2026-09-07', false);
 
         $this->get('/hr/approval/export/pdf?date=2026-09-07')
