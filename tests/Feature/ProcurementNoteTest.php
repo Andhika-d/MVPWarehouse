@@ -398,6 +398,59 @@ class ProcurementNoteTest extends TestCase
             ->assertDontSee('NOTA-20260903');
     }
 
+    public function test_note_print_defaults_to_landscape_and_supports_portrait(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Pulpen'), 4);
+        $note = ProcurementNote::firstOrFail();
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.print', $note))
+            ->assertOk()
+            ->assertSee('size: A4 landscape', false)
+            ->assertSee('Cetak A4 Landscape')
+            ->assertSee('Landscape')
+            ->assertSee('Portrait')
+            ->assertDontSee('<th>Jumlah</th>', false);
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.print', [$note, 'orientation' => 'portrait']))
+            ->assertOk()
+            ->assertSee('size: A4 portrait', false)
+            ->assertSee('Cetak A4 Portrait')
+            ->assertSee('<th>Jumlah</th>', false)
+            ->assertSee('Diminta')
+            ->assertSee('Diterima')
+            ->assertSee('Sisa');
+    }
+
+    public function test_note_print_rejects_invalid_orientation(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Pulpen'), 4);
+        $note = ProcurementNote::firstOrFail();
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.print', [$note, 'orientation' => 'bogus']))
+            ->assertRedirect()
+            ->assertSessionHasErrors('orientation');
+    }
+
+    public function test_period_print_supports_portrait_orientation(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $this->submitRequest($warehouse, $this->item('Pulpen'), 4);
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.print-period', ['orientation' => 'portrait']))
+            ->assertOk()
+            ->assertSee('size: A4 portrait', false)
+            ->assertSee('Cetak A4 Portrait');
+    }
+
     private function submitRequest(User $warehouse, Item $item, int $quantity): void
     {
         $this->actingAs($warehouse)->post('/gudang/request-barang', [

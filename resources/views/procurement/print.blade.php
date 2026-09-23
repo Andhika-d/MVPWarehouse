@@ -5,13 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ $title }}</title>
     <style>
-        @page { size: A4 landscape; margin: 10mm; }
+        @page { size: A4 {{ $orientation }}; margin: 10mm; }
         * { box-sizing: border-box; }
         body { margin: 0; color: #0f172a; background: #eef2f7; font: 12px Arial, sans-serif; }
         .toolbar { display: flex; justify-content: flex-end; gap: 8px; max-width: 297mm; margin: 16px auto 0; }
         .toolbar a, .toolbar button { border: 1px solid #cbd5e1; border-radius: 6px; padding: 8px 14px; color: #334155; background: white; font-weight: 700; text-decoration: none; cursor: pointer; }
+        .toolbar a.active { border-color: #93c5fd; color: #1d4ed8; background: #eff6ff; }
         .toolbar button { border-color: #1d4ed8; color: white; background: #1d4ed8; }
-        .sheet { max-width: 297mm; min-height: 210mm; margin: 12px auto 24px; padding: 10mm; background: white; box-shadow: 0 8px 30px rgba(15, 23, 42, .1); break-after: page; }
+        .sheet { max-width: {{ $orientation === 'portrait' ? '210mm' : '297mm' }}; min-height: {{ $orientation === 'portrait' ? '297mm' : '210mm' }}; margin: 12px auto 24px; padding: 10mm; background: white; box-shadow: 0 8px 30px rgba(15, 23, 42, .1); break-after: page; }
         .sheet:last-child { break-after: auto; }
         header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; padding-bottom: 12px; border-bottom: 3px solid #1d4ed8; }
         h1 { margin: 0 0 5px; font-size: 22px; letter-spacing: .02em; }
@@ -34,6 +35,10 @@
         th { color: white; background: #1e3a8a; font-size: 9px; text-transform: uppercase; letter-spacing: .04em; }
         td.number { text-align: right; white-space: nowrap; }
         .status { white-space: nowrap; font-weight: 700; }
+        .cell-primary { display: block; font-weight: 700; color: #0f172a; }
+        .cell-meta { display: block; margin-top: 2px; color: #475569; font-size: 9px; }
+        .procurement-table--portrait th:first-child, .procurement-table--portrait td:first-child { width: 15mm; }
+        .procurement-table--portrait th:nth-child(3), .procurement-table--portrait td:nth-child(3) { width: 30mm; }
         footer { margin-top: 10px; color: #64748b; font-size: 9px; text-align: right; }
         @media print {
             body { background: white; }
@@ -45,8 +50,10 @@
 </head>
 <body>
     <div class="toolbar">
-        <a href="{{ url()->previous() }}">Kembali</a>
-        <button type="button" onclick="window.print()">Cetak</button>
+        <a href="{{ $backUrl }}">Kembali</a>
+        <a href="{{ request()->fullUrlWithQuery(['orientation' => 'landscape']) }}" class="{{ $orientation === 'landscape' ? 'active' : '' }}">Landscape</a>
+        <a href="{{ request()->fullUrlWithQuery(['orientation' => 'portrait']) }}" class="{{ $orientation === 'portrait' ? 'active' : '' }}">Portrait</a>
+        <button type="button" onclick="window.print()">Cetak A4 {{ ucfirst($orientation) }}</button>
     </div>
 
     @foreach($notes as $note)
@@ -89,6 +96,39 @@
             <span><strong>Status:</strong> {{ $note->statusLabel() }}</span>
         </div>
 
+        @if($orientation === 'portrait')
+        <table class="procurement-table--portrait">
+            <thead>
+                <tr>
+                    <th>ID</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($note->requests as $stockRequest)
+                @php
+                    $activeRemaining = $stockRequest->canReceive() ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
+                @endphp
+                <tr>
+                    <td>
+                        <span class="cell-primary">#{{ $stockRequest->id }}</span>
+                        <span class="cell-meta">{{ $stockRequest->created_at->format('H:i') }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-primary">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</span>
+                        <span class="cell-meta">{{ $stockRequest->user?->name ?? '—' }}</span>
+                    </td>
+                    <td>
+                        <span class="cell-primary">Diminta {{ $stockRequest->quantity }} {{ $stockRequest->unit }}</span>
+                        <span class="cell-meta">Diterima {{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</span>
+                        <span class="cell-meta">Sisa {{ $activeRemaining === null ? '—' : $activeRemaining.' '.$stockRequest->unit }}</span>
+                    </td>
+                    <td><span class="status">{{ $stockRequest->status }}</span></td>
+                    <td>{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
         <table>
             <thead>
                 <tr>
@@ -115,6 +155,7 @@
                 @endforeach
             </tbody>
         </table>
+        @endif
 
         <footer>THI2-WAREHOUSE · {{ $note->number }} · Dokumen rekap otomatis dari data request dan penerimaan barang.</footer>
     </main>

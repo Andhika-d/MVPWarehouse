@@ -105,8 +105,9 @@ class ProcurementNoteController extends Controller
         return view('procurement.request-detail', compact('procurementNote', 'request', 'timeline'));
     }
 
-    public function print(ProcurementNote $procurementNote)
+    public function print(Request $httpRequest, ProcurementNote $procurementNote)
     {
+        $orientation = $this->printOrientation($httpRequest);
         $procurementNote->load($this->printRelations());
         $procurementNote->update(['last_printed_at' => now()]);
 
@@ -117,6 +118,8 @@ class ProcurementNoteController extends Controller
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
             'printedRole' => $this->roleLabel(Auth::user()->role),
+            'orientation' => $orientation,
+            'backUrl' => route('procurement-notes.show', $procurementNote),
         ]);
     }
 
@@ -132,6 +135,7 @@ class ProcurementNoteController extends Controller
 
     public function printPeriod(Request $request)
     {
+        $orientation = $this->printOrientation($request);
         $period = PeriodRange::fromRequest($request);
         $notes = $this->filteredNotesQuery($request, $period)
             ->with($this->printRelations())
@@ -140,6 +144,8 @@ class ProcurementNoteController extends Controller
 
         abort_if($notes->isEmpty(), 404);
 
+        $backQuery = $request->except('orientation');
+
         return view('procurement.print', [
             'notes' => $notes,
             'title' => 'Rekap Riwayat Pengadaan Barang',
@@ -147,7 +153,18 @@ class ProcurementNoteController extends Controller
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
             'printedRole' => $this->roleLabel(Auth::user()->role),
+            'orientation' => $orientation,
+            'backUrl' => route('procurement-notes.index').($backQuery ? '?'.http_build_query($backQuery) : ''),
         ]);
+    }
+
+    private function printOrientation(Request $request): string
+    {
+        $validated = $request->validate([
+            'orientation' => ['nullable', 'in:landscape,portrait'],
+        ]);
+
+        return $validated['orientation'] ?? 'landscape';
     }
 
     public function excelPeriod(Request $request)
