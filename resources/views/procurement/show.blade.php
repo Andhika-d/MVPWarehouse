@@ -74,7 +74,7 @@
                             </td>
                             <td class="px-4 py-4"><x-status-badge domain="request" :status="$stockRequest->status" /></td>
                             <td class="max-w-xs px-4 py-4 text-xs text-slate-500">{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
-                            <td class="px-4 py-4 text-right">@if(auth()->user()->role === 'hr' && $stockRequest->canClose())<x-hr-request-close-button :request="$stockRequest" class="whitespace-nowrap" />@else<span class="text-slate-300">—</span>@endif</td>
+                            <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.requests.show', [$procurementNote, $stockRequest]) }}" class="action-link">Detail Riwayat</a>@if(auth()->user()->role === 'hr' && $stockRequest->canClose())<x-hr-request-close-button :request="$stockRequest" class="whitespace-nowrap" />@endif</td>
                         </tr>
                         @endforeach
                     </tbody>

@@ -38,6 +38,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/riwayat-pengadaan/cetak', [ProcurementNoteController::class, 'printPeriod'])->name('procurement-notes.print-period');
         Route::get('/riwayat-pengadaan/export/excel', [ProcurementNoteController::class, 'excelPeriod'])->name('procurement-notes.excel-period');
         Route::get('/riwayat-pengadaan/{procurementNote}', [ProcurementNoteController::class, 'show'])->name('procurement-notes.show');
+        Route::get('/riwayat-pengadaan/{procurementNote}/request/{request}', [ProcurementNoteController::class, 'requestDetail'])->name('procurement-notes.requests.show');
         Route::get('/riwayat-pengadaan/{procurementNote}/cetak', [ProcurementNoteController::class, 'print'])->name('procurement-notes.print');
         Route::get('/riwayat-pengadaan/{procurementNote}/excel', [ProcurementNoteController::class, 'excel'])->name('procurement-notes.excel');
     });

@@ -24,6 +24,19 @@ class ProcurementNoteController extends Controller
             ->paginate(12)
             ->withQueryString();
 
+        $search = trim((string) $request->input('search', ''));
+        $searchActive = $search !== '';
+        $matchingRequestsByNote = $searchActive
+            ? $notes->getCollection()->mapWithKeys(function (ProcurementNote $note) use ($request, $search) {
+                $matched = $note->requests->filter(function (StockRequest $stockRequest) use ($request, $search) {
+                    return $this->requestMatchesSearch($stockRequest, $search)
+                        && $this->requestMatchesFilters($stockRequest, $request);
+                })->values();
+
+                return [$note->id => $matched];
+            })
+            : collect();
+
         $activeBuilder = (clone $base)->whereHas(
             'requests',
             fn (Builder $requestQuery) => $requestQuery->whereNotIn('status', ProcurementNote::TERMINAL_REQUEST_STATUSES),
@@ -39,6 +52,9 @@ class ProcurementNoteController extends Controller
             'activeCount' => $activeCount,
             'completedCount' => $totalNotes - $activeCount,
             'requestCount' => $requestCount,
+            'searchActive' => $searchActive,
+            'search' => $search,
+            'matchingRequestsByNote' => $matchingRequestsByNote,
         ]);
     }
 
@@ -49,14 +65,49 @@ class ProcurementNoteController extends Controller
             'requests.user',
             'requests.reviewedBy',
             'requests.closedBy',
-            'requests.requestHistories.user',
         ]);
 
         return view('procurement.show', compact('procurementNote'));
     }
 
-    public function print(ProcurementNote $procurementNote)
+    public function requestDetail(ProcurementNote $procurementNote, StockRequest $request)
     {
+        abort_unless($request->procurement_note_id === $procurementNote->id, 404);
+
+        $request->load([
+            'item.storageLocation',
+            'user',
+            'reviewedBy',
+            'closedBy',
+            'requestHistories.user',
+        ]);
+
+        $timeline = $request->requestHistories
+            ->sortBy('created_at')
+            ->map(fn ($history) => [
+                'status' => $history->status,
+                'user' => $history->user?->name ?? 'Sistem',
+                'time' => $history->created_at,
+                'note' => $history->note,
+            ]);
+
+        if (! $timeline->contains('status', 'Menunggu Review')) {
+            $timeline->push([
+                'status' => 'Menunggu Review',
+                'user' => $request->user?->name ?? '—',
+                'time' => $request->created_at,
+                'note' => 'Barang: '.($request->item?->name ?? $request->item_name ?? 'Barang').' — '.$request->quantity.' '.$request->unit,
+            ]);
+        }
+
+        $timeline = $timeline->sortBy(fn ($event) => $event['time'])->values();
+
+        return view('procurement.request-detail', compact('procurementNote', 'request', 'timeline'));
+    }
+
+    public function print(Request $httpRequest, ProcurementNote $procurementNote)
+    {
+        $orientation = $this->printOrientation($httpRequest);
         $procurementNote->load($this->printRelations());
         $procurementNote->update(['last_printed_at' => now()]);
 
@@ -67,6 +118,8 @@ class ProcurementNoteController extends Controller
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
             'printedRole' => $this->roleLabel(Auth::user()->role),
+            'orientation' => $orientation,
+            'backUrl' => route('procurement-notes.show', $procurementNote),
         ]);
     }
 
@@ -82,6 +135,7 @@ class ProcurementNoteController extends Controller
 
     public function printPeriod(Request $request)
     {
+        $orientation = $this->printOrientation($request);
         $period = PeriodRange::fromRequest($request);
         $notes = $this->filteredNotesQuery($request, $period)
             ->with($this->printRelations())
@@ -90,6 +144,8 @@ class ProcurementNoteController extends Controller
 
         abort_if($notes->isEmpty(), 404);
 
+        $backQuery = $request->except('orientation');
+
         return view('procurement.print', [
             'notes' => $notes,
             'title' => 'Rekap Riwayat Pengadaan Barang',
@@ -97,7 +153,18 @@ class ProcurementNoteController extends Controller
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
             'printedRole' => $this->roleLabel(Auth::user()->role),
+            'orientation' => $orientation,
+            'backUrl' => route('procurement-notes.index').($backQuery ? '?'.http_build_query($backQuery) : ''),
         ]);
+    }
+
+    private function printOrientation(Request $request): string
+    {
+        $validated = $request->validate([
+            'orientation' => ['nullable', 'in:landscape,portrait'],
+        ]);
+
+        return $validated['orientation'] ?? 'landscape';
     }
 
     public function excelPeriod(Request $request)
@@ -124,26 +191,40 @@ class ProcurementNoteController extends Controller
             $query->whereDate('request_date', '<=', $period->endDate());
         }
 
-        if ($request->filled('search')) {
-            $search = trim((string) $request->input('search'));
-            $query->where(function (Builder $noteQuery) use ($search) {
-                $noteQuery->where('number', 'like', "%{$search}%")
-                    ->orWhereHas('requests', function (Builder $requestQuery) use ($search) {
-                        $requestQuery->where('item_name', 'like', "%{$search}%")
-                            ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->where('name', 'like', "%{$search}%"))
-                            ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
-                    });
+        $search = trim((string) $request->input('search', ''));
+        $status = $request->filled('request_status') && $request->input('request_status') !== 'all'
+            ? $request->input('request_status')
+            : null;
+        $priority = $request->filled('priority') && $request->input('priority') !== 'all'
+            ? $request->input('priority')
+            : null;
+
+        if ($search !== '' || $status !== null || $priority !== null) {
+            $query->where(function (Builder $noteQuery) use ($search, $status, $priority) {
+                if ($search !== '') {
+                    $pattern = $this->likePattern($search);
+                    $noteQuery->whereRaw("number LIKE ? ESCAPE '\\'", [$pattern]);
+                }
+
+                $noteQuery->orWhereHas('requests', function (Builder $requestQuery) use ($search, $status, $priority) {
+                    if ($search !== '') {
+                        $pattern = $this->likePattern($search);
+                        $requestQuery->where(function (Builder $valueQuery) use ($pattern) {
+                            $valueQuery->whereRaw("item_name LIKE ? ESCAPE '\\'", [$pattern])
+                                ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]))
+                                ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]));
+                        });
+                    }
+
+                    if ($status !== null) {
+                        $requestQuery->where('status', $status);
+                    }
+
+                    if ($priority !== null) {
+                        $requestQuery->where('priority', $priority);
+                    }
+                });
             });
-        }
-
-        if ($request->filled('request_status') && $request->input('request_status') !== 'all') {
-            $status = $request->input('request_status');
-            $query->whereHas('requests', fn (Builder $requestQuery) => $requestQuery->where('status', $status));
-        }
-
-        if ($request->filled('priority') && $request->input('priority') !== 'all') {
-            $priority = $request->input('priority');
-            $query->whereHas('requests', fn (Builder $requestQuery) => $requestQuery->where('priority', $priority));
         }
 
         if ($request->input('note_status') === ProcurementNote::STATUS_COMPLETED) {
@@ -153,6 +234,45 @@ class ProcurementNoteController extends Controller
         }
 
         return $query;
+    }
+
+    private function requestMatchesSearch(StockRequest $stockRequest, string $search): bool
+    {
+        $searchable = array_filter([
+            $stockRequest->item?->name,
+            $stockRequest->item_name,
+            $stockRequest->user?->name,
+        ]);
+
+        foreach ($searchable as $value) {
+            if (is_string($value) && mb_stripos($value, $search) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function likePattern(string $term): string
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term);
+
+        return "%{$escaped}%";
+    }
+
+    private function requestMatchesFilters(StockRequest $stockRequest, Request $request): bool
+    {
+        if ($request->filled('request_status') && $request->input('request_status') !== 'all'
+            && $stockRequest->status !== $request->input('request_status')) {
+            return false;
+        }
+
+        if ($request->filled('priority') && $request->input('priority') !== 'all'
+            && $stockRequest->priority !== $request->input('priority')) {
+            return false;
+        }
+
+        return true;
     }
 
     private function printRelations(): array
