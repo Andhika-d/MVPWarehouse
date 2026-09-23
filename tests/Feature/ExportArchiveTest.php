@@ -111,6 +111,7 @@ class ExportArchiveTest extends TestCase
         $response = $this->actingAs($gudang)->get('/gudang/location-change/export/pdf');
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('/NanumGothic', $response->baseResponse->getContent());
     }
 
     public function test_gudang_export_is_scoped_to_own_requests_only(): void

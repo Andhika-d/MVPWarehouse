@@ -31,7 +31,7 @@
         .subtitle { color: #475569; }
         .meta { color: #475569; text-align: right; line-height: 1.6; font-size: 10px; }
 
-        .approval-grid { width: 78mm; height: 28mm; margin: 8px 0 0 auto; border-collapse: collapse; table-layout: fixed; color: #0f172a; font-size: 9px; line-height: 1.05; }
+        .approval-grid { width: 78mm; height: 28mm; margin: 8px 0 0 auto; border-collapse: collapse; table-layout: fixed; color: #0f172a; font-size: 9px; line-height: 1.05; font-family: "NanumGothic", "Nanum Gothic", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
         .approval-grid td { padding: 0; border: 1.5px solid #111827; text-align: center; vertical-align: middle; }
         .approval-grid .approval-label { width: 7mm; font-size: 12px; line-height: 1.8; }
         .approval-grid .approval-heading { height: 7mm; font-size: 9px; }

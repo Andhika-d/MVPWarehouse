@@ -21,6 +21,8 @@ final class LocationChangePdf
                 : 'Semua',
         ];
 
+        PdfFonts::register();
+
         $pdf = Pdf::loadView('exports.location-changes', [
             'title' => 'Riwayat Pengajuan Lokasi',
             'rows' => $rows,

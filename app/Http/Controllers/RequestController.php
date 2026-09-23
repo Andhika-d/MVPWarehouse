@@ -13,6 +13,7 @@ use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use App\Support\ItemLocationSorter;
+use App\Support\PdfFonts;
 use App\Support\PdfFooter;
 use App\Support\PeriodRange;
 use App\Support\PrintOrientation;
@@ -314,6 +315,8 @@ class RequestController extends Controller
         string $printedRole,
         array $filters = []
     ) {
+        PdfFonts::register();
+
         $pdf = Pdf::loadView('exports.stock-requests', [
             'rows' => $rows,
             'title' => $title,
