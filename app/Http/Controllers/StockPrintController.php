@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\PrintOrientation;
+use App\Support\RoleLabel;
 use App\Support\StockLocationQuery;
 use Illuminate\Http\Request;
 
@@ -9,21 +11,13 @@ class StockPrintController extends Controller
 {
     public function __invoke(Request $request)
     {
-        $validated = $request->validate([
-            'orientation' => ['nullable', 'in:landscape,portrait'],
-        ]);
-        $orientation = $validated['orientation'] ?? 'landscape';
+        $orientation = PrintOrientation::resolve($request);
         $locations = StockLocationQuery::fromRequest($request)->get();
         $items = $locations->flatMap->items;
         $statusLabels = [
             'occupied' => 'Terisi',
             'empty' => 'Lokasi Kosong',
             'item_empty' => 'Barang Kosong',
-        ];
-        $roleLabels = [
-            'gudang' => 'Gudang',
-            'hr' => 'HR',
-            'director' => 'Direktur',
         ];
 
         $summary = [
@@ -52,7 +46,7 @@ class StockPrintController extends Controller
             'filters' => $filters,
             'printedAt' => now(),
             'printedBy' => $request->user()->name,
-            'role' => $roleLabels[$request->user()->role] ?? ucfirst($request->user()->role),
+            'printedRole' => RoleLabel::of($request->user()->role),
             'backUrl' => $backUrl,
             'orientation' => $orientation,
         ]);

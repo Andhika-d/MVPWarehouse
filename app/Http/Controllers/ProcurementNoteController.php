@@ -6,6 +6,8 @@ use App\Exports\ProcurementNoteExport;
 use App\Models\ProcurementNote;
 use App\Models\StockRequest;
 use App\Support\PeriodRange;
+use App\Support\PrintOrientation;
+use App\Support\RoleLabel;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -107,7 +109,7 @@ class ProcurementNoteController extends Controller
 
     public function print(Request $httpRequest, ProcurementNote $procurementNote)
     {
-        $orientation = $this->printOrientation($httpRequest);
+        $orientation = PrintOrientation::resolve($httpRequest);
         $procurementNote->load($this->printRelations());
         $procurementNote->update(['last_printed_at' => now()]);
 
@@ -117,7 +119,7 @@ class ProcurementNoteController extends Controller
             'periodLabel' => $procurementNote->request_date->translatedFormat('d F Y'),
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
-            'printedRole' => $this->roleLabel(Auth::user()->role),
+            'printedRole' => RoleLabel::of(Auth::user()->role),
             'orientation' => $orientation,
             'backUrl' => route('procurement-notes.show', $procurementNote),
         ]);
@@ -135,14 +137,38 @@ class ProcurementNoteController extends Controller
 
     public function printPeriod(Request $request)
     {
-        $orientation = $this->printOrientation($request);
+        $orientation = PrintOrientation::resolve($request);
         $period = PeriodRange::fromRequest($request);
+        $search = trim((string) $request->input('search', ''));
+        $hasRequestFilters = $search !== ''
+            || ($request->filled('request_status') && $request->input('request_status') !== 'all')
+            || ($request->filled('priority') && $request->input('priority') !== 'all');
+
         $notes = $this->filteredNotesQuery($request, $period)
             ->with($this->printRelations())
             ->latest('request_date')
             ->get();
 
         abort_if($notes->isEmpty(), 404);
+
+        if ($hasRequestFilters) {
+            $notes = $notes->map(function (ProcurementNote $procurementNote) use ($request, $search) {
+                $matchedByNoteNumber = $search !== ''
+                    && mb_stripos($procurementNote->number, $search) !== false;
+
+                $requests = $procurementNote->requests->filter(function (StockRequest $stockRequest) use ($request, $search, $matchedByNoteNumber) {
+                    if (! $this->requestMatchesFilters($stockRequest, $request)) {
+                        return false;
+                    }
+
+                    return $matchedByNoteNumber || $search === '' || $this->requestMatchesSearch($stockRequest, $search);
+                });
+
+                $procurementNote->setRelation('requests', $requests->values());
+
+                return $procurementNote;
+            });
+        }
 
         $backQuery = $request->except('orientation');
 
@@ -152,19 +178,10 @@ class ProcurementNoteController extends Controller
             'periodLabel' => $period?->label() ?? 'Semua Periode',
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
-            'printedRole' => $this->roleLabel(Auth::user()->role),
+            'printedRole' => RoleLabel::of(Auth::user()->role),
             'orientation' => $orientation,
             'backUrl' => route('procurement-notes.index').($backQuery ? '?'.http_build_query($backQuery) : ''),
         ]);
-    }
-
-    private function printOrientation(Request $request): string
-    {
-        $validated = $request->validate([
-            'orientation' => ['nullable', 'in:landscape,portrait'],
-        ]);
-
-        return $validated['orientation'] ?? 'landscape';
     }
 
     public function excelPeriod(Request $request)
@@ -284,17 +301,6 @@ class ProcurementNoteController extends Controller
             'requests.closedBy',
             'requests.requestHistories',
         ];
-    }
-
-    private function roleLabel(?string $role): string
-    {
-        return match ($role) {
-            'admin' => 'ADMIN',
-            'hr' => 'HR',
-            'director' => 'DIREKTUR',
-            'gudang' => 'GUDANG',
-            default => strtoupper((string) $role),
-        };
     }
 
     private function downloadExcel($notes, string $filename)
