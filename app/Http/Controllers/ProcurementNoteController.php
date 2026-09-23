@@ -174,26 +174,40 @@ class ProcurementNoteController extends Controller
             $query->whereDate('request_date', '<=', $period->endDate());
         }
 
-        if ($request->filled('search')) {
-            $search = trim((string) $request->input('search'));
-            $query->where(function (Builder $noteQuery) use ($search) {
-                $noteQuery->where('number', 'like', "%{$search}%")
-                    ->orWhereHas('requests', function (Builder $requestQuery) use ($search) {
-                        $requestQuery->where('item_name', 'like', "%{$search}%")
-                            ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->where('name', 'like', "%{$search}%"))
-                            ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->where('name', 'like', "%{$search}%"));
-                    });
+        $search = trim((string) $request->input('search', ''));
+        $status = $request->filled('request_status') && $request->input('request_status') !== 'all'
+            ? $request->input('request_status')
+            : null;
+        $priority = $request->filled('priority') && $request->input('priority') !== 'all'
+            ? $request->input('priority')
+            : null;
+
+        if ($search !== '' || $status !== null || $priority !== null) {
+            $query->where(function (Builder $noteQuery) use ($search, $status, $priority) {
+                if ($search !== '') {
+                    $pattern = $this->likePattern($search);
+                    $noteQuery->whereRaw("number LIKE ? ESCAPE '\\'", [$pattern]);
+                }
+
+                $noteQuery->orWhereHas('requests', function (Builder $requestQuery) use ($search, $status, $priority) {
+                    if ($search !== '') {
+                        $pattern = $this->likePattern($search);
+                        $requestQuery->where(function (Builder $valueQuery) use ($pattern) {
+                            $valueQuery->whereRaw("item_name LIKE ? ESCAPE '\\'", [$pattern])
+                                ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]))
+                                ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]));
+                        });
+                    }
+
+                    if ($status !== null) {
+                        $requestQuery->where('status', $status);
+                    }
+
+                    if ($priority !== null) {
+                        $requestQuery->where('priority', $priority);
+                    }
+                });
             });
-        }
-
-        if ($request->filled('request_status') && $request->input('request_status') !== 'all') {
-            $status = $request->input('request_status');
-            $query->whereHas('requests', fn (Builder $requestQuery) => $requestQuery->where('status', $status));
-        }
-
-        if ($request->filled('priority') && $request->input('priority') !== 'all') {
-            $priority = $request->input('priority');
-            $query->whereHas('requests', fn (Builder $requestQuery) => $requestQuery->where('priority', $priority));
         }
 
         if ($request->input('note_status') === ProcurementNote::STATUS_COMPLETED) {
@@ -207,11 +221,26 @@ class ProcurementNoteController extends Controller
 
     private function requestMatchesSearch(StockRequest $stockRequest, string $search): bool
     {
-        $itemName = $stockRequest->item?->name ?? $stockRequest->item_name;
-        $requester = $stockRequest->user?->name;
+        $searchable = array_filter([
+            $stockRequest->item?->name,
+            $stockRequest->item_name,
+            $stockRequest->user?->name,
+        ]);
 
-        return (is_string($itemName) && mb_stripos($itemName, $search) !== false)
-            || (is_string($requester) && mb_stripos($requester, $search) !== false);
+        foreach ($searchable as $value) {
+            if (is_string($value) && mb_stripos($value, $search) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function likePattern(string $term): string
+    {
+        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term);
+
+        return "%{$escaped}%";
     }
 
     private function requestMatchesFilters(StockRequest $stockRequest, Request $request): bool

@@ -280,6 +280,110 @@ class ProcurementNoteTest extends TestCase
             ->assertSee('Permintaan Dibuat');
     }
 
+    public function test_note_search_and_request_filters_must_match_the_same_request(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+
+        $bearing = $this->requestOn($warehouse, $note, $this->item('Bearing'), 2, 'Ditolak');
+        $oil = $this->requestOn($warehouse, $note, $this->item('Oli Mesin'), 3, 'Disetujui');
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => 'Bearing', 'request_status' => 'Disetujui']))
+            ->assertOk()
+            ->assertDontSee('NOTA-20260902');
+
+        $content = $response->getContent();
+        $this->assertStringNotContainsString('#request-'.$bearing->id, $content);
+        $this->assertStringNotContainsString('#request-'.$oil->id, $content);
+    }
+
+    public function test_note_search_and_priority_filter_must_match_the_same_request(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+
+        $this->requestOn($warehouse, $note, $this->item('Bearing'), 2, 'Ditolak', 'Biasa');
+        $this->requestOn($warehouse, $note, $this->item('Oli Mesin'), 3, 'Disetujui', 'Mendesak');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => 'Bearing', 'priority' => 'Mendesak']))
+            ->assertOk()
+            ->assertDontSee('NOTA-20260902');
+    }
+
+    public function test_request_detail_shows_hr_response_label_by_status(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+
+        $waiting = $this->requestOn($warehouse, $note, $this->item('Karet'), 1, 'Menunggu Review');
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $waiting]))
+            ->assertOk()
+            ->assertSee('Belum Ditanggapi')
+            ->assertDontSee('Waktu Review');
+
+        $pending = $this->requestOn($warehouse, $note, $this->item('Baut'), 1, 'Pending');
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $pending]))
+            ->assertOk()
+            ->assertSee('Ditunda');
+
+        $rejected = $this->requestOn($warehouse, $note, $this->item('Paku'), 1, 'Ditolak');
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $rejected]))
+            ->assertOk()
+            ->assertSee('Ditolak');
+    }
+
+    public function test_note_search_still_finds_request_when_item_was_renamed(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $item = $this->item('Bearing Lama');
+
+        $this->travelTo(now()->setDate(2026, 9, 2)->startOfDay()->addHours(8));
+        $this->submitRequest($warehouse, $item, 3);
+        $request = StockRequest::firstOrFail();
+        $note = $request->procurementNote;
+
+        $item->update(['name' => 'Bearing Baru']);
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => 'Bearing Lama']))
+            ->assertOk()
+            ->assertSee('NOTA-20260902');
+
+        $this->assertStringContainsString('#request-'.$request->id, $response->getContent());
+    }
+
+    public function test_note_search_treats_percent_and_underscore_literally(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $percentNote = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $this->requestOn($warehouse, $percentNote, $this->item('Saklar % Kecil'), 2, 'Disetujui');
+
+        $plainNote = ProcurementNote::findOrCreateForDate('2026-09-03');
+        $this->requestOn($warehouse, $plainNote, $this->item('Printer'), 1, 'Ditolak');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => '%']))
+            ->assertOk()
+            ->assertSee('NOTA-20260902')
+            ->assertDontSee('NOTA-20260903');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => '_']))
+            ->assertOk()
+            ->assertDontSee('NOTA-20260902')
+            ->assertDontSee('NOTA-20260903');
+    }
+
     private function submitRequest(User $warehouse, Item $item, int $quantity): void
     {
         $this->actingAs($warehouse)->post('/gudang/request-barang', [
@@ -290,14 +394,14 @@ class ProcurementNoteTest extends TestCase
         ])->assertRedirect('/gudang/history');
     }
 
-    private function requestOn(User $warehouse, ProcurementNote $note, Item $item, int $quantity, string $status): StockRequest
+    private function requestOn(User $warehouse, ProcurementNote $note, Item $item, int $quantity, string $status, string $priority = 'Biasa'): StockRequest
     {
         return StockRequest::create([
             'user_id' => $warehouse->id,
             'item_id' => $item->id,
             'quantity' => $quantity,
             'unit' => 'Pcs',
-            'priority' => 'Biasa',
+            'priority' => $priority,
             'reason' => 'Kebutuhan operasional',
             'status' => $status,
             'procurement_note_id' => $note->id,
