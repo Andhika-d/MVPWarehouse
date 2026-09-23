@@ -5,13 +5,6 @@
     @php
         $itemName = $request->item?->name ?? $request->item_name ?? 'Barang';
         $sisa = max(0, $request->quantity - $request->received_quantity);
-        $hrResponse = match ($request->status) {
-            'Pending' => 'Ditunda',
-            'Ditolak' => 'Ditolak',
-            'Dibatalkan' => 'Dibatalkan',
-            'Menunggu Review' => 'Belum Ditanggapi',
-            default => 'Disetujui',
-        };
     @endphp
 
     <div class="space-y-4">
@@ -82,16 +75,18 @@
                 </div>
             </div>
 
+            @if($request->approved_at)
             <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-sm">
                 <div>
-                    <p class="text-xs text-slate-500">Reviewer</p>
+                    <p class="text-xs text-slate-500">Disetujui oleh</p>
                     <p class="font-semibold text-slate-900 mt-0.5">{{ $request->reviewedBy?->name ?? '—' }}</p>
                 </div>
                 <div>
-                    <p class="text-xs text-slate-500">Tanggapan HR</p>
-                    <p class="font-semibold text-slate-900 mt-0.5">{{ $hrResponse }}</p>
+                    <p class="text-xs text-slate-500">Waktu Persetujuan</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->approved_at->translatedFormat('d M Y, H:i') }}</p>
                 </div>
             </div>
+            @endif
 
             @if($request->isClosed() && $request->closed_at)
             <div class="mt-4 pt-4 border-t border-slate-100 grid grid-cols-2 gap-4 text-sm">

@@ -314,30 +314,44 @@ class ProcurementNoteTest extends TestCase
             ->assertDontSee('NOTA-20260902');
     }
 
-    public function test_request_detail_shows_hr_response_label_by_status(): void
+    public function test_request_detail_hides_approval_panel_before_approval(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);
         $warehouse = User::factory()->create(['role' => 'gudang']);
         $note = ProcurementNote::findOrCreateForDate('2026-09-02');
 
-        $waiting = $this->requestOn($warehouse, $note, $this->item('Karet'), 1, 'Menunggu Review');
-        $this->actingAs($hr)
-            ->get(route('procurement-notes.requests.show', [$note, $waiting]))
-            ->assertOk()
-            ->assertSee('Belum Ditanggapi')
-            ->assertDontSee('Waktu Review');
+        foreach (['Menunggu Review', 'Pending', 'Ditolak'] as $status) {
+            $this->requestOn($warehouse, $note, $this->item('Barang '.$status), 1, $status);
+        }
 
-        $pending = $this->requestOn($warehouse, $note, $this->item('Baut'), 1, 'Pending');
-        $this->actingAs($hr)
-            ->get(route('procurement-notes.requests.show', [$note, $pending]))
-            ->assertOk()
-            ->assertSee('Ditunda');
+        foreach (StockRequest::all() as $request) {
+            $this->actingAs($hr)
+                ->get(route('procurement-notes.requests.show', [$note, $request]))
+                ->assertOk()
+                ->assertDontSee('Disetujui oleh')
+                ->assertDontSee('Waktu Persetujuan');
+        }
+    }
 
-        $rejected = $this->requestOn($warehouse, $note, $this->item('Paku'), 1, 'Ditolak');
-        $this->actingAs($hr)
-            ->get(route('procurement-notes.requests.show', [$note, $rejected]))
+    public function test_request_detail_shows_approval_panel_with_reviewer_and_time_when_approved(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+
+        $approved = $this->requestOn($warehouse, $note, $this->item('Mur'), 1, 'Disetujui');
+        $approved->update(['reviewed_by' => $hr->id, 'approved_at' => now()]);
+
+        $this->travelTo(now()->setDateTime(2026, 9, 10, 14, 30, 0));
+        $approved->update(['approved_at' => now()]);
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $approved]))
             ->assertOk()
-            ->assertSee('Ditolak');
+            ->assertSee('Disetujui oleh')
+            ->assertSee('Waktu Persetujuan')
+            ->assertSee('10 Sep 2026, 14:30')
+            ->assertSee($hr->name);
     }
 
     public function test_note_search_still_finds_request_when_item_was_renamed(): void
