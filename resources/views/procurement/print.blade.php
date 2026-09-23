@@ -100,19 +100,17 @@
         <table class="procurement-table--portrait">
             <thead>
                 <tr>
-                    <th>ID</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Catatan</th>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($note->requests as $stockRequest)
+                @foreach($note->requests as $index => $stockRequest)
                 @php
-                    $activeRemaining = $stockRequest->canReceive() ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
+                    $remaining = max(0, $stockRequest->quantity - $stockRequest->received_quantity);
                 @endphp
                 <tr>
-                    <td>
-                        <span class="cell-primary">#{{ $stockRequest->id }}</span>
-                        <span class="cell-meta">{{ $stockRequest->created_at->format('H:i') }}</span>
-                    </td>
+                    <td><span class="cell-primary">{{ $index + 1 }}</span></td>
+                    <td><span class="cell-meta">{{ $stockRequest->created_at->format('H:i') }}</span></td>
                     <td>
                         <span class="cell-primary">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</span>
                         <span class="cell-meta">{{ $stockRequest->user?->name ?? '—' }}</span>
@@ -120,7 +118,7 @@
                     <td>
                         <span class="cell-primary">Diminta {{ $stockRequest->quantity }} {{ $stockRequest->unit }}</span>
                         <span class="cell-meta">Diterima {{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</span>
-                        <span class="cell-meta">Sisa {{ $activeRemaining === null ? '—' : $activeRemaining.' '.$stockRequest->unit }}</span>
+                        <span class="cell-meta">Sisa {{ $remaining }} {{ $stockRequest->unit }}</span>
                     </td>
                     <td><span class="status">{{ $stockRequest->status }}</span></td>
                     <td>{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
@@ -132,23 +130,22 @@
         <table>
             <thead>
                 <tr>
-                    <th>ID</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th class="number">Diminta</th><th class="number">Diterima</th><th class="number">Sisa</th><th>Status</th><th>Catatan</th>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th class="number">Diminta</th><th class="number">Diterima</th><th class="number">Sisa</th><th>Status</th><th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
-                @foreach($note->requests as $stockRequest)
+                @foreach($note->requests as $index => $stockRequest)
                 @php
-                    $closedQuantity = in_array($stockRequest->status, \App\Models\StockRequest::CLOSED_STATUSES, true) ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
-                    $activeRemaining = $stockRequest->canReceive() ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
+                    $remaining = max(0, $stockRequest->quantity - $stockRequest->received_quantity);
                 @endphp
                 <tr>
-                    <td>#{{ $stockRequest->id }}</td>
+                    <td>{{ $index + 1 }}</td>
                     <td>{{ $stockRequest->created_at->format('H:i') }}</td>
                     <td>{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</td>
                     <td>{{ $stockRequest->user?->name ?? '—' }}</td>
                     <td class="number">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
                     <td class="number">{{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</td>
-                    <td class="number">{{ $activeRemaining === null ? '—' : $activeRemaining.' '.$stockRequest->unit }}</td>
+                    <td class="number">{{ $remaining }} {{ $stockRequest->unit }}</td>
                     <td class="status">{{ $stockRequest->status }}</td>
                     <td>{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
                 </tr>

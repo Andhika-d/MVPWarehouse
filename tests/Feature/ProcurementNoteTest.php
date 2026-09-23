@@ -451,6 +451,55 @@ class ProcurementNoteTest extends TestCase
             ->assertSee('Cetak A4 Portrait');
     }
 
+    public function test_note_print_uses_sequential_numbers_and_creation_time(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $first = $this->requestOn($warehouse, $note, $this->item('Bearing'), 4, 'Disetujui');
+        $this->requestOn($warehouse, $note, $this->item('Oli Mesin'), 2, 'Disetujui');
+
+        foreach (['landscape', 'portrait'] as $orientation) {
+            $response = $this->actingAs($hr)
+                ->get(route('procurement-notes.print', [$note, 'orientation' => $orientation]))
+                ->assertOk()
+                ->assertSee('<th>Waktu</th>', false);
+
+            $content = $response->getContent();
+
+            if ($orientation === 'portrait') {
+                $this->assertStringContainsString('<span class="cell-primary">1</span>', $content);
+                $this->assertStringContainsString('<span class="cell-primary">2</span>', $content);
+                $this->assertStringNotContainsString('<span class="cell-primary">#'.$first->id, $content);
+            } else {
+                $this->assertStringContainsString('>1</td>', $content);
+                $this->assertStringContainsString('>2</td>', $content);
+                $this->assertStringNotContainsString('<td>#'.$first->id.'</td>', $content);
+            }
+        }
+    }
+
+    public function test_note_print_shows_remaining_quantity_when_closed_partially(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $request = $this->requestOn($warehouse, $note, $this->item('Mur'), 4, 'Ditutup Sebagian');
+        $request->update(['received_quantity' => 3]);
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.print', [$note, 'orientation' => 'portrait']))
+            ->assertOk()
+            ->assertSee('Diminta 4 Pcs')
+            ->assertSee('Diterima 3 Pcs')
+            ->assertSee('Sisa 1 Pcs');
+
+        $landscape = $this->actingAs($hr)
+            ->get(route('procurement-notes.print', [$note, 'orientation' => 'landscape']))
+            ->assertOk();
+        $this->assertStringContainsString('>1 Pcs</td>', $landscape->getContent());
+    }
+
     private function submitRequest(User $warehouse, Item $item, int $quantity): void
     {
         $this->actingAs($warehouse)->post('/gudang/request-barang', [
