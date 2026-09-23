@@ -220,16 +220,16 @@ class ProcurementNoteController extends Controller
             $query->where(function (Builder $noteQuery) use ($search, $status, $priority) {
                 if ($search !== '') {
                     $pattern = $this->likePattern($search);
-                    $noteQuery->whereRaw("number LIKE ? ESCAPE '\\'", [$pattern]);
+                    $noteQuery->whereRaw("number LIKE ? ESCAPE '!'", [$pattern]);
                 }
 
                 $noteQuery->orWhereHas('requests', function (Builder $requestQuery) use ($search, $status, $priority) {
                     if ($search !== '') {
                         $pattern = $this->likePattern($search);
                         $requestQuery->where(function (Builder $valueQuery) use ($pattern) {
-                            $valueQuery->whereRaw("item_name LIKE ? ESCAPE '\\'", [$pattern])
-                                ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]))
-                                ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->whereRaw("name LIKE ? ESCAPE '\\'", [$pattern]));
+                            $valueQuery->whereRaw("item_name LIKE ? ESCAPE '!'", [$pattern])
+                                ->orWhereHas('item', fn (Builder $itemQuery) => $itemQuery->whereRaw("name LIKE ? ESCAPE '!'", [$pattern]))
+                                ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->whereRaw("name LIKE ? ESCAPE '!'", [$pattern]));
                         });
                     }
 
@@ -272,7 +272,7 @@ class ProcurementNoteController extends Controller
 
     private function likePattern(string $term): string
     {
-        $escaped = str_replace(['\\', '%', '_'], ['\\\\', '\%', '\_'], $term);
+        $escaped = str_replace(['!', '%', '_'], ['!!', '!%', '!_'], $term);
 
         return "%{$escaped}%";
     }
