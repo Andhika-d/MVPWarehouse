@@ -179,7 +179,19 @@ class RequestController extends Controller
 
     public function previewHistoryExport(Request $request)
     {
-        return $this->previewRequestExport($request, 'gudang', 'Riwayat Permintaan', '/gudang/history');
+        $path = '/gudang/history';
+
+        return $this->previewRequestExport(
+            $request,
+            'gudang',
+            'Riwayat Permintaan',
+            $path,
+            [
+                ['format' => 'PDF', 'text' => 'Unduh PDF', 'url' => $this->exportUrl($path.'/export/pdf', $request, ['orientation'])],
+                ['format' => 'Excel', 'text' => 'Unduh Excel', 'url' => $this->exportUrl($path.'/export/excel', $request, ['orientation'])],
+                ['format' => 'Browser', 'text' => 'Cetak Browser', 'url' => $this->exportUrl($path.'/print', $request, ['orientation'])],
+            ]
+        );
     }
 
     public function previewApprovalExport(Request $request)
@@ -188,6 +200,31 @@ class RequestController extends Controller
         $title = $date ? 'Approval Nota #NOTA-'.$date->format('Ymd') : 'Approval Permintaan';
 
         return $this->previewRequestExport($request, 'approval', $title, '/hr/approval');
+    }
+
+    public function printHistory(Request $request)
+    {
+        $requests = $this->buildExportQuery($request, 'gudang')->latest()->get();
+        $rows = $this->buildExportRows($requests);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk dicetak dengan filter yang dipilih.');
+        }
+
+        $backQuery = $request->except('orientation');
+
+        return view('exports.stock-requests', [
+            'rows' => $rows,
+            'title' => 'RIWAYAT PERMINTAAN',
+            'orientation' => PrintOrientation::resolve($request, 'portrait'),
+            'periodLabel' => PeriodRange::fromRequest($request)?->label() ?? 'Semua Periode',
+            'filters' => $this->requestExportFilters($request),
+            'printedAt' => now(),
+            'printedBy' => Auth::user()->name,
+            'printedRole' => RoleLabel::of(Auth::user()->role),
+            'showToolbar' => true,
+            'backUrl' => url('/gudang/history').($backQuery ? '?'.http_build_query($backQuery) : ''),
+        ]);
     }
 
     public function exportHistoryPdf(Request $request)
@@ -203,7 +240,7 @@ class RequestController extends Controller
             'riwayat-permintaan.pdf',
             'RIWAYAT PERMINTAAN',
             $rows,
-            PrintOrientation::resolve($request, 'portrait'),
+            'portrait',
             PeriodRange::fromRequest($request)?->label() ?? 'Semua Periode',
             Auth::user()->name,
             RoleLabel::of(Auth::user()->role),
@@ -369,7 +406,7 @@ class RequestController extends Controller
         })->toArray();
     }
 
-    protected function previewRequestExport(Request $request, string $scope, string $title, string $basePath)
+    protected function previewRequestExport(Request $request, string $scope, string $title, string $basePath, ?array $downloads = null)
     {
         $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
 
@@ -382,7 +419,7 @@ class RequestController extends Controller
             $this->stockRequestExportColumns(),
             $rows,
             $this->exportUrl($basePath, $request),
-            array_merge(
+            $downloads ?? array_merge(
                 $this->pdfVersions($basePath.'/export/pdf', $request->except('orientation')),
                 [['format' => 'Excel', 'url' => $this->exportUrl($basePath.'/export/excel', $request)]],
             )
@@ -394,9 +431,11 @@ class RequestController extends Controller
         return ['ID', 'Pemohon', 'Barang', 'Jumlah', 'Satuan', 'Prioritas', 'Status', 'Tanggal', 'Catatan Review'];
     }
 
-    protected function exportUrl(string $path, Request $request): string
+    protected function exportUrl(string $path, Request $request, array $except = []): string
     {
-        return url($path).($request->getQueryString() ? '?'.$request->getQueryString() : '');
+        $query = $request->except($except);
+
+        return url($path).($query ? '?'.http_build_query($query) : '');
     }
 
     public function approve(StockRequest $request, Request $httpRequest)

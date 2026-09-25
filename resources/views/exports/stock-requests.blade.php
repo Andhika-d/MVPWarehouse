@@ -2,6 +2,8 @@
     :title="$title"
     :orientation="$orientation"
     :styles="'prints.styles.requests'"
+    :show-toolbar="$showToolbar ?? false"
+    :back-url="$backUrl ?? null"
 >
     <main class="sheet">
         @include('prints.document-header', [

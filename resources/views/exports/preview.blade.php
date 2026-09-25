@@ -15,7 +15,7 @@
             <div class="flex flex-wrap gap-2">
                 @foreach($downloads as $download)
                     <a href="{{ $download['url'] }}" class="inline-flex min-h-10 items-center rounded-lg px-4 py-2 text-sm font-semibold text-white {{ $download['format'] === 'PDF' ? 'bg-red-600 hover:bg-red-700' : 'bg-emerald-600 hover:bg-emerald-700' }}">
-                        Unduh {{ $download['label'] ?? $download['format'] }}
+                        {{ $download['text'] ?? 'Unduh '.($download['label'] ?? $download['format']) }}
                     </a>
                 @endforeach
             </div>

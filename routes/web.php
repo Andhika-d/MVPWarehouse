@@ -65,6 +65,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/gudang/history/export/preview', [RequestController::class, 'previewHistoryExport']);
         Route::get('/gudang/history/export/pdf', [RequestController::class, 'exportHistoryPdf']);
         Route::get('/gudang/history/export/excel', [RequestController::class, 'exportHistoryExcel']);
+        Route::get('/gudang/history/print', [RequestController::class, 'printHistory']);
         Route::get('/gudang/history/{request}', [RequestController::class, 'detail']);
 
         Route::get('/gudang/location-change/search', [GudangController::class, 'locationSearch']);
