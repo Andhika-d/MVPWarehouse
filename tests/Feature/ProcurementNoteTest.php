@@ -398,6 +398,40 @@ class ProcurementNoteTest extends TestCase
             ->assertDontSee('NOTA-20260903');
     }
 
+    public function test_note_search_finds_common_word_in_item_name(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $matchingNote = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $this->requestOn($warehouse, $matchingNote, $this->item('Regulator Gas'), 2, 'Disetujui');
+
+        $otherNote = ProcurementNote::findOrCreateForDate('2026-09-03');
+        $this->requestOn($warehouse, $otherNote, $this->item('Kabel Listrik'), 1, 'Ditolak');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => 'regulator']))
+            ->assertOk()
+            ->assertSee('NOTA-20260902')
+            ->assertDontSee('NOTA-20260903');
+    }
+
+    public function test_note_search_treats_exclamation_literally(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $bangNote = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $this->requestOn($warehouse, $bangNote, $this->item('Kabel !'), 2, 'Disetujui');
+
+        $plainNote = ProcurementNote::findOrCreateForDate('2026-09-03');
+        $this->requestOn($warehouse, $plainNote, $this->item('Kabel Biasa'), 1, 'Ditolak');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index', ['search' => '!']))
+            ->assertOk()
+            ->assertSee('NOTA-20260902')
+            ->assertDontSee('NOTA-20260903');
+    }
+
     public function test_note_print_defaults_to_landscape_and_supports_portrait(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);
@@ -449,6 +483,41 @@ class ProcurementNoteTest extends TestCase
             ->assertOk()
             ->assertSee('size: A4 portrait', false)
             ->assertSee('Cetak A4 Portrait');
+    }
+
+    public function test_period_print_only_prints_requests_matching_filters(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $this->requestOn($warehouse, $note, $this->item('Bearing'), 4, 'Disetujui');
+        $this->requestOn($warehouse, $note, $this->item('Oli Mesin'), 2, 'Menunggu Review');
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.print-period', ['request_status' => 'Disetujui']))
+            ->assertOk()
+            ->assertSee('NOTA-20260902')
+            ->assertSee('Bearing')
+            ->assertDontSee('Oli Mesin');
+    }
+
+    public function test_period_print_matching_note_number_still_applies_request_filters(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-02');
+        $this->requestOn($warehouse, $note, $this->item('Bearing'), 4, 'Disetujui');
+        $this->requestOn($warehouse, $note, $this->item('Oli Mesin'), 2, 'Menunggu Review');
+
+        $response = $this->actingAs($hr)
+            ->get(route('procurement-notes.print-period', [
+                'search' => $note->number,
+                'request_status' => 'Disetujui',
+            ]))
+            ->assertOk()
+            ->assertSee('NOTA-20260902')
+            ->assertSee('Bearing')
+            ->assertDontSee('Oli Mesin');
     }
 
     public function test_note_print_uses_sequential_numbers_and_creation_time(): void

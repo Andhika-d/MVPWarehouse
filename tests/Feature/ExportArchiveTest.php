@@ -73,7 +73,7 @@ class ExportArchiveTest extends TestCase
     {
         $tempFile = tempnam(sys_get_temp_dir(), 'xlsx-arsip');
         file_put_contents($tempFile, $content);
-        $zip = new \ZipArchive();
+        $zip = new \ZipArchive;
         $zip->open($tempFile);
         $sheet = $zip->getFromName('xl/worksheets/sheet1.xml');
         $zip->close();
@@ -111,6 +111,7 @@ class ExportArchiveTest extends TestCase
         $response = $this->actingAs($gudang)->get('/gudang/location-change/export/pdf');
         $response->assertOk();
         $response->assertHeader('content-type', 'application/pdf');
+        $this->assertStringContainsString('/NanumGothic', $response->baseResponse->getContent());
     }
 
     public function test_gudang_export_is_scoped_to_own_requests_only(): void
@@ -230,6 +231,39 @@ class ExportArchiveTest extends TestCase
         $sheet = $this->extractXlsxText($response->getContent());
         $this->assertStringContainsString('Backup tersimpan', $sheet);
         $this->assertStringNotContainsString('Login berhasil', $sheet);
+    }
+
+    public function test_gudang_location_change_preview_lists_pdf_landscape_and_portrait_links(): void
+    {
+        $gudang = $this->makeUser('gudang');
+        $from = $this->makeLocation('A', 1);
+        $to = $this->makeLocation('B', 1);
+        $item = $this->makeItem($from);
+        $this->makeRequest($gudang, $item, $to, LocationChangeRequest::STATUS_PENDING);
+
+        $this->actingAs($gudang)
+            ->get('/gudang/location-change/export/preview')
+            ->assertOk()
+            ->assertSee('Unduh PDF Landscape', false)
+            ->assertSee('Unduh PDF Portrait', false)
+            ->assertSee('/gudang/location-change/export/pdf?orientation=landscape', false)
+            ->assertSee('/gudang/location-change/export/pdf?orientation=portrait', false)
+            ->assertSee('/gudang/location-change/export/excel', false);
+    }
+
+    public function test_invalid_orientation_on_location_pdf_export_is_rejected(): void
+    {
+        $gudang = $this->makeUser('gudang');
+        $from = $this->makeLocation('A', 1);
+        $to = $this->makeLocation('B', 1);
+        $item = $this->makeItem($from);
+        $this->makeRequest($gudang, $item, $to, LocationChangeRequest::STATUS_PENDING);
+
+        $this->actingAs($gudang)
+            ->from('/gudang/location-change/export/preview')
+            ->get('/gudang/location-change/export/pdf?orientation=sideways')
+            ->assertRedirect()
+            ->assertSessionHasErrors('orientation');
     }
 
     public function test_non_gudang_cannot_export_gudang_location_changes(): void

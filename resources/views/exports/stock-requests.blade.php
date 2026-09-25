@@ -1,46 +1,71 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <title>{{ $title ?? 'Export Permintaan' }}</title>
-    <style>
-        body { font-family: Arial, sans-serif; font-size: 12px; color: #111827; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th, td { border: 1px solid #d1d5db; padding: 6px; text-align: left; }
-        th { background: #f3f4f6; }
-    </style>
-</head>
-<body>
-    <h2>{{ $title ?? 'Daftar Permintaan Barang' }}</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Pemohon</th>
-                <th>Barang</th>
-                <th>Jumlah</th>
-                <th>Satuan</th>
-                <th>Prioritas</th>
-                <th>Status</th>
-                <th>Tanggal</th>
-                <th>Catatan</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($rows as $row)
+<x-print-shell
+    :title="$title"
+    :orientation="$orientation"
+    :styles="'prints.styles.requests'"
+    :show-toolbar="$showToolbar ?? false"
+    :back-url="$backUrl ?? null"
+>
+    <main class="sheet">
+        @include('prints.document-header', [
+            'title' => $title,
+            'subtitle' => 'THI2-WAREHOUSE · Dokumen rekap permintaan barang',
+            'printedAt' => $printedAt,
+            'printedBy' => $printedBy,
+            'printedRole' => $printedRole,
+        ])
+
+        <div class="filters">
+            <span><strong>Periode:</strong> {{ $periodLabel }}</span>
+            <span><strong>Baris:</strong> {{ count($rows) }}</span>
+            @foreach($filters as $label => $value)<span><strong>{{ $label }}:</strong> {{ $value }}</span>@endforeach
+        </div>
+
+        @if($orientation === 'portrait')
+        <table class="data request-table--portrait">
+            <thead>
                 <tr>
-                    <td>{{ $row['id'] ?? '' }}</td>
-                    <td>{{ $row['pemohon'] ?? '' }}</td>
-                    <td>{{ $row['barang'] ?? '' }}</td>
-                    <td>{{ $row['jumlah'] ?? '' }}</td>
-                    <td>{{ $row['satuan'] ?? '' }}</td>
-                    <td>{{ $row['prioritas'] ?? '' }}</td>
-                    <td>{{ $row['status'] ?? '' }}</td>
-                    <td>{{ $row['tanggal'] ?? '' }}</td>
-                    <td>{{ $row['catatan'] ?? '' }}</td>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th>Jumlah</th><th>Prioritas</th><th>Status</th>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
-</body>
-</html>
+            </thead>
+            <tbody>
+                @foreach($rows as $index => $row)
+                <tr>
+                    <td><span class="cell-primary">{{ $index + 1 }}</span></td>
+                    <td><span class="cell-meta">{{ $row['tanggal'] ?? '—' }}</span></td>
+                    <td><span class="cell-primary">{{ $row['barang'] ?? '—' }}</span></td>
+                    <td>{{ $row['pemohon'] ?? '—' }}</td>
+                    <td><span class="cell-primary">{{ $row['jumlah'] ?? '—' }}</span><span class="cell-meta">{{ $row['satuan'] ?? '—' }}</span></td>
+                    <td>{{ $row['prioritas'] ?? '—' }}</td>
+                    <td><span class="status">{{ $row['status'] ?? '—' }}</span></td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @else
+        <table class="data">
+            <thead>
+                <tr>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th class="number">Jumlah</th><th>Satuan</th><th>Prioritas</th><th>Status</th><th>Catatan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($rows as $index => $row)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $row['tanggal'] ?? '—' }}</td>
+                    <td>{{ $row['barang'] ?? '—' }}</td>
+                    <td>{{ $row['pemohon'] ?? '—' }}</td>
+                    <td class="number">{{ $row['jumlah'] ?? '—' }}</td>
+                    <td>{{ $row['satuan'] ?? '—' }}</td>
+                    <td>{{ $row['prioritas'] ?? '—' }}</td>
+                    <td><span class="status">{{ $row['status'] ?? '—' }}</span></td>
+                    <td>{{ $row['catatan'] ?? '—' }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+        @endif
+
+        <footer class="doc-footer">THI2-WAREHOUSE · Dokumen rekap otomatis dari data permintaan barang.</footer>
+    </main>
+</x-print-shell>

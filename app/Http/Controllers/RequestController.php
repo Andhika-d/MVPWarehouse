@@ -13,7 +13,11 @@ use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use App\Support\ItemLocationSorter;
+use App\Support\PdfFonts;
+use App\Support\PdfFooter;
 use App\Support\PeriodRange;
+use App\Support\PrintOrientation;
+use App\Support\RoleLabel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -117,7 +121,7 @@ class RequestController extends Controller
                 'action' => 'created_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $stockRequest->id,
-                'details' => 'Gudang membuat permintaan ' . $stockRequest->quantity . ' ' . $stockRequest->unit . ' ' . ($item?->name ?? $data['item_name']),
+                'details' => 'Gudang membuat permintaan '.$stockRequest->quantity.' '.$stockRequest->unit.' '.($item?->name ?? $data['item_name']),
             ]);
 
             return $stockRequest;
@@ -175,7 +179,19 @@ class RequestController extends Controller
 
     public function previewHistoryExport(Request $request)
     {
-        return $this->previewRequestExport($request, 'gudang', 'Riwayat Permintaan', '/gudang/history');
+        $path = '/gudang/history';
+
+        return $this->previewRequestExport(
+            $request,
+            'gudang',
+            'Riwayat Permintaan',
+            $path,
+            [
+                ['format' => 'PDF', 'text' => 'Unduh PDF', 'url' => $this->exportUrl($path.'/export/pdf', $request, ['orientation'])],
+                ['format' => 'Excel', 'text' => 'Unduh Excel', 'url' => $this->exportUrl($path.'/export/excel', $request, ['orientation'])],
+                ['format' => 'Browser', 'text' => 'Cetak Browser', 'url' => $this->exportUrl($path.'/print', $request, ['orientation'])],
+            ]
+        );
     }
 
     public function previewApprovalExport(Request $request)
@@ -186,12 +202,50 @@ class RequestController extends Controller
         return $this->previewRequestExport($request, 'approval', $title, '/hr/approval');
     }
 
+    public function printHistory(Request $request)
+    {
+        $requests = $this->buildExportQuery($request, 'gudang')->latest()->get();
+        $rows = $this->buildExportRows($requests);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk dicetak dengan filter yang dipilih.');
+        }
+
+        $backQuery = $request->except('orientation');
+
+        return view('exports.stock-requests', [
+            'rows' => $rows,
+            'title' => 'RIWAYAT PERMINTAAN',
+            'orientation' => PrintOrientation::resolve($request, 'portrait'),
+            'periodLabel' => PeriodRange::fromRequest($request)?->label() ?? 'Semua Periode',
+            'filters' => $this->requestExportFilters($request),
+            'printedAt' => now(),
+            'printedBy' => Auth::user()->name,
+            'printedRole' => RoleLabel::of(Auth::user()->role),
+            'showToolbar' => true,
+            'backUrl' => url('/gudang/history').($backQuery ? '?'.http_build_query($backQuery) : ''),
+        ]);
+    }
+
     public function exportHistoryPdf(Request $request)
     {
         $requests = $this->buildExportQuery($request, 'gudang')->latest()->get();
         $rows = $this->buildExportRows($requests);
 
-        return $this->downloadPdf('riwayat-permintaan.pdf', $rows);
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+        }
+
+        return $this->downloadPdf(
+            'riwayat-permintaan.pdf',
+            'RIWAYAT PERMINTAAN',
+            $rows,
+            'portrait',
+            PeriodRange::fromRequest($request)?->label() ?? 'Semua Periode',
+            Auth::user()->name,
+            RoleLabel::of(Auth::user()->role),
+            $this->requestExportFilters($request),
+        );
     }
 
     public function exportHistoryExcel(Request $request)
@@ -206,11 +260,25 @@ class RequestController extends Controller
     {
         $requests = $this->buildExportQuery($request, 'approval')->latest()->get();
         $rows = $this->buildExportRows($requests);
+
+        if (empty($rows)) {
+            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+        }
+
         $date = $this->safeDate($request->input('date'));
         $filename = $date ? 'approval-nota-'.$date->format('Ymd').'.pdf' : 'approval-permintaan.pdf';
-        $title = $date ? 'Approval Nota #NOTA-'.$date->format('Ymd') : 'Daftar Permintaan Barang';
+        $title = $date ? 'APPROVAL NOTA #NOTA-'.$date->format('Ymd') : 'DAFTAR PERMINTAAN BARANG';
 
-        return $this->downloadPdf($filename, $rows, $title);
+        return $this->downloadPdf(
+            $filename,
+            $title,
+            $rows,
+            PrintOrientation::resolve($request, 'portrait'),
+            $date?->translatedFormat('d F Y') ?? PeriodRange::fromRequest($request)?->label() ?? 'Semua Periode',
+            Auth::user()->name,
+            RoleLabel::of(Auth::user()->role),
+            $this->requestExportFilters($request),
+        );
     }
 
     public function exportApprovalExcel(Request $request)
@@ -274,11 +342,42 @@ class RequestController extends Controller
         return $query;
     }
 
-    protected function downloadPdf(string $filename, array $rows, string $title = 'Daftar Permintaan Barang')
-    {
-        $pdf = Pdf::loadView('exports.stock-requests', ['rows' => $rows, 'title' => $title]);
+    protected function downloadPdf(
+        string $filename,
+        string $title,
+        array $rows,
+        string $orientation,
+        string $periodLabel,
+        string $printedBy,
+        string $printedRole,
+        array $filters = []
+    ) {
+        PdfFonts::register();
+
+        $pdf = Pdf::loadView('exports.stock-requests', [
+            'rows' => $rows,
+            'title' => $title,
+            'orientation' => $orientation,
+            'periodLabel' => $periodLabel,
+            'filters' => $filters,
+            'printedAt' => now(),
+            'printedBy' => $printedBy,
+            'printedRole' => $printedRole,
+        ])->setPaper('a4', $orientation);
+
+        PdfFooter::apply($pdf);
 
         return $pdf->download($filename);
+    }
+
+    protected function requestExportFilters(Request $request): array
+    {
+        return [
+            'Pencarian' => $request->filled('search') ? $request->input('search') : 'Semua',
+            'Status' => $request->filled('status') && $request->input('status') !== 'all'
+                ? $request->input('status')
+                : 'Semua',
+        ];
     }
 
     protected function downloadXlsx(string $filename, array $rows)
@@ -307,7 +406,7 @@ class RequestController extends Controller
         })->toArray();
     }
 
-    protected function previewRequestExport(Request $request, string $scope, string $title, string $basePath)
+    protected function previewRequestExport(Request $request, string $scope, string $title, string $basePath, ?array $downloads = null)
     {
         $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
 
@@ -320,10 +419,10 @@ class RequestController extends Controller
             $this->stockRequestExportColumns(),
             $rows,
             $this->exportUrl($basePath, $request),
-            [
-                ['format' => 'PDF', 'url' => $this->exportUrl($basePath.'/export/pdf', $request)],
-                ['format' => 'Excel', 'url' => $this->exportUrl($basePath.'/export/excel', $request)],
-            ]
+            $downloads ?? array_merge(
+                $this->pdfVersions($basePath.'/export/pdf', $request->except('orientation')),
+                [['format' => 'Excel', 'url' => $this->exportUrl($basePath.'/export/excel', $request)]],
+            )
         );
     }
 
@@ -332,9 +431,11 @@ class RequestController extends Controller
         return ['ID', 'Pemohon', 'Barang', 'Jumlah', 'Satuan', 'Prioritas', 'Status', 'Tanggal', 'Catatan Review'];
     }
 
-    protected function exportUrl(string $path, Request $request): string
+    protected function exportUrl(string $path, Request $request, array $except = []): string
     {
-        return url($path).($request->getQueryString() ? '?'.$request->getQueryString() : '');
+        $query = $request->except($except);
+
+        return url($path).($query ? '?'.http_build_query($query) : '');
     }
 
     public function approve(StockRequest $request, Request $httpRequest)
@@ -406,7 +507,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan berhasil disetujui.');
+        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan berhasil disetujui.');
     }
 
     public function rejectAll(Request $httpRequest)
@@ -433,7 +534,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan berhasil ditolak.');
+        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan berhasil ditolak.');
     }
 
     public function delayAll(Request $httpRequest)
@@ -460,7 +561,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count . ' request yang ditampilkan ditunda (Pending).');
+        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan ditunda (Pending).');
     }
 
     protected function applyApproval(StockRequest $request, int $userId, ?string $note): bool
@@ -493,7 +594,7 @@ class RequestController extends Controller
                 'action' => 'approved_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $request->id,
-                'details' => 'HR menyetujui permintaan ' . ($request->item?->name ?? 'Barang') . ' (' . $request->quantity . ' ' . $request->unit . ')',
+                'details' => 'HR menyetujui permintaan '.($request->item?->name ?? 'Barang').' ('.$request->quantity.' '.$request->unit.')',
             ]);
 
             if ($request->user) {
@@ -533,7 +634,7 @@ class RequestController extends Controller
                 'action' => 'rejected_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $request->id,
-                'details' => 'HR menolak permintaan ' . ($request->item?->name ?? 'Barang') . ': ' . $note,
+                'details' => 'HR menolak permintaan '.($request->item?->name ?? 'Barang').': '.$note,
             ]);
 
             if ($request->user) {
@@ -573,7 +674,7 @@ class RequestController extends Controller
                 'action' => 'delayed_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $request->id,
-                'details' => 'HR menunda permintaan ' . ($request->item?->name ?? 'Barang'),
+                'details' => 'HR menunda permintaan '.($request->item?->name ?? 'Barang'),
             ]);
 
             if ($request->user) {

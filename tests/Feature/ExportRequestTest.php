@@ -42,4 +42,30 @@ class ExportRequestTest extends TestCase
         $excelResponse->assertOk();
         $excelResponse->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     }
+
+    public function test_history_pdf_embeds_korean_font_for_approval_grid(): void
+    {
+        $user = User::factory()->create(['role' => 'gudang']);
+        $item = Item::create([
+            'name' => 'Kertas A4',
+            'unit' => 'rim',
+            'stock' => 20,
+            'rack_location' => 'A',
+        ]);
+
+        StockRequest::create([
+            'user_id' => $user->id,
+            'item_id' => $item->id,
+            'quantity' => 5,
+            'unit' => 'rim',
+            'priority' => 'Biasa',
+            'reason' => 'Butuh tambahan',
+            'status' => 'Disetujui',
+        ]);
+
+        $pdfResponse = $this->actingAs($user)->get('/gudang/history/export/pdf');
+
+        $pdfResponse->assertOk();
+        $this->assertStringContainsString('/NanumGothic', $pdfResponse->baseResponse->getContent());
+    }
 }

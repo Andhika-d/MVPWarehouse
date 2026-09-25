@@ -39,9 +39,78 @@ class ExportPreviewTest extends TestCase
         $response->assertOk()
             ->assertSee('Menampilkan 100 dari 101 baris.')
             ->assertSee('/gudang/history/export/pdf?status=Disetujui', false)
-            ->assertSee('/gudang/history/export/excel?status=Disetujui', false);
+            ->assertSee('/gudang/history/export/excel?status=Disetujui', false)
+            ->assertSee('/gudang/history/print?status=Disetujui', false)
+            ->assertSee('Unduh PDF', false)
+            ->assertSee('Unduh Excel', false)
+            ->assertSee('Cetak Browser', false)
+            ->assertDontSee('orientation=landscape', false)
+            ->assertDontSee('unduh-pdf-landscape', false)
+            ->assertDontSee('PDF Portrait', false);
 
         $this->assertSame(100, substr_count($response->getContent(), '<tr class="align-top'));
+    }
+
+    public function test_history_print_defaults_to_portrait_with_toolbar_and_all_rows(): void
+    {
+        $gudang = User::factory()->create(['role' => 'gudang']);
+        $item = Item::create(['name' => 'Kertas Print', 'unit' => 'rim', 'stock' => 20]);
+
+        foreach (range(1, 25) as $index) {
+            StockRequest::create([
+                'user_id' => $gudang->id,
+                'item_id' => $item->id,
+                'quantity' => $index,
+                'unit' => 'rim',
+                'priority' => 'Biasa',
+                'reason' => 'Print '.$index,
+                'status' => 'Disetujui',
+            ]);
+        }
+
+        $response = $this->actingAs($gudang)->get('/gudang/history/print?status=Disetujui');
+
+        $response->assertOk()
+            ->assertSee('RIWAYAT PERMINTAAN', false)
+            ->assertSee('size: A4 portrait', false)
+            ->assertSee('Cetak A4 Portrait')
+            ->assertSee('/gudang/history?status=Disetujui', false);
+        $this->assertSame(25, substr_count($response->getContent(), '>'.$item->name.'</span>'));
+
+        $landscape = $this->actingAs($gudang)->get('/gudang/history/print?orientation=landscape');
+        $landscape->assertOk()->assertSee('size: A4 landscape', false)->assertSee('Cetak A4 Landscape');
+    }
+
+    public function test_history_print_empty_returns_error(): void
+    {
+        $gudang = User::factory()->create(['role' => 'gudang']);
+
+        $this->actingAs($gudang)
+            ->get('/gudang/history/print')
+            ->assertRedirect()
+            ->assertSessionHas('error');
+    }
+
+    public function test_history_pdf_always_renders_portrait_even_when_orientation_asked(): void
+    {
+        $gudang = User::factory()->create(['role' => 'gudang']);
+        $item = Item::create(['name' => 'Kertas A4', 'unit' => 'rim', 'stock' => 20]);
+        StockRequest::create([
+            'user_id' => $gudang->id,
+            'item_id' => $item->id,
+            'quantity' => 5,
+            'unit' => 'rim',
+            'priority' => 'Biasa',
+            'reason' => 'Butuh tambahan',
+            'status' => 'Disetujui',
+        ]);
+
+        $response = $this->actingAs($gudang)->get('/gudang/history/export/pdf?orientation=landscape');
+
+        $response->assertOk();
+        $content = $response->baseResponse->getContent();
+        $this->assertStringContainsString('/MediaBox [0.000 0.000 595.280 841.890]', $content);
+        $this->assertStringNotContainsString('/MediaBox [0.000 0.000 841.890 595.280]', $content);
     }
 
     public function test_movement_preview_keeps_export_filters_and_download_link(): void
@@ -197,7 +266,8 @@ class ExportPreviewTest extends TestCase
             ->assertSee('Approval Nota #NOTA-20260907')
             ->assertSee('Menampilkan 1 dari 1 baris.')
             ->assertDontSee('Approval Nota Agustus')
-            ->assertSee('/hr/approval/export/pdf?date=2026-09-07', false)
+            ->assertSee('/hr/approval/export/pdf?date=2026-09-07&amp;orientation=landscape', false)
+            ->assertSee('/hr/approval/export/pdf?date=2026-09-07&amp;orientation=portrait', false)
             ->assertSee('/hr/approval/export/excel?date=2026-09-07', false);
 
         $this->get('/hr/approval/export/pdf?date=2026-09-07')
