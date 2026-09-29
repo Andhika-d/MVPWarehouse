@@ -23,9 +23,9 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $request = $this->request($requester, $item, 73, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:'.$request->id)->first();
 
         $this->assertNotNull($issue);
         $this->assertSame(MonitoringIssue::SOURCE_DETECTOR, $issue->source);
@@ -48,7 +48,7 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $this->request($requester, $item, 71, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $this->assertSame(0, MonitoringIssue::count());
     }
@@ -59,9 +59,9 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $request = $this->request($requester, $item, 169, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:'.$request->id)->first();
 
         $this->assertSame(MonitoringIssue::SEVERITY_CRITICAL, $issue->severity);
         $this->assertStringContainsString('7 hari', $issue->description);
@@ -73,7 +73,7 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $this->request($requester, $item, 90, 'Menunggu Review');
 
-        $synchronizer = new MonitoringIssueSynchronizer();
+        $synchronizer = new MonitoringIssueSynchronizer;
         $synchronizer->sync();
         $synchronizer->sync();
 
@@ -88,15 +88,15 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $request = $this->request($requester, $item, 73, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:'.$request->id)->first();
         $issue->update([
             'status' => MonitoringIssue::STATUS_RESOLVED,
             'resolved_at' => now(),
         ]);
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $issue->refresh();
         $this->assertSame(MonitoringIssue::STATUS_OPEN, $issue->status);
@@ -110,9 +110,9 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $request = $this->request($requester, $item, 100, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'request_awaiting_review:stockrequest:'.$request->id)->first();
         $this->assertSame(MonitoringIssue::STATUS_OPEN, $issue->status);
 
         $request->update([
@@ -125,7 +125,7 @@ class ProcessMonitoringTest extends TestCase
             'note' => 'Disetujui oleh HR',
         ]);
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $issue->refresh();
         $this->assertSame(MonitoringIssue::STATUS_RESOLVED, $issue->status);
@@ -140,9 +140,9 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item();
         $request = $this->request($requester, $item, 150, 'Disetujui', received: 0, approvedHoursAgo: 90);
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'awaiting_first_receipt:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'awaiting_first_receipt:stockrequest:'.$request->id)->first();
 
         $this->assertNotNull($issue);
         $this->assertSame('Menunggu Penerimaan Awal', $issue->category);
@@ -171,9 +171,9 @@ class ProcessMonitoringTest extends TestCase
             'occurred_at' => now()->subHours(100),
         ]);
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'partial_receipt_stalled:stockrequest:' . $request->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'partial_receipt_stalled:stockrequest:'.$request->id)->first();
 
         $this->assertNotNull($issue);
         $this->assertSame('Penerimaan Parsial Berhenti', $issue->category);
@@ -201,9 +201,9 @@ class ProcessMonitoringTest extends TestCase
         $createdAt = now()->subHours(90);
         $change->forceFill(['created_at' => $createdAt, 'updated_at' => $createdAt])->saveQuietly();
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
-        $issue = MonitoringIssue::where('dedupe_key', 'location_change_awaiting_confirmation:locationchangerequest:' . $change->id)->first();
+        $issue = MonitoringIssue::where('dedupe_key', 'location_change_awaiting_confirmation:locationchangerequest:'.$change->id)->first();
 
         $this->assertNotNull($issue);
         $this->assertSame('Perubahan Lokasi Menunggu Konfirmasi', $issue->category);
@@ -232,7 +232,7 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item('Sarung Tangan');
         $request = $this->request($requester, $item, 80, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $issuedAt = MonitoringIssue::first();
 
@@ -248,6 +248,22 @@ class ProcessMonitoringTest extends TestCase
             ->assertSee($issuedAt->description);
     }
 
+    public function test_director_issues_description_renders_in_english(): void
+    {
+        $director = User::factory()->create(['role' => 'director', 'locale' => 'en']);
+        $requester = User::factory()->create(['role' => 'gudang']);
+        $item = $this->item('Sarung Tangan');
+        $this->request($requester, $item, 80, 'Menunggu Review');
+
+        (new MonitoringIssueSynchronizer)->sync();
+
+        $this->actingAs($director)
+            ->get('/director/issues')
+            ->assertOk()
+            ->assertSee('Request Sarung Tangan has been awaiting a decision for 3 days.')
+            ->assertDontSee('belum menerima keputusan');
+    }
+
     public function test_director_issues_page_filters_by_status_and_severity(): void
     {
         $director = User::factory()->create(['role' => 'director']);
@@ -256,10 +272,10 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item('Barang Peringatan');
         $this->request($requester, $item, 80, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $this->actingAs($director)
-            ->get('/director/issues?severity=' . urlencode('Kritis'))
+            ->get('/director/issues?severity='.urlencode('Kritis'))
             ->assertOk()
             ->assertDontSee('Barang Peringatan');
 
@@ -276,7 +292,7 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item('Sarung Tangan');
         $request = $this->request($requester, $item, 80, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $issuedAt = MonitoringIssue::first();
 
@@ -287,7 +303,7 @@ class ProcessMonitoringTest extends TestCase
             ->assertSee('Masalah & Analisis')
             ->assertSee('Sarung Tangan')
             ->assertSee('Lihat detail request')
-            ->assertSee('/hr/requests/' . $request->id)
+            ->assertSee('/hr/requests/'.$request->id)
             ->assertDontSee('/director/requests/')
             ->assertSee($issuedAt->description);
     }
@@ -299,7 +315,7 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item('Sarung Tangan');
         $this->request($requester, $item, 80, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $this->actingAs($hr)
             ->get('/hr/issues?status=Open')
@@ -315,13 +331,13 @@ class ProcessMonitoringTest extends TestCase
         $item = $this->item('Sarung Tangan');
         $request = $this->request($requester, $item, 80, 'Menunggu Review');
 
-        (new MonitoringIssueSynchronizer())->sync();
+        (new MonitoringIssueSynchronizer)->sync();
 
         $this->actingAs($director)
             ->get('/director/issues')
             ->assertOk()
             ->assertSee('Lihat detail request')
-            ->assertSee('/director/requests/' . $request->id)
+            ->assertSee('/director/requests/'.$request->id)
             ->assertDontSee('/hr/requests/');
     }
 
@@ -344,7 +360,7 @@ class ProcessMonitoringTest extends TestCase
             'code' => $code,
             'rack' => 'A',
             'number' => $number,
-            'sub_location' => 'a.1.' . str_pad((string) $number, 2, '0', STR_PAD_LEFT),
+            'sub_location' => 'a.1.'.str_pad((string) $number, 2, '0', STR_PAD_LEFT),
             'status' => StorageLocation::STATUS_OCCUPIED,
         ]);
     }

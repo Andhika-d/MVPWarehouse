@@ -479,6 +479,25 @@ class DirectorTimelineTest extends TestCase
         }
     }
 
+    public function test_duration_analysis_uses_english_for_english_director(): void
+    {
+        $this->travelTo(now()->startOfDay());
+        $director = $this->makeUser('director');
+        $director->update(['locale' => 'en']);
+        $gudang = $this->makeUser('gudang');
+        $request = $this->makeRequest($gudang, $this->makeItem());
+        $request->forceFill([
+            'status' => 'Menunggu Review',
+            'created_at' => now()->subDays(5),
+        ])->save();
+
+        $this->actingAs($director)
+            ->get(route('director.request-detail', $request))
+            ->assertOk()
+            ->assertSee('5 days ongoing')
+            ->assertDontSee('5 hari berjalan');
+    }
+
     public function test_duration_analysis_marks_single_receipt_as_directly_full(): void
     {
         $director = $this->makeUser('director');

@@ -61,6 +61,17 @@
             @php
                 $subject = $issue->subject;
                 $startedAt = isset($issue->context['started_at']) ? \Carbon\Carbon::parse($issue->context['started_at']) : $issue->detected_at;
+                $issueDescription = $issue->description;
+                if (app()->getLocale() === 'en' && preg_match('/(\d+)\s+hari/u', $issue->description, $durationMatch)) {
+                    $days = $durationMatch[1];
+                    $issueDescription = match ($issue->rule_key) {
+                        \App\Models\MonitoringIssue::RULE_REQUEST_AWAITING_REVIEW => __('Request :item has been awaiting a decision for :days days.', ['item' => $subject?->item_name ?? '—', 'days' => $days]),
+                        \App\Models\MonitoringIssue::RULE_AWAITING_FIRST_RECEIPT => __('No goods have been received for :days days after approval.', ['days' => $days]),
+                        \App\Models\MonitoringIssue::RULE_PARTIAL_RECEIPT_STALLED => __('Goods receipt has stalled for :days days since the last receipt.', ['days' => $days]),
+                        \App\Models\MonitoringIssue::RULE_LOCATION_CHANGE_AWAITING_CONFIRMATION => __('The location change for :item has not been confirmed for :days days.', ['item' => $subject?->item?->display_name ?? '—', 'days' => $days]),
+                        default => $issue->description,
+                    };
+                }
             @endphp
             <div class="bg-white rounded-xl border border-slate-200 p-5">
                 <div class="flex items-start justify-between gap-4">
@@ -73,7 +84,7 @@
                             <span class="text-xs text-slate-400">{{ __('Terulang') }} ×{{ $issue->occurrence_count }}</span>
                             @endif
                         </div>
-                        <p class="text-sm text-slate-600">{{ $issue->description }}</p>
+                        <p class="text-sm text-slate-600">{{ $issueDescription }}</p>
 
                         @if($subject instanceof \App\Models\StockRequest)
                         <p class="mt-1 text-xs text-slate-500">
