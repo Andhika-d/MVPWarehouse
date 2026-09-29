@@ -18,6 +18,19 @@
                 <div class="space-y-4">
                     @forelse($paginated as $event)
                     <div class="relative flex items-start gap-4 pl-4">
+                    @php
+                        $eventType = $event['type'];
+                        if (str_starts_with($eventType, 'Pengajuan Lokasi: ')) {
+                            $eventType = __('Pengajuan Lokasi') . ': ' . __(\Illuminate\Support\Str::after($eventType, ': '));
+                        } else {
+                            $eventType = __($eventType);
+                        }
+                        $eventDetail = str_replace(
+                            ['Keterangan:', 'Catatan:', 'Alasan:', 'Status:', ' diterima', ' ditutup', '(Mendesak)', '(Biasa)'],
+                            [__('Keterangan') . ':', __('Catatan') . ':', __('Alasan') . ':', __('Status') . ':', ' ' . __('diterima'), ' ' . __('ditutup'), '(' . __('Mendesak') . ')', '(' . __('Biasa') . ')'],
+                            $event['detail'],
+                        );
+                    @endphp
                         @if(in_array($event['icon'], ['approved', 'IN']))
                         <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 relative z-10">
                             <svg class="text-emerald-600" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -42,10 +55,10 @@
 
                         <div class="flex-1 min-w-0 pb-2 border-b border-slate-50">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-sm font-semibold text-slate-900">{{ $event['type'] }}</span>
+                                <span class="text-sm font-semibold text-slate-900">{{ $eventType }}</span>
                                 <span class="text-xs text-slate-400">{{ __('oleh') }} {{ $event['user'] }}</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ $event['detail'] }}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $eventDetail }}</p>
                             <p class="text-xs text-slate-400 mt-0.5">{{ $event['time'] ? \Carbon\Carbon::parse($event['time'])->translatedFormat('d M Y, H:i') : '—' }}</p>
                         </div>
                     </div>
