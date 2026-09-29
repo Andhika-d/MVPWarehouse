@@ -11,6 +11,7 @@
                     <option value="all">Semua Peran</option>
                     <option value="admin" {{ request('role') === 'admin' ? 'selected' : '' }}>Admin</option>
                     <option value="hr" {{ request('role') === 'hr' ? 'selected' : '' }}>HR</option>
+                    <option value="director" {{ request('role') === 'director' ? 'selected' : '' }}>Direktur</option>
                     <option value="gudang" {{ request('role') === 'gudang' ? 'selected' : '' }}>Gudang</option>
                 </select>
                 @if(request()->filled('search') || (request()->filled('role') && request('role') !== 'all'))
@@ -112,6 +113,7 @@
                             <select name="role" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                                 <option value="gudang">Gudang</option>
                                 <option value="hr">HR</option>
+                                <option value="director">Direktur</option>
                                 <option value="admin">Admin</option>
                             </select>
                         </div>
