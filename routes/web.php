@@ -1,12 +1,13 @@
 <?php
 
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectorController;
 use App\Http\Controllers\GudangController;
 use App\Http\Controllers\HelpGuideController;
-use App\Http\Controllers\AdminHelpGuideController;
+use App\Http\Controllers\LanguageController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProcurementNoteController;
 use App\Http\Controllers\RequestController;
@@ -20,8 +21,9 @@ Route::get('/', function () {
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/language', [LanguageController::class, 'switch'])->name('language.switch');
 
-//middleware group for authenticated users
+// middleware group for authenticated users
 Route::middleware('auth')->group(function () {
     Route::get('/ubah-password', [AuthController::class, 'showChangePassword'])->name('password.change');
     Route::post('/ubah-password', [AuthController::class, 'changePassword']);
