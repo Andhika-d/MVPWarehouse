@@ -1,6 +1,6 @@
 <x-layout>
-    <x-slot:title>Riwayat Perubahan Stok — THI2-WAREHOUSE</x-slot:title>
-    <x-slot:headerTitle>Riwayat Perubahan Stok</x-slot:headerTitle>
+    <x-slot:title>{{ __('Riwayat Perubahan Stok — THI2-WAREHOUSE') }}</x-slot:title>
+    <x-slot:headerTitle>{{ __('Riwayat Perubahan Stok') }}</x-slot:headerTitle>
 
     <div class="space-y-4">
 
@@ -8,25 +8,25 @@
         <form id="movementFilters" method="GET" action="/gudang/movements" data-auto-filter class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div class="flex items-center gap-2 flex-wrap">
                 <select name="type" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
-                    <option value="">Semua Tipe</option>
-                    <option value="IN" {{ request('type') === 'IN' ? 'selected' : '' }}>Barang Masuk</option>
-                    <option value="OUT" {{ request('type') === 'OUT' ? 'selected' : '' }}>Barang Keluar</option>
-                    <option value="ADJUSTMENT" {{ request('type') === 'ADJUSTMENT' ? 'selected' : '' }}>Penyesuaian Stok</option>
+                    <option value="">{{ __('Semua Tipe') }}</option>
+                    <option value="IN" {{ request('type') === 'IN' ? 'selected' : '' }}>{{ __('Barang Masuk') }}</option>
+                    <option value="OUT" {{ request('type') === 'OUT' ? 'selected' : '' }}>{{ __('Barang Keluar') }}</option>
+                    <option value="ADJUSTMENT" {{ request('type') === 'ADJUSTMENT' ? 'selected' : '' }}>{{ __('Penyesuaian Stok') }}</option>
                 </select>
                 <select name="item_id" class="bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-corpblue-500">
-                    <option value="">Semua Barang</option>
+                    <option value="">{{ __('Semua Barang') }}</option>
                     @foreach($items as $item)
                         <option value="{{ $item->id }}" {{ request('item_id') == $item->id ? 'selected' : '' }}>{{ $item->display_name }}</option>
                     @endforeach
                 </select>
                 <x-period-filter-button :period="$period" />
                 @if(request()->hasAny(['type', 'item_id']) || $period)
-                    <a href="/gudang/movements" class="text-xs font-medium text-slate-500 hover:text-slate-700">Reset</a>
+                    <a href="/gudang/movements" class="text-xs font-medium text-slate-500 hover:text-slate-700">{{ __('Reset') }}</a>
                 @endif
             </div>
             <button type="button" onclick="openExportModal()" class="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-semibold transition-all cursor-pointer whitespace-nowrap">
                 <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Export
+                {{ __('Export') }}
             </button>
         </form>
 
@@ -36,13 +36,13 @@
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
-                            <th class="py-3 px-5">Tanggal & Waktu</th>
-                            <th class="py-3 px-5">Barang</th>
-                            <th class="py-3 px-5 text-center">Tipe</th>
-                            <th class="py-3 px-5 text-center">Jumlah</th>
-                            <th class="py-3 px-5">Stok</th>
-                            <th class="py-3 px-5">Keterangan</th>
-                            <th class="py-3 px-5">Pengguna</th>
+                            <th class="py-3 px-5">{{ __('Tanggal & Waktu') }}</th>
+                            <th class="py-3 px-5">{{ __('Barang') }}</th>
+                            <th class="py-3 px-5 text-center">{{ __('Tipe') }}</th>
+                            <th class="py-3 px-5 text-center">{{ __('Jumlah') }}</th>
+                            <th class="py-3 px-5">{{ __('Stok') }}</th>
+                            <th class="py-3 px-5">{{ __('Keterangan') }}</th>
+                            <th class="py-3 px-5">{{ __('Pengguna') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
@@ -52,11 +52,11 @@
                             <td class="py-3 px-5 font-semibold text-slate-900">{{ $m->item?->name ?? '—' }}</td>
                             <td class="py-3 px-5 text-center">
                                 @if($m->type === 'IN')
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">Masuk</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">{{ __('Masuk') }}</span>
                                 @elseif($m->type === 'OUT')
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">Keluar</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">{{ __('Keluar') }}</span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold">Penyesuaian</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold">{{ __('Penyesuaian') }}</span>
                                 @endif
                             </td>
                             <td class="py-3 px-5 text-center">
@@ -69,11 +69,11 @@
                                 <span>{{ $m->balance_after }} {{ $m->unit }}</span>
                                 @if($m->balance_before !== null)
                         <span class="relative inline-flex ml-1 align-middle">
-                            <button type="button" data-balance-tooltip aria-label="Lihat detail saldo" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
+                            <button type="button" data-balance-tooltip aria-label="{{ __('Lihat detail saldo') }}" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
                             <span class="balance-tooltip-content hidden">
-                                        Stok sebelum: <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
-                                        Perubahan: <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
-                                        Stok setelah: <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
+                                        {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
+                                        {{ __('Perubahan:') }} <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
+                                        {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
                                     </span>
                                 </span>
                                 @endif
@@ -83,7 +83,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="py-10 text-center text-slate-400 text-sm">Belum ada riwayat perubahan stok.</td>
+                            <td colspan="7" class="py-10 text-center text-slate-400 text-sm">{{ __('Belum ada riwayat perubahan stok.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -104,11 +104,11 @@
                         <p class="text-xs text-slate-500 mt-0.5">{{ $m->occurred_at->translatedFormat('d M Y, H:i') }}</p>
                     </div>
                     @if($m->type === 'IN')
-                        <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">Masuk</span>
+                        <span class="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">{{ __('Masuk') }}</span>
                     @elseif($m->type === 'OUT')
-                        <span class="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">Keluar</span>
+                        <span class="px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">{{ __('Keluar') }}</span>
                     @else
-                        <span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold">Penyesuaian</span>
+                        <span class="px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold">{{ __('Penyesuaian') }}</span>
                     @endif
                 </div>
                 <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 text-xs">
@@ -117,14 +117,14 @@
                             {{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}
                         </span>
                     </div>
-                    <span class="text-slate-500">Saldo: <strong class="text-slate-900">{{ $m->balance_after }} {{ $m->unit }}</strong>
+                    <span class="text-slate-500">{{ __('Saldo:') }} <strong class="text-slate-900">{{ $m->balance_after }} {{ $m->unit }}</strong>
                         @if($m->balance_before !== null)
                         <span class="relative inline-flex ml-1 align-middle">
-                            <button type="button" data-balance-tooltip aria-label="Lihat detail saldo" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
+                            <button type="button" data-balance-tooltip aria-label="{{ __('Lihat detail saldo') }}" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
                             <span class="balance-tooltip-content hidden">
-                                Stok sebelum: <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
-                                Perubahan: <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
-                                Stok setelah: <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
+                                {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
+                                {{ __('Perubahan:') }} <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
+                                {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
                             </span>
                         </span>
                         @endif
@@ -135,7 +135,7 @@
                 @endif
             </div>
             @empty
-            <div class="bg-white rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">Belum ada riwayat perubahan stok.</div>
+            <div class="bg-white rounded-xl border border-dashed border-slate-200 p-8 text-center text-sm text-slate-400">{{ __('Belum ada riwayat perubahan stok.') }}</div>
             @endforelse
             @if($movements->hasPages())
             <div class="pt-2">{{ $movements->links() }}</div>
@@ -168,8 +168,8 @@
                         <svg class="text-corpblue-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     </div>
                     <div class="min-w-0 flex-1">
-                        <h3 id="exportModalTitle" class="text-base font-bold text-slate-900">Export Perubahan Stok</h3>
-                        <p class="text-sm text-slate-500 mt-1">Pilih data yang ingin diekspor ke Excel.</p>
+                        <h3 id="exportModalTitle" class="text-base font-bold text-slate-900">{{ __('Export Perubahan Stok') }}</h3>
+                        <p class="text-sm text-slate-500 mt-1">{{ __('Pilih data yang ingin diekspor ke Excel.') }}</p>
                     </div>
                 </div>
                 <div class="px-6 pb-5">
@@ -186,8 +186,8 @@
                                     <svg class="text-emerald-600" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m0-16l-4 4m4-4l4 4"/></svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-emerald-700">Barang Masuk</p>
-                                    <p class="text-xs text-slate-400">Hanya data penerimaan barang</p>
+                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-emerald-700">{{ __('Barang Masuk') }}</p>
+                                    <p class="text-xs text-slate-400">{{ __('Hanya data penerimaan barang') }}</p>
                                 </div>
                             </div>
                         </button>
@@ -198,8 +198,8 @@
                                     <svg class="text-red-600" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 20V4m0 16l-4-4m4 4l4-4"/></svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-red-700">Barang Keluar</p>
-                                    <p class="text-xs text-slate-400">Hanya data pengeluaran barang</p>
+                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-red-700">{{ __('Barang Keluar') }}</p>
+                                    <p class="text-xs text-slate-400">{{ __('Hanya data pengeluaran barang') }}</p>
                                 </div>
                             </div>
                         </button>
@@ -210,8 +210,8 @@
                                     <svg class="text-indigo-600" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
                                 </div>
                                 <div>
-                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-indigo-700">Barang Masuk & Keluar</p>
-                                    <p class="text-xs text-slate-400">Gabungan data masuk dan keluar</p>
+                                    <p class="text-sm font-semibold text-slate-900 group-hover:text-indigo-700">{{ __('Barang Masuk & Keluar') }}</p>
+                                    <p class="text-xs text-slate-400">{{ __('Gabungan data masuk dan keluar') }}</p>
                                 </div>
                             </div>
                         </button>
@@ -222,8 +222,8 @@
                                 <svg class="text-amber-600" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-slate-900 group-hover:text-amber-700">Penyesuaian Stok</p>
-                                <p class="text-xs text-slate-400">Hanya data penyesuaian / stok awal</p>
+                                <p class="text-sm font-semibold text-slate-900 group-hover:text-amber-700">{{ __('Penyesuaian Stok') }}</p>
+                                <p class="text-xs text-slate-400">{{ __('Hanya data penyesuaian / stok awal') }}</p>
                             </div>
                         </div>
                     </button>
@@ -234,15 +234,15 @@
                                 <svg class="text-corpblue-600" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                             </div>
                             <div>
-                                <p class="text-sm font-semibold text-slate-900 group-hover:text-corpblue-700">Semua Perubahan Stok</p>
-                                <p class="text-xs text-slate-400">Stok awal, masuk, keluar, & penyesuaian</p>
+                                <p class="text-sm font-semibold text-slate-900 group-hover:text-corpblue-700">{{ __('Semua Perubahan Stok') }}</p>
+                                <p class="text-xs text-slate-400">{{ __('Stok awal, masuk, keluar, & penyesuaian') }}</p>
                             </div>
                         </div>
                     </button>
                     </form>
                 </div>
                 <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end">
-                    <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded-xl font-medium transition-colors cursor-pointer">Batal</button>
+                    <button type="button" onclick="closeExportModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded-xl font-medium transition-colors cursor-pointer">{{ __('Batal') }}</button>
                 </div>
             </div>
         </div>

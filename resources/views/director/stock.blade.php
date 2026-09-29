@@ -1,4 +1,4 @@
-<x-layout :title="'Monitoring Stok — THI2-WAREHOUSE'" :headerTitle="'Monitoring Stok Barang'">
+<x-layout :title="__('Monitoring Stok — THI2-WAREHOUSE')" :headerTitle="__('Monitoring Stok Barang')">
     <div class="space-y-6">
 
         {{-- Summary Stats --}}
@@ -9,7 +9,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-slate-900">{{ number_format($summary['total_items']) }}</p>
-                    <p class="text-xs text-slate-500">Total Lokasi</p>
+                    <p class="text-xs text-slate-500">{{ __('Total Lokasi') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-emerald-600">{{ number_format($summary['total_stock']) }}</p>
-                    <p class="text-xs text-slate-500">Total Stok</p>
+                    <p class="text-xs text-slate-500">{{ __('Total Stok') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -27,7 +27,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-amber-600">{{ number_format($summary['low_stock']) }}</p>
-                    <p class="text-xs text-slate-500">Stok Menipis (≤5)</p>
+                    <p class="text-xs text-slate-500">{{ __('Stok Menipis (≤5)') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -36,7 +36,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-red-600">{{ number_format($summary['out_of_stock']) }}</p>
-                    <p class="text-xs text-slate-500">Habis (0)</p>
+                    <p class="text-xs text-slate-500">{{ __('Habis (0)') }}</p>
                 </div>
             </div>
         </div>
@@ -45,7 +45,7 @@
         <div class="flex gap-2 overflow-x-auto pb-1">
             <a href="{{ route('director.stock', ['status' => $status] + ($search ? ['search' => $search] : [])) }}"
                class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ !$rack ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">
-                <span class="font-bold">Semua</span>
+                <span class="font-bold">{{ __('Semua') }}</span>
             </a>
             @foreach($rackStats as $rs)
             <a href="{{ route('director.stock', ['rack' => $rs['rack'], 'status' => $status] + ($search ? ['search' => $search] : [])) }}"
@@ -61,18 +61,18 @@
             <form method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 @if($rack)<input type="hidden" name="rack" value="{{ $rack }}">@endif
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari kode tag, nama barang, sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('Cari kode tag, nama barang, sub lokasi...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none cursor-pointer">
-                    <option value="all" {{ ($status ?? '') === 'all' ? 'selected' : '' }}>Semua Status</option>
-                    <option value="occupied" {{ ($status ?? '') === 'occupied' ? 'selected' : '' }}>Terisi</option>
-                    <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>Lokasi Kosong</option>
-                    <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>Barang Kosong</option>
+                    <option value="all" {{ ($status ?? '') === 'all' ? 'selected' : '' }}>{{ __('Semua Status') }}</option>
+                    <option value="occupied" {{ ($status ?? '') === 'occupied' ? 'selected' : '' }}>{{ __('Terisi') }}</option>
+                    <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>{{ __('Lokasi Kosong') }}</option>
+                    <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>{{ __('Barang Kosong') }}</option>
                 </select>
                 @if(($search ?? '') !== '' || (($status ?? 'all') !== 'all'))
-                <a href="{{ $rack ? '/director/stock?rack='.urlencode($rack) : '/director/stock' }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="{{ $rack ? '/director/stock?rack='.urlencode($rack) : '/director/stock' }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
-                <a href="{{ route('director.stock.print', array_filter(['rack' => $rack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '' && $value !== 'all')) }}" class="btn btn--secondary whitespace-nowrap">Cetak</a>
+                <a href="{{ route('director.stock.print', array_filter(['rack' => $rack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '' && $value !== 'all')) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
             </form>
         </div>
 
@@ -82,14 +82,14 @@
                 <table class="w-full text-sm min-w-[900px]">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Lokasi Rak</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Sub Lokasi</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama Barang</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Ukuran</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Stok</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Satuan</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Kode Tag') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Lokasi Rak') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Sub Lokasi') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Nama Barang') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Ukuran') }}</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Stok') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Satuan') }}</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Status') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -112,7 +112,7 @@
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 {{ $item->name }}
                                 @if($loc->items->count() > 1)
-                                <span class="text-[11px] font-semibold text-indigo-600 ml-1">(+{{ $loc->items->count() - 1 }} ditumpuk)</span>
+                                <span class="text-[11px] font-semibold text-indigo-600 ml-1">(+{{ $loc->items->count() - 1 }} {{ __('ditumpuk') }})</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->size ?? '—' }}</td>
@@ -127,7 +127,7 @@
                             </td>
                             <td class="px-4 py-3 text-center text-slate-600">{{ $item->unit }}</td>
                             <td class="px-4 py-3 text-center">
-                                <x-status-badge domain="location" status="Terisi" :label="$item->stock === 0 ? 'Terisi (Barang Kosong)' : 'Terisi'" dot />
+                                <x-status-badge domain="location" status="Terisi" :label="$item->stock === 0 ? __('Terisi (Barang Kosong)') : __('Terisi')" dot />
                             </td>
                         </tr>
                         @empty
@@ -156,7 +156,7 @@
                         @endforelse
                         @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-400">Tidak ada data lokasi.</td>
+                            <td colspan="8" class="px-4 py-12 text-center text-sm text-slate-400">{{ __('Tidak ada data lokasi.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
