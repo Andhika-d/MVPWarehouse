@@ -143,6 +143,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/users/{user}/reset-password', [AdminController::class, 'resetUserPassword'])->name('users.reset-password');
         Route::post('/users/{user}/toggle-status', [AdminController::class, 'toggleUserStatus'])->name('users.toggle-status');
         Route::post('/users/{user}/role', [AdminController::class, 'updateUserRole'])->name('users.role');
+        Route::post('/users/{user}/locale', [AdminController::class, 'updateUserLocale'])->name('users.locale');
         Route::delete('/users/{user}', [AdminController::class, 'deleteUser'])->name('users.destroy');
         Route::post('/users/{user}/login-as', [AdminController::class, 'loginAs'])->name('users.login-as');
 

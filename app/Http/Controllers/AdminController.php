@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class AdminController extends Controller
 {
@@ -739,6 +740,7 @@ class AdminController extends Controller
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['nullable', 'string', 'min:6'],
             'role' => ['required', 'in:gudang,hr,admin,director'],
+            'locale' => ['nullable', Rule::in(array_keys(config('language.supported')))],
         ]);
 
         $generatedPassword = filled($data['password'] ?? null) ? $data['password'] : Str::password(12);
@@ -748,6 +750,7 @@ class AdminController extends Controller
             'email' => $data['email'],
             'password' => Hash::make($generatedPassword),
             'role' => $data['role'],
+            'locale' => $data['locale'] ?? config('app.locale'),
             'must_change_password' => blank($data['password'] ?? null),
         ]);
 
@@ -838,6 +841,25 @@ class AdminController extends Controller
         ]);
 
         return back()->with('success', 'Peran pengguna berhasil diperbarui.');
+    }
+
+    public function updateUserLocale(Request $request, User $user)
+    {
+        $data = $request->validate([
+            'locale' => ['required', Rule::in(array_keys(config('language.supported')))],
+        ]);
+
+        $user->update(['locale' => $data['locale']]);
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'updated_user_locale',
+            'target_type' => User::class,
+            'target_id' => $user->id,
+            'details' => 'Mengubah bahasa akun '.$user->email.' menjadi '.$data['locale'],
+        ]);
+
+        return back()->with('success', __('Bahasa pengguna berhasil diperbarui.'));
     }
 
     public function deleteUser(User $user)

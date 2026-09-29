@@ -63,6 +63,7 @@ class AuditLog extends Model
             'reset_password' => 'Reset password',
             'toggle_user_status' => 'Mengubah status pengguna',
             'updated_user_role' => 'Mengubah peran pengguna',
+            'updated_user_locale' => 'Mengubah bahasa pengguna',
             'deleted_user' => 'Menghapus pengguna',
             'impersonated_user' => 'Login sebagai pengguna',
             'impersonation_stopped' => 'Menghentikan login sebagai',
