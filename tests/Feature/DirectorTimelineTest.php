@@ -558,6 +558,39 @@ class DirectorTimelineTest extends TestCase
         $this->assertStringContainsString('Kebutuhan operasional', $content);
     }
 
+    public function test_director_request_detail_timeline_translates_event_labels_in_english(): void
+    {
+        $director = $this->makeUser('director');
+        $director->update(['locale' => 'en']);
+        $hr = $this->makeUser('hr');
+        $gudang = $this->makeUser('gudang');
+        $request = $this->makeRequest($gudang, $this->makeItem(), 5);
+        $request->update([
+            'status' => 'Disetujui',
+            'reviewed_by' => $hr->id,
+            'approved_at' => now(),
+        ]);
+        $request->requestHistories()->create([
+            'user_id' => $hr->id,
+            'status' => 'Disetujui',
+            'note' => 'Disetujui untuk kebutuhan operasional',
+        ]);
+
+        $this->actingAs($director)
+            ->get(route('director.request-detail', $request))
+            ->assertOk()
+            ->assertSee('Request Created')
+            ->assertSee('Reviewed')
+            ->assertSee('Approved by')
+            ->assertSee('Item:')
+            ->assertSee('Quantity:')
+            ->assertSee('Priority:')
+            ->assertSee('Reason:')
+            ->assertDontSee('Barang:')
+            ->assertDontSee('Jumlah:')
+            ->assertDontSee('Disetujui oleh');
+    }
+
     public function test_global_timeline_no_duplicate_receipt(): void
     {
         $director = $this->makeUser('director');

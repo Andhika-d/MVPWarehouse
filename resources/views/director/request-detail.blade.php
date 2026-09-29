@@ -190,6 +190,12 @@
                                     'slate' => ['bg' => 'bg-slate-400', 'light' => 'bg-slate-50', 'text' => 'text-slate-500'],
                                 ];
                                 $c = $colorMap[$event['color']] ?? $colorMap['slate'];
+                                $eventDetail = $event['detail'];
+                                if (app()->getLocale() === 'en' && $eventDetail) {
+                                    $eventDetail = preg_replace_callback('/(^|\n)(Barang|Jumlah|Prioritas|Alasan|Keterangan):/u', fn ($matches) => $matches[1] . __($matches[2]) . ':', $eventDetail);
+                                    $eventDetail = preg_replace('/^Diterima (?=\d)/u', __('Diterima') . ' ', $eventDetail);
+                                    $eventDetail = preg_replace('/(?<=\d) dari (?=\d)/u', ' of ', $eventDetail);
+                                }
                             @endphp
                             <div class="relative flex items-start gap-4 pl-0 py-2">
                                 {{-- Dot --}}
@@ -205,10 +211,10 @@
                                     </div>
                                     <p class="text-xs text-slate-500 mt-0.5">{{ __('oleh') }} <span class="font-medium text-slate-600">{{ $event['user'] }}</span></p>
                                     @if(isset($event['decision']))
-                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $event['decision'] }} {{ __('oleh') }} {{ $event['processor'] }}</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ __($event['decision']) }} {{ __('oleh') }} {{ $event['processor'] }}</p>
                                     @endif
                                     @if($event['detail'])
-                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $event['detail'] }}</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $eventDetail }}</p>
                                     @endif
                                 </div>
                             </div>
