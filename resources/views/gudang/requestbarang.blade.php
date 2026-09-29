@@ -1,6 +1,6 @@
 <x-layout>
-    <x-slot:title>Buat Permintaan — THI2-WAREHOUSE</x-slot:title>
-    <x-slot:headerTitle>Buat Permintaan</x-slot:headerTitle>
+    <x-slot:title>{{ __('Buat Permintaan — THI2-WAREHOUSE') }}</x-slot:title>
+    <x-slot:headerTitle>{{ __('Buat Permintaan') }}</x-slot:headerTitle>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
@@ -11,7 +11,7 @@
 
                 {{-- 1. Nama Barang --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Barang</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
                     <input type="hidden" name="item_id" id="item_id" value="">
                     <input type="hidden" name="item_name" id="item_name_hidden" value="">
 
@@ -22,28 +22,28 @@
                                     id="itemSearch"
                                     type="text"
                                     autocomplete="off"
-                                    placeholder="Ketik untuk mencari barang..."
+                                    placeholder="{{ __('Ketik untuk mencari barang...') }}"
                                     oninput="filterItems()"
                                     onfocus="openItemList()"
                                     class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"
                                 >
-                                <button type="button" id="itemClear" onclick="clearItemSelection()" title="Bersihkan" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
+                                <button type="button" id="itemClear" onclick="clearItemSelection()" title="{{ __('Bersihkan') }}" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
                             </div>
                             <div class="relative" id="rackDropdownWrap">
                                 <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
                                     <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    <span id="rackDropdownLabel">Semua Rak</span>
+                                    <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
                                 <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
                                     <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
-                                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> Semua Rak
+                                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
                                     </button>
                                     @foreach(['A','B','C','D','E'] as $rack)
                                     <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
-                                        <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> Rak {{ $rack }}
+                                        <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
                                     </button>
                                     @endforeach
                                 </div>
@@ -60,58 +60,58 @@
                                 <p id="infoItemDetail" class="text-xs text-slate-500 mt-0.5"></p>
                             </div>
                             <div class="text-right">
-                                <p class="text-xs text-slate-500">Stok</p>
+                                <p class="text-xs text-slate-500">{{ __('Stok') }}</p>
                                 <p id="infoItemStock" class="text-base font-bold text-slate-900"></p>
                             </div>
                         </div>
                             <div class="mt-2 pt-2 border-t border-slate-200 flex items-center gap-4 text-xs text-slate-500">
-                                <span>Satuan: <strong id="infoItemUnit" class="text-slate-700"></strong></span>
-                                <span>Rak: <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
-                                <span id="infoSubLocWrap" class="hidden">Sub: <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
-                                <span id="infoTagWrap" class="hidden">Tag: <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                <span>{{ __('Satuan:') }} <strong id="infoItemUnit" class="text-slate-700"></strong></span>
+                                <span>{{ __('Rak:') }} <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
+                                <span id="infoSubLocWrap" class="hidden">{{ __('Sub:') }} <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                <span id="infoTagWrap" class="hidden">{{ __('Tag:') }} <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
                             </div>
                     </div>
                 </div>
 
                 {{-- 2. Jumlah --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Jumlah</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Jumlah') }}</label>
                     <input type="number" name="quantity" min="1" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                     <input type="hidden" name="unit" id="unit-field" value="">
                 </div>
 
                 {{-- 3. Prioritas --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Prioritas</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Prioritas') }}</label>
                     <div class="flex gap-3">
                         <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-corpblue-500 has-[:checked]:bg-corpblue-50 transition-all">
                             <input type="radio" name="priority" value="Biasa" checked class="sr-only">
-                            <span class="text-sm text-slate-700 font-medium">Biasa</span>
+                            <span class="text-sm text-slate-700 font-medium">{{ __('Biasa') }}</span>
                         </label>
                         <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-red-400 has-[:checked]:bg-red-50 transition-all">
                             <input type="radio" name="priority" value="Mendesak" class="sr-only">
-                            <span class="text-sm text-slate-700 font-medium">Mendesak</span>
+                            <span class="text-sm text-slate-700 font-medium">{{ __('Mendesak') }}</span>
                         </label>
                     </div>
                 </div>
 
                 {{-- 4. Alasan --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Alasan <span class="text-slate-400 font-normal">(opsional)</span></label>
-                    <textarea name="reason" rows="2" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all placeholder:text-slate-400 resize-none" placeholder="Alasan pengajuan barang..."></textarea>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Alasan') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
+                    <textarea name="reason" rows="2" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all placeholder:text-slate-400 resize-none" placeholder="{{ __('Alasan pengajuan barang...') }}"></textarea>
                 </div>
 
                 {{-- 5. Lampiran --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">Lampiran <span class="text-slate-400 font-normal">(opsional)</span></label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Lampiran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
                     <input type="file" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.xls" class="w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-600 file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-corpblue-50 file:text-corpblue-600 hover:file:bg-corpblue-100 file:cursor-pointer">
-                    <p class="mt-1 text-[11px] text-slate-400">PDF, JPG, PNG, DOC, DOCX, XLSX, XLS. Maks 2 MB.</p>
+                    <p class="mt-1 text-[11px] text-slate-400">{{ __('PDF, JPG, PNG, DOC, DOCX, XLSX, XLS. Maks 2 MB.') }}</p>
                 </div>
 
                 {{-- Footer --}}
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                    <a href="/gudang/dashboard" class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all">Batal</a>
-                    <button type="submit" class="px-5 py-2.5 bg-corpblue-500 text-white font-semibold rounded-lg text-sm hover:bg-corpblue-600 transition-all min-h-[44px]">Kirim Pengajuan</button>
+                    <a href="/gudang/dashboard" class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all">{{ __('Batal') }}</a>
+                    <button type="submit" class="px-5 py-2.5 bg-corpblue-500 text-white font-semibold rounded-lg text-sm hover:bg-corpblue-600 transition-all min-h-[44px]">{{ __('Kirim Pengajuan') }}</button>
                 </div>
             </form>
         </div>
@@ -120,30 +120,30 @@
         <div class="space-y-4">
             {{-- Alur --}}
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-semibold text-slate-900 mb-3">Alur Pengajuan</h3>
+                <h3 class="text-sm font-semibold text-slate-900 mb-3">{{ __('Alur Pengajuan') }}</h3>
                 <ol class="space-y-3 text-xs text-slate-500">
                     <li class="flex gap-3">
                         <span class="flex items-center justify-center w-5 h-5 bg-corpblue-50 text-corpblue-600 rounded-full text-[10px] font-bold shrink-0">1</span>
-                        <span>Isi formulir dan kirim pengajuan</span>
+                        <span>{{ __('Isi formulir dan kirim pengajuan') }}</span>
                     </li>
                     <li class="flex gap-3">
                         <span class="flex items-center justify-center w-5 h-5 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold shrink-0">2</span>
-                        <span>HR meninjau dan memutuskan</span>
+                        <span>{{ __('HR meninjau dan memutuskan') }}</span>
                     </li>
                     <li class="flex gap-3">
                         <span class="flex items-center justify-center w-5 h-5 bg-slate-100 text-slate-500 rounded-full text-[10px] font-bold shrink-0">3</span>
-                        <span>Barang siap diambil atau ditolak</span>
+                        <span>{{ __('Barang siap diambil atau ditolak') }}</span>
                     </li>
                 </ol>
             </div>
 
             {{-- PIC --}}
             <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                <h3 class="text-sm font-semibold text-slate-900 mb-2">Hubungi Administrator Sistem</h3>
-                <p class="text-xs text-slate-500 mb-3">Untuk koreksi data.</p>
+                <h3 class="text-sm font-semibold text-slate-900 mb-2">{{ __('Hubungi Administrator Sistem') }}</h3>
+                <p class="text-xs text-slate-500 mb-3">{{ __('Untuk koreksi data.') }}</p>
                 <div class="bg-slate-50 p-3 rounded-lg">
                     <p class="text-xs font-semibold text-slate-900">Andhika Dwiky Fauzi</p>
-                    <p class="text-[11px] text-slate-400 mt-0.5">Administrator Sistem &middot; Ext: 104</p>
+                    <p class="text-[11px] text-slate-400 mt-0.5">{!! __('Administrator Sistem &middot; Ext: 104') !!}</p>
                 </div>
             </div>
         </div>
@@ -170,7 +170,7 @@
 
     function selectRack(rack) {
         selectedRack = rack;
-        document.getElementById('rackDropdownLabel').textContent = rack ? 'Rak ' + rack : 'Semua Rak';
+        document.getElementById('rackDropdownLabel').textContent = rack ? '{{ __('Rak') }} ' + rack : '{{ __('Semua Rak') }}';
         document.getElementById('rackDropdownMenu').classList.add('hidden');
 
         document.querySelectorAll('.rack-option').forEach((btn) => {
@@ -234,8 +234,8 @@
             const empty = document.createElement('div');
             empty.className = 'px-3 py-3 text-xs text-slate-400 text-center';
             empty.textContent = selectedRack
-                ? (q ? 'Barang "' + q + '" tidak ditemukan di Rak ' + selectedRack + '.' : 'Belum ada barang di Rak ' + selectedRack + '.')
-                : 'Barang tidak ditemukan.';
+                ? (q ? '{{ __('Barang') }} "' + q + '" {{ __('tidak ditemukan di Rak') }} ' + selectedRack + '.' : '{{ __('Belum ada barang di Rak') }} ' + selectedRack + '.')
+                : '{{ __('Barang tidak ditemukan.') }}';
             listBox.appendChild(empty);
         } else {
             setActiveIndex(0);
@@ -266,7 +266,7 @@
         unitField.value = item.unit || '';
 
         document.getElementById('infoItemName').textContent = item.label;
-        document.getElementById('infoItemDetail').textContent = item.stock > 0 ? 'Tersedia' : 'Stok habis';
+        document.getElementById('infoItemDetail').textContent = item.stock > 0 ? '{{ __('Tersedia') }}' : '{{ __('Stok habis') }}';
         document.getElementById('infoItemStock').textContent = item.stock;
         document.getElementById('infoItemStock').className = 'text-base font-bold ' + (item.stock > 0 ? 'text-slate-900' : 'text-red-500');
         document.getElementById('infoItemUnit').textContent = item.unit || '—';
@@ -344,7 +344,7 @@
             e.preventDefault();
             searchInput.focus();
             openItemList();
-            alert('Silakan pilih barang dari inventaris.');
+            alert('{{ __('Silakan pilih barang dari inventaris.') }}');
         }
     });
     </script></x-slot:scripts>
