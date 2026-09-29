@@ -548,5 +548,22 @@
     "Semua Aktivitas": "All Activity",
     "Tidak ada aktivitas.": "No activity.",
     "Cari barang atau keterangan...": "Search items or descriptions...",
-    "Tidak ada data.": "No data."
+    "Tidak ada data.": "No data.",
+    "Buka notifikasi": "Open notifications",
+    "Notifikasi": "Notifications",
+    "Tandai semua dibaca": "Mark all as read",
+    "Tidak ada notifikasi.": "No notifications.",
+    "baru saja": "just now",
+    ":count menit yang lalu": ":count minutes ago",
+    ":count jam yang lalu": ":count hours ago",
+    ":count hari yang lalu": ":count days ago",
+    "Gagal memuat notifikasi.": "Failed to load notifications.",
+    "Notifikasi belum dapat diperbarui.": "Notifications could not be refreshed.",
+    "Gagal menandai notifikasi.": "Failed to mark notification as read.",
+    "Status notifikasi belum dapat diperbarui.": "Notification status could not be updated.",
+    "Memperbarui notifikasi.": "Updating notifications.",
+    "Semua notifikasi ditandai sudah dibaca.": "All notifications marked as read.",
+    "Gagal menandai semua notifikasi.": "Failed to mark all notifications as read.",
+    "Status tindakan": "Action status",
+    "Periksa kembali data yang dimasukkan.": "Please check the information you entered."
 }
