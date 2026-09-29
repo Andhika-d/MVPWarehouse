@@ -25,7 +25,7 @@ class AuditLog extends Model
 
     public function labelForAction(): string
     {
-        return static::actionLabels()[$this->action] ?? $this->action;
+        return __(static::actionLabels()[$this->action] ?? $this->action);
     }
 
     public function labelForTarget(): string
@@ -38,7 +38,7 @@ class AuditLog extends Model
 
         $name = static::targetLabels()[$type] ?? class_basename($type);
 
-        return $name . ($this->target_id ? ' #'.$this->target_id : '');
+        return __($name).($this->target_id ? ' #'.$this->target_id : '');
     }
 
     public static function actionLabels(): array
