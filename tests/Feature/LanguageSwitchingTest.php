@@ -187,6 +187,25 @@ class LanguageSwitchingTest extends TestCase
             ->assertSee('Active Issues')
             ->assertSee('All Severity Levels')
             ->assertSee('No issues recorded yet.');
+
+        $this->actingAs($hr)
+            ->get('/hr/movements')
+            ->assertOk()
+            ->assertSee('Stock Change History')
+            ->assertSee('Search items or descriptions...')
+            ->assertSee('All Types')
+            ->assertSee('Incoming Goods')
+            ->assertSee('Outgoing Goods')
+            ->assertSee('Adjustment')
+            ->assertSee('No data.');
+
+        $this->actingAs($director)
+            ->get('/director/movements')
+            ->assertOk()
+            ->assertSee('Stock Change History')
+            ->assertSee('All Types')
+            ->assertSee('Incoming Goods')
+            ->assertSee('Outgoing Goods');
     }
 
     public function test_admin_audit_page_renders_in_english(): void
