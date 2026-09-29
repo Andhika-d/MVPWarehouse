@@ -1,55 +1,55 @@
 <x-layout>
-    <x-slot:title>Riwayat Pengadaan — THI2-WAREHOUSE</x-slot:title>
-    <x-slot:headerTitle>Riwayat Pengadaan</x-slot:headerTitle>
+    <x-slot:title>{{ __('Riwayat Pengadaan — THI2-WAREHOUSE') }}</x-slot:title>
+    <x-slot:headerTitle>{{ __('Riwayat Pengadaan') }}</x-slot:headerTitle>
 
     <div class="space-y-5">
         <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Total Nota</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ __('Total Nota') }}</p>
                 <p class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($totalNotes) }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Aktif</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ __('Aktif') }}</p>
                 <p class="mt-1 text-2xl font-bold text-corpblue-700">{{ number_format($activeCount) }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Selesai</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ __('Selesai') }}</p>
                 <p class="mt-1 text-2xl font-bold text-emerald-600">{{ number_format($completedCount) }}</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-white p-4">
-                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Total Request</p>
+                <p class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">{{ __('Total Request') }}</p>
                 <p class="mt-1 text-2xl font-bold text-slate-900">{{ number_format($requestCount) }}</p>
             </div>
         </div>
 
         <form id="procurementFilters" method="GET" action="{{ route('procurement-notes.index') }}" data-auto-filter class="rounded-xl border border-slate-200 bg-white p-4">
             <div class="grid gap-3 lg:grid-cols-[minmax(220px,1fr)_170px_220px_170px_auto]">
-                <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nomor nota, barang, atau pemohon..." class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-corpblue-500 focus:bg-white focus:outline-none">
+                <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari nomor nota, barang, atau pemohon...') }}" class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-corpblue-500 focus:bg-white focus:outline-none">
                 <select name="note_status" class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                    <option value="all">Semua Status Nota</option>
-                    <option value="Aktif" @selected(request('note_status') === 'Aktif')>Aktif</option>
-                    <option value="Selesai" @selected(request('note_status') === 'Selesai')>Selesai</option>
+                    <option value="all">{{ __('Semua Status Nota') }}</option>
+                    <option value="Aktif" @selected(request('note_status') === 'Aktif')>{{ __('Aktif') }}</option>
+                    <option value="Selesai" @selected(request('note_status') === 'Selesai')>{{ __('Selesai') }}</option>
                 </select>
                 <select name="request_status" class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                    <option value="all">Semua Status Request</option>
+                    <option value="all">{{ __('Semua Status Request') }}</option>
                     @foreach(['Menunggu Review', 'Pending', 'Disetujui', 'Sebagian Diterima', 'Diterima Penuh', 'Ditutup Sebagian', 'Dibatalkan', 'Ditolak'] as $status)
-                    <option value="{{ $status }}" @selected(request('request_status') === $status)>{{ $status }}</option>
+                    <option value="{{ $status }}" @selected(request('request_status') === $status)>{{ __($status) }}</option>
                     @endforeach
                 </select>
                 <select name="priority" class="min-h-11 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                    <option value="all">Semua Prioritas</option>
-                    <option value="Biasa" @selected(request('priority') === 'Biasa')>Biasa</option>
-                    <option value="Mendesak" @selected(request('priority') === 'Mendesak')>Mendesak</option>
+                    <option value="all">{{ __('Semua Prioritas') }}</option>
+                    <option value="Biasa" @selected(request('priority') === 'Biasa')>{{ __('Biasa') }}</option>
+                    <option value="Mendesak" @selected(request('priority') === 'Mendesak')>{{ __('Mendesak') }}</option>
                 </select>
                 <x-period-filter-button :period="$period" />
             </div>
             <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100 pt-3">
                 <div class="flex gap-2">
-                    <a href="{{ route('procurement-notes.print-period', request()->query()) }}" class="btn btn--secondary">Cetak</a>
+                    <a href="{{ route('procurement-notes.print-period', request()->query()) }}" class="btn btn--secondary">{{ __('Cetak') }}</a>
                     <a href="{{ route('procurement-notes.excel-period', request()->query()) }}" class="btn btn--secondary">Excel</a>
                 </div>
                 @if(request()->filled('search') || $period || request('note_status', 'all') !== 'all' || request('request_status', 'all') !== 'all' || request('priority', 'all') !== 'all')
-                <a href="{{ route('procurement-notes.index') }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800">Reset Filter</a>
+                <a href="{{ route('procurement-notes.index') }}" class="text-xs font-semibold text-slate-500 hover:text-slate-800">{{ __('Reset Filter') }}</a>
                 @endif
             </div>
         </form>
@@ -59,15 +59,15 @@
                 <table class="w-full text-left text-sm">
                     <thead class="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
                         <tr>
-                            <th class="px-4 py-3">Nomor Nota</th>
-                            <th class="px-4 py-3">Tanggal</th>
+                            <th class="px-4 py-3">{{ __('Nomor Nota') }}</th>
+                            <th class="px-4 py-3">{{ __('Tanggal') }}</th>
                             @if($searchActive)
-                            <th class="px-4 py-3">Barang Ditemukan<span class="block text-[9px] font-normal normal-case">Cocok dengan kata kunci</span></th>
+                            <th class="px-4 py-3">{{ __('Barang Ditemukan') }}<span class="block text-[9px] font-normal normal-case">{{ __('Cocok dengan kata kunci') }}</span></th>
                             @endif
-                            <th class="px-4 py-3 text-center">Request</th>
-                            <th class="px-4 py-3">Progres<span class="block text-[9px] font-normal normal-case">Menunggu / Proses / Selesai</span></th>
-                            <th class="px-4 py-3">Status</th>
-                            <th class="px-4 py-3 text-right">Aksi</th>
+                            <th class="px-4 py-3 text-center">{{ __('Request') }}</th>
+                            <th class="px-4 py-3">{{ __('Progres') }}<span class="block text-[9px] font-normal normal-case">{{ __('Menunggu / Proses / Selesai') }}</span></th>
+                            <th class="px-4 py-3">{{ __('Status') }}</th>
+                            <th class="px-4 py-3 text-right">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -87,7 +87,7 @@
                             @endphp
                             <td class="px-4 py-4">
                                 @if($matches->isEmpty() && $numberMatched)
-                                <span class="text-xs font-semibold text-corpblue-600">Nomor Nota cocok</span>
+                                <span class="text-xs font-semibold text-corpblue-600">{{ __('Nomor Nota cocok') }}</span>
                                 @else
                                 <ul class="space-y-1.5">
                                     @foreach($matches->take(3) as $matched)
@@ -103,7 +103,7 @@
                                     @endforeach
                                 </ul>
                                 @if($matches->count() > 3)
-                                <p class="mt-1 text-[11px] text-slate-400">+{{ $matches->count() - 3 }} hasil lainnya</p>
+                                <p class="mt-1 text-[11px] text-slate-400">+{{ $matches->count() - 3 }} {{ __('hasil lainnya') }}</p>
                                 @endif
                                 @endif
                             </td>
@@ -112,12 +112,12 @@
                             <td class="whitespace-nowrap px-4 py-4 text-center">
                                 <span><b class="text-amber-600">{{ ($counts['Menunggu Review'] ?? 0) + ($counts['Pending'] ?? 0) }}</b> <span class="mx-1 text-slate-300">/</span><b class="text-blue-600">{{ ($counts['Disetujui'] ?? 0) + ($counts['Sebagian Diterima'] ?? 0) }}</b> <span class="mx-1 text-slate-300">/</span><b class="text-emerald-600">{{ $completed }}</b></span>
                             </td>
-                            <td class="px-4 py-4"><x-status-badge domain="procurement" :status="$note->statusLabel()" dot /></td>
-                            <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.show', $note).($searchActive && $firstMatch ? '#request-'.$firstMatch->id : '') }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">Buka Nota &rarr;</a></td>
+                            <td class="px-4 py-4"><x-status-badge domain="procurement" :status="$note->statusLabel()" :label="__($note->statusLabel())" dot /></td>
+                            <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.show', $note).($searchActive && $firstMatch ? '#request-'.$firstMatch->id : '') }}" class="text-xs font-semibold text-corpblue-600 hover:text-corpblue-800">{{ __('Buka Nota') }} &rarr;</a></td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="{{ $searchActive ? 7 : 6 }}" class="px-4 py-12 text-center text-sm text-slate-500">Belum ada Nota yang sesuai dengan filter.</td>
+                            <td colspan="{{ $searchActive ? 7 : 6 }}" class="px-4 py-12 text-center text-sm text-slate-500">{{ __('Belum ada Nota yang sesuai dengan filter.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>

@@ -565,5 +565,21 @@
     "Semua notifikasi ditandai sudah dibaca.": "All notifications marked as read.",
     "Gagal menandai semua notifikasi.": "Failed to mark all notifications as read.",
     "Status tindakan": "Action status",
-    "Periksa kembali data yang dimasukkan.": "Please check the information you entered."
+    "Periksa kembali data yang dimasukkan.": "Please check the information you entered.",
+    "Riwayat Pengadaan — THI2-WAREHOUSE": "Procurement History — THI2-WAREHOUSE",
+    "Total Nota": "Total Notes",
+    "Total Request": "Total Requests",
+    "Cari nomor nota, barang, atau pemohon...": "Search note number, item, or requester...",
+    "Semua Status Nota": "All Note Statuses",
+    "Semua Status Request": "All Request Statuses",
+    "Nomor Nota": "Note Number",
+    "Barang Ditemukan": "Matching Items",
+    "Cocok dengan kata kunci": "Matches search terms",
+    "Progres": "Progress",
+    "Menunggu / Proses / Selesai": "Waiting / In Progress / Completed",
+    "Nomor Nota cocok": "Note number matches",
+    "hasil lainnya": "more results",
+    "Buka Nota": "Open Note",
+    "Belum ada Nota yang sesuai dengan filter.": "No notes match the selected filters.",
+    "Reset Filter": "Reset Filters"
 }

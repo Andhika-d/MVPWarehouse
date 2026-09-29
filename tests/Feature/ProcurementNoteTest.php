@@ -112,6 +112,25 @@ class ProcurementNoteTest extends TestCase
         $this->actingAs($employee)->get(route('procurement-notes.index'))->assertForbidden();
     }
 
+    public function test_procurement_history_renders_in_english(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr', 'locale' => 'en']);
+        ProcurementNote::findOrCreateForDate(now());
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.index'))
+            ->assertOk()
+            ->assertSee('Procurement History')
+            ->assertSee('Total Notes')
+            ->assertSee('All Note Statuses')
+            ->assertSee('All Request Statuses')
+            ->assertSee('All Priorities')
+            ->assertSee('Note Number')
+            ->assertSee('Waiting / In Progress / Completed')
+            ->assertDontSee('Semua Status Nota')
+            ->assertDontSee('Semua Status Request');
+    }
+
     public function test_note_can_be_printed_and_exported_to_excel(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);
