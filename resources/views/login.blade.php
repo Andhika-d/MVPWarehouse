@@ -32,18 +32,6 @@
             <p class="text-xs font-medium text-corpblue-300 tracking-[0.08em] mt-0.5">Plan Dua</p>
         </div>
 
-        {{-- Language switcher --}}
-        <form method="POST" action="{{ route('language.switch') }}" class="absolute top-4 right-4 z-10 flex items-center gap-2">
-            @csrf
-            <label for="lang-select-login" class="text-xs font-medium text-corpblue-200">{{ __('Bahasa') }}</label>
-            <select id="lang-select-login" name="locale" onchange="this.form.submit()"
-                    class="rounded-lg border border-white/20 bg-corpblue-900/70 px-3 py-1.5 text-xs font-medium text-white focus:outline-none focus:ring-2 focus:ring-corpblue-300 cursor-pointer">
-                @foreach (config('language.supported') as $code => $name)
-                    <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
-                @endforeach
-            </select>
-        </form>
-
         {{-- ===== Login card ===== --}}
         <div class="login-card w-full max-w-3xl overflow-hidden rounded-2xl shadow-2xl lg:grid lg:grid-cols-[1.1fr_0.9fr]">
 
@@ -169,6 +157,19 @@
                         {{ __('Masuk') }}
                     </button>
                 </form>
+
+                <div class="mt-6 border-t border-slate-100 pt-5">
+                    <form method="POST" action="{{ route('language.switch') }}" class="mx-auto flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">
+                        @csrf
+                        <label for="lang-select-login" class="sr-only">{{ __('Bahasa') }}</label>
+                        <svg class="shrink-0 text-slate-500" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        <select id="lang-select-login" name="locale" onchange="this.form.submit()" class="cursor-pointer border-0 bg-transparent py-0.5 pl-0 pr-5 text-xs font-medium text-slate-600 focus:outline-none focus:ring-0">
+                            @foreach (config('language.supported') as $code => $name)
+                                <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
             </div>
         </div>
 

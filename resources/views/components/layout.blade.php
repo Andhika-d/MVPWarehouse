@@ -440,19 +440,6 @@
                         <span class="text-[10px] text-slate-500 font-medium">{{ $roleDescription }}</span>
                     </div>
                 </div>
-                <div class="mb-2 rounded-lg bg-slate-50 px-3 py-2">
-                    <form method="POST" action="{{ route('language.switch') }}" class="flex items-center gap-2">
-                        @csrf
-                        <label for="lang-select" class="sr-only">{{ __('Bahasa') }}</label>
-                        <svg class="shrink-0 text-slate-400" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/></svg>
-                        <select id="lang-select" name="locale" onchange="this.form.submit()"
-                                class="w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-medium text-slate-600 focus:border-corpblue-300 focus:outline-none focus:ring-2 focus:ring-corpblue-300 cursor-pointer">
-                            @foreach (config('language.supported') as $code => $name)
-                                <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
-                            @endforeach
-                        </select>
-                    </form>
-                </div>
                 <form method="POST" action="{{ route('logout') }}" class="w-full" data-confirm="{{ __('Yakin ingin keluar?') }}" data-confirm-title="{{ __('Keluar Akun') }}" data-confirm-tone="danger" data-confirm-button="{{ __('Keluar') }}">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 px-4 py-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-all cursor-pointer">
@@ -478,6 +465,16 @@
                     <!-- Area Kanan Header (Notifikasi Dinamis & Profil Peran) -->
                     <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
                         <a href="{{ route('help.index') }}" aria-label="{{ __('Bantuan') }}" title="{{ __('Bantuan') }}" class="touch-target flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600">?</a>
+                        <form method="POST" action="{{ route('language.switch') }}" class="flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 sm:px-3">
+                            @csrf
+                            <label for="lang-select" class="sr-only">{{ __('Bahasa') }}</label>
+                            <svg class="shrink-0 text-slate-500" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            <select id="lang-select" name="locale" onchange="this.form.submit()" class="max-w-[5.5rem] cursor-pointer border-0 bg-transparent py-1 pl-0 pr-5 text-xs font-medium text-slate-600 focus:outline-none focus:ring-0 sm:max-w-[6.5rem]">
+                                @foreach (config('language.supported') as $code => $name)
+                                    <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
                         
                         <!-- NOTIFIKASI DROPDOWN -->
                         <x-notifications-dropdown />

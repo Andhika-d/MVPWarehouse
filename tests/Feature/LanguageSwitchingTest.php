@@ -94,14 +94,14 @@ class LanguageSwitchingTest extends TestCase
         $this->actingAs($gudang)
             ->get('/gudang/barang-keluar')
             ->assertOk()
-            ->assertSee('Log Goods Issue')
+            ->assertSee('Log Outgoing Goods')
             ->assertSee('Select purpose')
             ->assertSee('Item Name');
 
         $this->actingAs($gudang)
             ->get('/gudang/penerimaan')
             ->assertOk()
-            ->assertSee('Goods Receipt')
+            ->assertSee('Incoming Goods')
             ->assertSee('Requests Awaiting Receipt')
             ->assertSee('No requests awaiting receipt.');
     }
