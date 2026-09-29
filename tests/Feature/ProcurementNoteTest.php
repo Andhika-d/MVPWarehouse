@@ -131,6 +131,42 @@ class ProcurementNoteTest extends TestCase
             ->assertDontSee('Semua Status Request');
     }
 
+    public function test_note_and_request_history_details_render_in_english(): void
+    {
+        $hr = User::factory()->create(['role' => 'hr', 'locale' => 'en']);
+        $warehouse = User::factory()->create(['role' => 'gudang']);
+        $note = ProcurementNote::findOrCreateForDate('2026-09-12');
+        $request = $this->requestOn($warehouse, $note, $this->item('Bearing'), 3, 'Disetujui');
+        $request->update(['reviewed_by' => $hr->id, 'approved_at' => now()]);
+        $request->requestHistories()->create([
+            'user_id' => $hr->id,
+            'status' => 'Disetujui',
+            'note' => 'Disetujui untuk kebutuhan operasional',
+        ]);
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.show', $note))
+            ->assertOk()
+            ->assertSee('Note Details')
+            ->assertSee('Print Note')
+            ->assertSee('Automatic request summary for')
+            ->assertSee('Requested / Received / Remaining')
+            ->assertSee('History Details')
+            ->assertDontSee('Cetak Nota')
+            ->assertDontSee('Diminta / Diterima / Sisa');
+
+        $this->actingAs($hr)
+            ->get(route('procurement-notes.requests.show', [$note, $request]))
+            ->assertOk()
+            ->assertSee('Request History Details')
+            ->assertSee('Approved by HR')
+            ->assertSee('Status Timeline')
+            ->assertSee('Requested')
+            ->assertSee('Approval Time')
+            ->assertDontSee('Disetujui HR')
+            ->assertDontSee('Waktu Persetujuan');
+    }
+
     public function test_note_can_be_printed_and_exported_to_excel(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);

@@ -589,5 +589,20 @@
     "hasil lainnya": "more results",
     "Buka Nota": "Open Note",
     "Belum ada Nota yang sesuai dengan filter.": "No notes match the selected filters.",
-    "Reset Filter": "Reset Filters"
+    "Reset Filter": "Reset Filters",
+    "Detail Nota": "Note Details",
+    "Cetak Nota": "Print Note",
+    "Rekap otomatis request tanggal": "Automatic request summary for",
+    "Total": "Total",
+    "Proses": "In Progress",
+    "Terminal": "Closed",
+    "Detail Riwayat": "History Details",
+    "Detail Riwayat Request": "Request History Details",
+    "Kembali ke": "Back to",
+    "Disetujui oleh": "Approved by",
+    "Waktu Persetujuan": "Approval Time",
+    "Permintaan Dibuat": "Request Created",
+    "Permintaan Ditunda": "Request Delayed",
+    "Disetujui HR": "Approved by HR",
+    "Ditolak HR": "Rejected by HR"
 }
