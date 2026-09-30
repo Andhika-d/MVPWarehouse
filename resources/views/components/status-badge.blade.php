@@ -89,5 +89,5 @@
 
 <span {{ $attributes->class(['status-badge', 'status-badge--'.$semantic]) }}>
     @if($dot)<span class="status-badge__dot" aria-hidden="true"></span>@endif
-    {{ $displayLabel }}
+    {{ __($displayLabel) }}
 </span>

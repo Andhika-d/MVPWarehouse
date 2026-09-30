@@ -1,23 +1,36 @@
-<x-layout :title="'Timeline Aktivitas — THI2-WAREHOUSE'" :headerTitle="'Timeline Aktivitas Perusahaan'">
+<x-layout :title="__('Timeline Aktivitas — THI2-WAREHOUSE')" :headerTitle="__('Timeline Aktivitas Perusahaan')">
     <div class="space-y-6">
 
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form id="timelineFilters" method="GET" data-auto-filter class="flex flex-col sm:flex-row gap-3">
-                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Cari aktivitas..." class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="{{ __('Cari aktivitas...') }}" class="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 <x-period-filter-button :period="$period" />
                 @if(request()->filled('search') || $period)
-                <a href="/director/timeline" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="/director/timeline" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
             </form>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">Semua Aktivitas</h3>
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-widest mb-5">{{ __('Semua Aktivitas') }}</h3>
             <div class="relative">
                 <div class="absolute left-4 top-0 bottom-0 w-px bg-slate-200"></div>
                 <div class="space-y-4">
                     @forelse($paginated as $event)
                     <div class="relative flex items-start gap-4 pl-4">
+                    @php
+                        $eventType = $event['type'];
+                        if (str_starts_with($eventType, 'Pengajuan Lokasi: ')) {
+                            $eventType = __('Pengajuan Lokasi') . ': ' . __(\Illuminate\Support\Str::after($eventType, ': '));
+                        } else {
+                            $eventType = __($eventType);
+                        }
+                        $eventDetail = str_replace(
+                            ['Keterangan:', 'Catatan:', 'Alasan:', 'Status:', ' diterima', ' ditutup', '(Mendesak)', '(Biasa)'],
+                            [__('Keterangan') . ':', __('Catatan') . ':', __('Alasan') . ':', __('Status') . ':', ' ' . __('diterima'), ' ' . __('ditutup'), '(' . __('Mendesak') . ')', '(' . __('Biasa') . ')'],
+                            $event['detail'],
+                        );
+                    @endphp
                         @if(in_array($event['icon'], ['approved', 'IN']))
                         <div class="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0 relative z-10">
                             <svg class="text-emerald-600" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
@@ -42,15 +55,15 @@
 
                         <div class="flex-1 min-w-0 pb-2 border-b border-slate-50">
                             <div class="flex items-center gap-2 flex-wrap">
-                                <span class="text-sm font-semibold text-slate-900">{{ $event['type'] }}</span>
-                                <span class="text-xs text-slate-400">oleh {{ $event['user'] }}</span>
+                                <span class="text-sm font-semibold text-slate-900">{{ $eventType }}</span>
+                                <span class="text-xs text-slate-400">{{ __('oleh') }} {{ $event['user'] }}</span>
                             </div>
-                            <p class="text-xs text-slate-500 mt-0.5">{{ $event['detail'] }}</p>
+                            <p class="text-xs text-slate-500 mt-0.5">{{ $eventDetail }}</p>
                             <p class="text-xs text-slate-400 mt-0.5">{{ $event['time'] ? \Carbon\Carbon::parse($event['time'])->translatedFormat('d M Y, H:i') : '—' }}</p>
                         </div>
                     </div>
                     @empty
-                    <div class="pl-4 text-sm text-slate-400">Tidak ada aktivitas.</div>
+                    <div class="pl-4 text-sm text-slate-400">{{ __('Tidak ada aktivitas.') }}</div>
                     @endforelse
                 </div>
             </div>

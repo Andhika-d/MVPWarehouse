@@ -18,8 +18,8 @@ class DirectorTimelineTest extends TestCase
     private function makeUser(string $role): User
     {
         return User::create([
-            'name' => ucfirst($role) . ' Test',
-            'email' => $role . '-' . uniqid() . '@example.com',
+            'name' => ucfirst($role).' Test',
+            'email' => $role.'-'.uniqid().'@example.com',
             'password' => Hash::make('password'),
             'role' => $role,
         ]);
@@ -30,7 +30,7 @@ class DirectorTimelineTest extends TestCase
         $prefix = StorageLocation::getPrefixForRack($rack);
 
         return StorageLocation::create([
-            'code' => $prefix . '-' . str_pad($number, 3, '0', STR_PAD_LEFT),
+            'code' => $prefix.'-'.str_pad($number, 3, '0', STR_PAD_LEFT),
             'rack' => $rack,
             'number' => $number,
             'status' => StorageLocation::STATUS_EMPTY,
@@ -42,7 +42,7 @@ class DirectorTimelineTest extends TestCase
         $location ??= $this->makeLocation();
 
         return Item::create([
-            'name' => 'Barang Test ' . uniqid(),
+            'name' => 'Barang Test '.uniqid(),
             'storage_location_id' => $location->id,
             'stock' => $stock,
             'unit' => 'Pcs',
@@ -62,6 +62,39 @@ class DirectorTimelineTest extends TestCase
             'reason' => 'Kebutuhan operasional',
             'status' => 'Menunggu Review',
         ]);
+    }
+
+    public function test_director_timeline_translates_event_labels_in_english(): void
+    {
+        $director = $this->makeUser('director');
+        $director->update(['locale' => 'en']);
+        $warehouse = $this->makeUser('gudang');
+        $item = $this->makeItem();
+        $request = $this->makeRequest($warehouse, $item);
+        $request->update(['status' => 'Diterima Penuh', 'received_quantity' => 4]);
+
+        StockMovement::create([
+            'item_id' => $item->id,
+            'stock_request_id' => $request->id,
+            'type' => StockMovement::TYPE_IN,
+            'quantity' => 4,
+            'unit' => 'Pcs',
+            'reason' => 'Penerimaan barang',
+            'note' => 'Penerimaan lengkap',
+            'user_id' => $warehouse->id,
+            'balance_after' => 4,
+            'occurred_at' => now(),
+        ]);
+
+        $this->actingAs($director)
+            ->get('/director/timeline')
+            ->assertOk()
+            ->assertSee('Request Created')
+            ->assertSee('Full Receipt')
+            ->assertSee('received')
+            ->assertSee('Description:')
+            ->assertDontSee('Request Dibuat')
+            ->assertDontSee('Penerimaan Penuh');
     }
 
     public function test_dashboard_displays_overdue_age_as_whole_days(): void
@@ -446,6 +479,25 @@ class DirectorTimelineTest extends TestCase
         }
     }
 
+    public function test_duration_analysis_uses_english_for_english_director(): void
+    {
+        $this->travelTo(now()->startOfDay());
+        $director = $this->makeUser('director');
+        $director->update(['locale' => 'en']);
+        $gudang = $this->makeUser('gudang');
+        $request = $this->makeRequest($gudang, $this->makeItem());
+        $request->forceFill([
+            'status' => 'Menunggu Review',
+            'created_at' => now()->subDays(5),
+        ])->save();
+
+        $this->actingAs($director)
+            ->get(route('director.request-detail', $request))
+            ->assertOk()
+            ->assertSee('5 days ongoing')
+            ->assertDontSee('5 hari berjalan');
+    }
+
     public function test_duration_analysis_marks_single_receipt_as_directly_full(): void
     {
         $director = $this->makeUser('director');
@@ -504,6 +556,39 @@ class DirectorTimelineTest extends TestCase
 
         // The "Request Dibuat" event should contain the reason
         $this->assertStringContainsString('Kebutuhan operasional', $content);
+    }
+
+    public function test_director_request_detail_timeline_translates_event_labels_in_english(): void
+    {
+        $director = $this->makeUser('director');
+        $director->update(['locale' => 'en']);
+        $hr = $this->makeUser('hr');
+        $gudang = $this->makeUser('gudang');
+        $request = $this->makeRequest($gudang, $this->makeItem(), 5);
+        $request->update([
+            'status' => 'Disetujui',
+            'reviewed_by' => $hr->id,
+            'approved_at' => now(),
+        ]);
+        $request->requestHistories()->create([
+            'user_id' => $hr->id,
+            'status' => 'Disetujui',
+            'note' => 'Disetujui untuk kebutuhan operasional',
+        ]);
+
+        $this->actingAs($director)
+            ->get(route('director.request-detail', $request))
+            ->assertOk()
+            ->assertSee('Request Created')
+            ->assertSee('Reviewed')
+            ->assertSee('Approved by')
+            ->assertSee('Item:')
+            ->assertSee('Quantity:')
+            ->assertSee('Priority:')
+            ->assertSee('Reason:')
+            ->assertDontSee('Barang:')
+            ->assertDontSee('Jumlah:')
+            ->assertDontSee('Disetujui oleh');
     }
 
     public function test_global_timeline_no_duplicate_receipt(): void

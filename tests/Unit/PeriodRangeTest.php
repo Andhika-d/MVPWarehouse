@@ -45,9 +45,12 @@ class PeriodRangeTest extends TestCase
             $table->timestamp('occurred_at');
         });
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             public $timestamps = false;
+
             protected $table = 'period_range_records';
+
             protected $guarded = [];
         };
 
@@ -69,5 +72,16 @@ class PeriodRangeTest extends TestCase
         $this->assertSame('2026-08-01', $period->startDate());
         $this->assertSame('2026-08-31', $period->endDate());
         $this->assertSame('2026-09-01', $period->endExclusive()->toDateString());
+    }
+
+    public function test_one_sided_period_labels_follow_the_active_locale(): void
+    {
+        $this->app->setLocale('en');
+
+        $from = PeriodRange::fromRequest(Request::create('/history', 'GET', ['date_from' => '2026-08-07']));
+        $until = PeriodRange::fromRequest(Request::create('/history', 'GET', ['date_to' => '2026-08-14']));
+
+        $this->assertSame('From 07 Aug 2026', $from->label());
+        $this->assertSame('Until 14 Aug 2026', $until->label());
     }
 }

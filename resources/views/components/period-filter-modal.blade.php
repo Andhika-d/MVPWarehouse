@@ -15,15 +15,15 @@
     <div class="relative z-[101] w-full max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
         <div class="flex items-start justify-between border-b border-slate-100 px-5 py-4">
             <div>
-                <h3 id="{{ $modalId }}Title" class="text-base font-bold text-slate-900">Filter Periode</h3>
-                <p class="mt-1 text-xs text-slate-500">Pilih pola periode dan periksa rentang sebelum diterapkan.</p>
+                <h3 id="{{ $modalId }}Title" class="text-base font-bold text-slate-900">{{ __('Filter Periode') }}</h3>
+                <p class="mt-1 text-xs text-slate-500">{{ __('Pilih pola periode dan periksa rentang sebelum diterapkan.') }}</p>
             </div>
-            <button type="button" onclick="closeModal('{{ $modalId }}')" class="touch-target rounded-lg text-slate-500 hover:bg-slate-100" aria-label="Tutup">&times;</button>
+            <button type="button" onclick="closeModal('{{ $modalId }}')" class="touch-target rounded-lg text-slate-500 hover:bg-slate-100" aria-label="{{ __('Tutup') }}">&times;</button>
         </div>
 
         <div class="space-y-5 p-5">
             <fieldset>
-                <legend class="ui-label mb-2">Jenis Periode</legend>
+                <legend class="ui-label mb-2">{{ __('Jenis Periode') }}</legend>
                 <div class="grid grid-cols-3 gap-2">
                     @foreach(['weekly' => 'Weekly', 'monthly' => 'Monthly', 'flexible' => 'Flexible'] as $value => $label)
                     <label class="cursor-pointer">
@@ -35,27 +35,27 @@
             </fieldset>
 
             <div>
-                <label for="{{ $modalId }}Start" class="ui-label mb-1 block">Tanggal Awal</label>
+                <label for="{{ $modalId }}Start" class="ui-label mb-1 block">{{ __('Tanggal Awal') }}</label>
                 <input id="{{ $modalId }}Start" type="date" value="{{ $startValue }}" class="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-corpblue-500 focus:outline-none">
             </div>
 
             <div id="{{ $modalId }}EndWrap" class="{{ $activeMode === 'flexible' ? '' : 'hidden' }}">
-                <label for="{{ $modalId }}End" class="ui-label mb-1 block">Tanggal Akhir</label>
+                <label for="{{ $modalId }}End" class="ui-label mb-1 block">{{ __('Tanggal Akhir') }}</label>
                 <input id="{{ $modalId }}End" type="date" value="{{ $endValue }}" class="min-h-11 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm focus:border-corpblue-500 focus:outline-none">
             </div>
 
             <div class="rounded-xl border border-corpblue-100 bg-corpblue-50 p-4">
-                <p class="ui-heading text-corpblue-700">Preview Periode</p>
+                <p class="ui-heading text-corpblue-700">{{ __('Preview Periode') }}</p>
                 <p id="{{ $modalId }}Preview" class="mt-1 text-sm font-semibold text-corpblue-900"></p>
                 <p id="{{ $modalId }}Error" class="mt-1 hidden text-xs font-semibold text-red-700"></p>
             </div>
         </div>
 
         <div class="flex flex-col-reverse gap-2 border-t border-slate-100 bg-slate-50 px-5 py-4 sm:flex-row sm:justify-between">
-            <button id="{{ $modalId }}Clear" type="button" class="btn btn--ghost">Hapus Periode</button>
+            <button id="{{ $modalId }}Clear" type="button" class="btn btn--ghost">{{ __('Hapus Periode') }}</button>
             <div class="flex gap-2">
-                <button type="button" onclick="closeModal('{{ $modalId }}')" class="btn btn--secondary flex-1 sm:flex-none">Batal</button>
-                <button id="{{ $modalId }}Apply" type="button" class="btn btn--primary flex-1 sm:flex-none">Terapkan</button>
+                <button type="button" onclick="closeModal('{{ $modalId }}')" class="btn btn--secondary flex-1 sm:flex-none">{{ __('Batal') }}</button>
+                <button id="{{ $modalId }}Apply" type="button" class="btn btn--primary flex-1 sm:flex-none">{{ __('Terapkan') }}</button>
             </div>
         </div>
     </div>
@@ -108,8 +108,8 @@
 
             const invalid = !startDate || !endDate || endDate < startDate;
             error.classList.toggle('hidden', !invalid);
-            error.textContent = invalid ? 'Tanggal akhir harus sama dengan atau setelah tanggal awal.' : '';
-            preview.textContent = invalid ? 'Periode belum valid' : `${formatDisplay(startDate)} - ${formatDisplay(endDate)}`;
+            error.textContent = invalid ? '{{ __('Tanggal akhir harus sama dengan atau setelah tanggal awal.') }}' : '';
+            preview.textContent = invalid ? '{{ __('Periode belum valid') }}' : `${formatDisplay(startDate)} - ${formatDisplay(endDate)}`;
             apply.disabled = invalid;
             return invalid ? null : { mode, start: formatInput(startDate), end: formatInput(endDate) };
         };

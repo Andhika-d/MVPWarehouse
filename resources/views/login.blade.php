@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — THI2-WAREHOUSE</title>
+    <title>{{ __('Login') }} — THI2-WAREHOUSE</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="min-h-screen bg-corpblue-950 text-slate-800 antialiased">
@@ -69,7 +69,7 @@
 
                     {{-- System name — prominent --}}
                     <p class="typing-text text-lg font-bold text-white uppercase tracking-[0.2em]">THI2-WAREHOUSE</p>
-                    <p class="text-xs text-corpblue-200/70 mt-1.5">Sistem Manajemen Gudang Internal</p>
+                    <p class="text-xs text-corpblue-200/70 mt-1.5">{{ __('Sistem Manajemen Gudang Internal') }}</p>
 
                     {{-- Divider 2 --}}
                     <div class="w-10 h-px bg-white/20 mx-auto my-7"></div>
@@ -82,11 +82,11 @@
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
-                            <span>Monitoring Stok</span>
+                            <span>{{ __('Monitoring Stok') }}</span>
                         </div>
                         <div class="flex items-center gap-3">
                             <span class="text-corpblue-200/70 text-[10px]">◆</span>
-                            <span>Riwayat Gudang</span>
+                            <span>{{ __('Riwayat Gudang') }}</span>
                         </div>
                     </div>
                 </div>
@@ -95,8 +95,8 @@
             {{-- ===== RIGHT PANEL: FORM ===== --}}
             <div class="bg-white border border-slate-200 p-6 sm:p-8 lg:p-8 flex flex-col justify-center">
                 <div class="text-center">
-                    <h2 class="text-lg font-semibold text-slate-900">Masuk</h2>
-                    <p class="mt-1.5 text-sm text-slate-500">Gunakan akun yang sudah terdaftar.</p>
+                    <h2 class="text-lg font-semibold text-slate-900">{{ __('Masuk') }}</h2>
+                    <p class="mt-1.5 text-sm text-slate-500">{{ __('Gunakan akun yang sudah terdaftar.') }}</p>
                 </div>
 
                 <form action="{{ route('login') }}" method="POST" class="mt-8 max-w-sm mx-auto w-full space-y-3">
@@ -140,29 +140,42 @@
                                 autocomplete="current-password"
                                 required
                                 class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-corpblue-500 focus:bg-white"
-                                placeholder="Masukkan password"
+                                placeholder="{{ __('Masukkan password') }}"
                             >
                         </div>
                     </div>
 
                     <div class="flex items-center">
                         <input id="remember" name="remember" type="checkbox" value="1" class="h-4 w-4 rounded border-slate-300 text-corpblue-500 focus:ring-corpblue-500 cursor-pointer">
-                        <label for="remember" class="ml-2 block text-sm text-slate-600 cursor-pointer">Ingat saya</label>
+                        <label for="remember" class="ml-2 block text-sm text-slate-600 cursor-pointer">{{ __('Ingat saya') }}</label>
                     </div>
 
                     <button
                         type="submit"
                         class="w-full rounded-lg bg-corpblue-500 px-4 py-3 text-sm font-semibold text-white transition hover:bg-corpblue-600 min-h-[44px]"
                     >
-                        Masuk
+                        {{ __('Masuk') }}
                     </button>
                 </form>
+
+                <div class="mt-6 border-t border-slate-100 pt-5">
+                    <form method="POST" action="{{ route('language.switch') }}" class="mx-auto flex w-fit items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-2">
+                        @csrf
+                        <label for="lang-select-login" class="sr-only">{{ __('Bahasa') }}</label>
+                        <svg class="shrink-0 text-slate-500" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                        <select id="lang-select-login" name="locale" onchange="this.form.submit()" class="cursor-pointer border-0 bg-transparent py-0.5 pl-0 pr-5 text-xs font-medium text-slate-600 focus:outline-none focus:ring-0">
+                            @foreach (config('language.supported') as $code => $name)
+                                <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
+                            @endforeach
+                        </select>
+                    </form>
+                </div>
             </div>
         </div>
 
         {{-- Footer --}}
         <p class="mt-8 text-xs text-white/30">
-            &copy; 2026 PT Taehang Indonesia Plan Dua. Hak Cipta Dilindungi.
+            &copy; 2026 PT Taehang Indonesia Plan Dua. {{ __('Hak Cipta Dilindungi.') }}
         </p>
     </div>
 

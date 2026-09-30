@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Support\NotificationText;
 use Illuminate\Notifications\DatabaseNotification;
 use Illuminate\Support\Facades\Auth;
 
@@ -14,7 +15,7 @@ class NotificationController extends Controller
         $notifications = $user->notifications()->latest()->limit(10)->get()->map(function ($n) {
             return [
                 'id' => $n->id,
-                'data' => $n->data,
+                'data' => NotificationText::resolve($n->data),
                 'read_at' => $n->read_at,
                 'created_at' => $n->created_at->toISOString(),
             ];

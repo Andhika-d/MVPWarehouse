@@ -1,33 +1,33 @@
 <x-layout>
-    <x-slot:title>Penerimaan Barang — THI2-WAREHOUSE</x-slot:title>
-    <x-slot:headerTitle>Penerimaan Barang</x-slot:headerTitle>
+    <x-slot:title>{{ __('Penerimaan Barang — THI2-WAREHOUSE') }}</x-slot:title>
+    <x-slot:headerTitle>{{ __('Penerimaan Barang') }}</x-slot:headerTitle>
 
     <div class="space-y-4">
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-5 border-b border-slate-100">
-                <h3 class="text-sm font-semibold text-slate-900">Request Menunggu Penerimaan</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Daftar barang yang sudah disetujui HR dan menunggu diterima gudang.</p>
+                <h3 class="text-sm font-semibold text-slate-900">{{ __('Request Menunggu Penerimaan') }}</h3>
+                <p class="text-xs text-slate-500 mt-0.5">{{ __('Daftar barang yang sudah disetujui HR dan menunggu diterima gudang.') }}</p>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="w-full text-left border-collapse text-sm">
                     <thead>
                         <tr class="border-b border-slate-200 bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500">
-                            <th class="py-3 px-5">Barang</th>
-                            <th class="py-3 px-5">Nota</th>
-                            <th class="py-3 px-5 text-center">Diminta</th>
-                            <th class="py-3 px-5 text-center">Diterima</th>
-                            <th class="py-3 px-5 text-center">Sisa</th>
-                            <th class="py-3 px-5">Pemohon</th>
-                            <th class="py-3 px-5 text-right">Aksi</th>
+                            <th class="py-3 px-5">{{ __('Barang') }}</th>
+                            <th class="py-3 px-5">{{ __('Nota') }}</th>
+                            <th class="py-3 px-5 text-center">{{ __('Diminta') }}</th>
+                            <th class="py-3 px-5 text-center">{{ __('Diterima') }}</th>
+                            <th class="py-3 px-5 text-center">{{ __('Sisa') }}</th>
+                            <th class="py-3 px-5">{{ __('Pemohon') }}</th>
+                            <th class="py-3 px-5 text-right">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100 text-slate-700">
                         @forelse($requests as $req)
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-3 px-5">
-                                <p class="font-semibold text-slate-900">{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}</p>
+                                <p class="font-semibold text-slate-900">{{ $req->item?->name ?? $req->item_name ?? __('Barang') }}</p>
                                 <p class="mt-0.5 whitespace-nowrap text-xs text-slate-500">{{ $req->item?->storageLocation?->rack ?? '—' }} · {{ $req->item?->storageLocation?->code ?? '' }} · {{ $req->unit }}</p>
                             </td>
                             <td class="py-3 px-5 whitespace-nowrap">
@@ -48,25 +48,25 @@
                                     <button
                                         onclick="openCloseModal(this)"
                                         data-id="{{ $req->id }}"
-                                        data-name="{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}"
+                                        data-name="{{ $req->item?->name ?? $req->item_name ?? __('Barang') }}"
                                         data-remain="{{ $req->remainingQuantity() }}"
                                         data-unit="{{ $req->unit }}"
-                                        class="action-link action-link--warning">Tutup Sisa</button>
+                                        class="action-link action-link--warning">{{ __('Tutup Sisa') }}</button>
                                     <button
                                         onclick="openReceiveModal(this)"
                                         data-id="{{ $req->id }}"
-                                        data-name="{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}"
+                                        data-name="{{ $req->item?->name ?? $req->item_name ?? __('Barang') }}"
                                         data-qty="{{ $req->quantity }}"
                                         data-received="{{ $req->received_quantity }}"
                                         data-remain="{{ $req->remainingQuantity() }}"
                                         data-unit="{{ $req->unit }}"
-                                        class="action-link action-link--primary">Terima</button>
+                                        class="action-link action-link--primary">{{ __('Terima') }}</button>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">Tidak ada request yang menunggu penerimaan.</td>
+                            <td colspan="7" class="py-10 text-center text-sm text-slate-500">{{ __('Tidak ada request yang menunggu penerimaan.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -86,35 +86,35 @@
     <div id="receiveModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="receiveModalTitle">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeReceiveModal()"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 z-[101]">
-            <h3 id="receiveModalTitle" class="text-base font-bold text-slate-900 mb-4">Terima Barang</h3>
+            <h3 id="receiveModalTitle" class="text-base font-bold text-slate-900 mb-4">{{ __('Terima Barang') }}</h3>
             <form id="receiveForm" method="POST" action="/gudang/penerimaan">
                 @csrf
                 <input type="hidden" name="stock_request_id" id="receive_request_id">
                 <div class="flex flex-col gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Barang</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Barang') }}</label>
                         <p id="receive_item_name" class="text-sm font-semibold text-slate-900"></p>
                     </div>
                     <div class="grid grid-cols-3 gap-3 text-xs">
-                        <div><span class="text-slate-500">Diminta</span><p id="receive_qty" class="font-bold text-slate-900 mt-0.5"></p></div>
-                        <div><span class="text-slate-500">Sudah Diterima</span><p id="receive_already" class="font-bold text-emerald-600 mt-0.5"></p></div>
-                        <div><span class="text-slate-500">Sisa</span><p id="receive_remain" class="font-bold text-amber-600 mt-0.5"></p></div>
+                        <div><span class="text-slate-500">{{ __('Diminta') }}</span><p id="receive_qty" class="font-bold text-slate-900 mt-0.5"></p></div>
+                        <div><span class="text-slate-500">{{ __('Sudah Diterima') }}</span><p id="receive_already" class="font-bold text-emerald-600 mt-0.5"></p></div>
+                        <div><span class="text-slate-500">{{ __('Sisa') }}</span><p id="receive_remain" class="font-bold text-amber-600 mt-0.5"></p></div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Jumlah Diterima Sekarang</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Jumlah Diterima Sekarang') }}</label>
                         <div class="flex items-center gap-2">
                             <input type="number" name="received_quantity" id="receive_input" min="1" required class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             <span id="receive_unit" class="text-xs font-semibold text-slate-500"></span>
                         </div>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Catatan <span class="text-slate-400 font-normal">(opsional)</span></label>
-                        <input type="text" name="note" placeholder="Contoh: supplier hanya menyediakan sebagian" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Catatan') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
+                        <input type="text" name="note" placeholder="{{ __('Contoh: supplier hanya menyediakan sebagian') }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">
-                    <button type="button" onclick="closeReceiveModal()" class="btn btn--secondary flex-1">Batal</button>
-                    <button type="submit" class="btn btn--primary flex-1">Simpan</button>
+                    <button type="button" onclick="closeReceiveModal()" class="btn btn--secondary flex-1">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn--primary flex-1">{{ __('Simpan') }}</button>
                 </div>
             </form>
         </div>
@@ -123,29 +123,29 @@
     <div id="closeSisaModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="closeModalTitle">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeCloseModal()"></div>
         <div class="relative bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-sm p-6 z-[101]">
-            <h3 id="closeModalTitle" class="text-base font-bold text-slate-900 mb-1">Tutup Sisa Request</h3>
-            <p class="text-xs text-slate-500 mb-4">Sisa yang belum diterima tidak akan diproses lebih lanjut. Aksi ini permanen.</p>
+            <h3 id="closeModalTitle" class="text-base font-bold text-slate-900 mb-1">{{ __('Tutup Sisa Request') }}</h3>
+            <p class="text-xs text-slate-500 mb-4">{{ __('Sisa yang belum diterima tidak akan diproses lebih lanjut. Aksi ini permanen.') }}</p>
             <form id="closeSisaForm" method="POST" action="/gudang/penerimaan/close">
                 @csrf
                 <input type="hidden" name="stock_request_id" id="close_request_id">
                 <div class="flex flex-col gap-3">
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Barang</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Barang') }}</label>
                         <p id="close_item_name" class="text-sm font-semibold text-slate-900"></p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Sisa yang Ditutup</label>
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Sisa yang Ditutup') }}</label>
                         <p id="close_remain" class="text-sm font-bold text-amber-600"></p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">Alasan Penutupan <span class="text-red-500">*</span></label>
-                        <textarea name="note" id="close_note" rows="3" required maxlength="255" placeholder="Contoh: Supplier tidak dapat memenuhi sisa pesanan" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"></textarea>
-                        <p class="mt-1 text-xs text-slate-500">Wajib diisi dan tidak dapat diubah setelah request ditutup.</p>
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Alasan Penutupan') }} <span class="text-red-500">*</span></label>
+                        <textarea name="note" id="close_note" rows="3" required maxlength="255" placeholder="{{ __('Contoh: Supplier tidak dapat memenuhi sisa pesanan') }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"></textarea>
+                        <p class="mt-1 text-xs text-slate-500">{{ __('Wajib diisi dan tidak dapat diubah setelah request ditutup.') }}</p>
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">
-                    <button type="button" onclick="closeCloseModal()" class="btn btn--secondary flex-1">Batal</button>
-                    <button type="submit" class="btn btn--warning flex-1">Tutup Sisa</button>
+                    <button type="button" onclick="closeCloseModal()" class="btn btn--secondary flex-1">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn--warning flex-1">{{ __('Tutup Sisa') }}</button>
                 </div>
             </form>
         </div>

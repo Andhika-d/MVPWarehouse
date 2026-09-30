@@ -1,9 +1,9 @@
-<x-layout :title="'Detail Request — THI2-WAREHOUSE'" :headerTitle="'Detail Permintaan'">
+<x-layout :title="__('Detail Request — THI2-WAREHOUSE')" :headerTitle="__('Detail Permintaan')">
     <div class="space-y-6">
 
         <a href="{{ route('director.requests') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-corpblue-600 font-medium transition-colors">
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-            Kembali
+            {{ __('Kembali') }}
         </a>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -43,45 +43,45 @@
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Peminta</span>
+                            <span class="text-xs text-slate-500">{{ __('Peminta') }}</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->user?->name ?? '—' }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Jumlah</span>
+                            <span class="text-xs text-slate-500">{{ __('Jumlah') }}</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->quantity }} {{ $request->unit }}</span>
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Diterima</span>
+                            <span class="text-xs text-slate-500">{{ __('Diterima') }}</span>
                             <span class="text-sm font-medium {{ $request->received_quantity >= $request->quantity ? 'text-emerald-600' : 'text-amber-600' }}">{{ $request->received_quantity }} {{ $request->unit }}</span>
                         </div>
                         @if($request->received_quantity < $request->quantity)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">{{ $request->isClosed() ? 'Sisa (ditutup)' : 'Sisa' }}</span>
+                            <span class="text-xs text-slate-500">{{ $request->isClosed() ? __('Sisa (ditutup)') : __('Sisa') }}</span>
                             <span class="text-sm font-semibold {{ $request->isClosed() ? 'text-slate-400' : 'text-red-600' }}">{{ $request->quantity - $request->received_quantity }} {{ $request->unit }}</span>
                         </div>
                         @endif
                         @if($request->isClosed() && $request->closed_at)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Ditutup oleh</span>
+                            <span class="text-xs text-slate-500">{{ __('Ditutup oleh') }}</span>
                             <span class="text-sm font-medium text-slate-700">{{ $request->closedBy?->name ?? '—' }} · {{ $request->closed_at->translatedFormat('d M Y, H:i') }}</span>
                         </div>
                         @endif
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Prioritas</span>
+                            <span class="text-xs text-slate-500">{{ __('Prioritas') }}</span>
                             <x-status-badge domain="priority" :status="$request->priority" />
                         </div>
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
-                            <span class="text-xs text-slate-500">Status</span>
+                            <span class="text-xs text-slate-500">{{ __('Status') }}</span>
                             <x-status-badge domain="request" :status="$request->status" />
                         </div>
                         <div class="py-2">
-                            <span class="mb-1 block text-xs text-slate-500">Alasan</span>
-                            <p class="text-sm text-slate-600 leading-relaxed">{{ $request->reason ?: '—' }}</p>
+                            <span class="mb-1 block text-xs text-slate-500">{{ __('Alasan') }}</span>
+                            <p class="text-sm text-slate-600 leading-relaxed">{{ \App\Support\StoredText::translate($request->reason) ?: '—' }}</p>
                         </div>
                         @if($request->isClosed() && $request->close_note)
                         <div class="py-2">
-                            <span class="mb-1 block text-xs text-slate-500">Alasan Penutupan</span>
-                            <p class="text-sm text-slate-600 leading-relaxed">{{ $request->close_note }}</p>
+                            <span class="mb-1 block text-xs text-slate-500">{{ __('Alasan Penutupan') }}</span>
+                            <p class="text-sm text-slate-600 leading-relaxed">{{ \App\Support\StoredText::translate($request->close_note) }}</p>
                         </div>
                         @endif
                     </div>
@@ -89,11 +89,11 @@
 
                 {{-- Duration Analysis --}}
                 <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="ui-heading mb-4">Analisis Durasi</h3>
+                    <h3 class="ui-heading mb-4">{{ __('Analisis Durasi') }}</h3>
                     <div class="space-y-4">
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-slate-500">Request → Approval</span>
+                                <span class="text-xs text-slate-500">{{ __('Request → Approval') }}</span>
                                 <span class="text-sm font-bold {{ match($durations['request_to_approval_state']) { 'completed' => 'text-slate-900', 'ongoing' => 'text-amber-600', default => 'text-slate-300' } }}">{{ $durations['request_to_approval'] ?? '—' }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -102,7 +102,7 @@
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-slate-500">Approval → Penerimaan Awal</span>
+                                <span class="text-xs text-slate-500">{{ __('Approval → Penerimaan Awal') }}</span>
                                 <span class="text-sm font-bold {{ $durations['approval_to_first_receipt'] ? 'text-slate-900' : 'text-slate-300' }}">{{ $durations['approval_to_first_receipt'] ?? '—' }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -111,7 +111,7 @@
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1 gap-3">
-                                <span class="text-xs text-slate-500">Durasi Pemenuhan</span>
+                                <span class="text-xs text-slate-500">{{ __('Durasi Pemenuhan') }}</span>
                                 <span class="text-sm font-bold text-right {{ match($durations['fulfillment_state']) { 'completed' => 'text-emerald-600', 'ongoing' => 'text-amber-600', 'closed' => 'text-slate-600', default => 'text-slate-300' } }}">{{ $durations['fulfillment_duration'] ?? '—' }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -120,7 +120,7 @@
                         </div>
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-slate-500">Request → Selesai</span>
+                                <span class="text-xs text-slate-500">{{ __('Request → Selesai') }}</span>
                                 <span class="text-sm font-bold {{ $durations['request_to_complete'] ? 'text-slate-900' : 'text-slate-300' }}">{{ $durations['request_to_complete'] ?? '—' }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -135,8 +135,8 @@
                         @endphp
                         <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
                             <div class="flex items-center justify-between gap-3">
-                                <span class="text-xs font-semibold text-slate-600">{{ $durations['receipt_count'] }} tahap penerimaan</span>
-                                <span class="text-xs font-bold {{ $receiptProgress >= 100 ? 'text-emerald-600' : 'text-amber-600' }}">{{ $durations['received_quantity'] }}/{{ $durations['requested_quantity'] }} {{ $durations['unit'] }} diterima</span>
+                                <span class="text-xs font-semibold text-slate-600">{{ $durations['receipt_count'] }} {{ __('tahap penerimaan') }}</span>
+                                <span class="text-xs font-bold {{ $receiptProgress >= 100 ? 'text-emerald-600' : 'text-amber-600' }}">{{ $durations['received_quantity'] }}/{{ $durations['requested_quantity'] }} {{ $durations['unit'] }} {{ __('diterima') }}</span>
                             </div>
                             <div class="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-slate-200">
                                 <div class="h-full rounded-full {{ $receiptProgress >= 100 ? 'bg-emerald-500' : 'bg-amber-400' }}" style="width: {{ $receiptProgress }}%"></div>
@@ -146,7 +146,7 @@
                         @if($durations['request_to_close'])
                         <div>
                             <div class="flex items-center justify-between mb-1">
-                                <span class="text-xs text-slate-500">Request → Penutupan</span>
+                                <span class="text-xs text-slate-500">{{ __('Request → Penutupan') }}</span>
                                 <span class="text-sm font-bold text-slate-900">{{ $durations['request_to_close'] }}</span>
                             </div>
                             <div class="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
@@ -157,8 +157,8 @@
                         @if($durations['total_calendar_days'] !== null)
                         <div class="pt-3 mt-2 border-t border-slate-100">
                             <div class="flex items-center justify-between">
-                                <span class="text-xs font-semibold text-slate-600">Total Hari Kalender</span>
-                                <span class="text-xl font-extrabold text-slate-900">{{ $durations['total_calendar_days'] }} <span class="text-xs font-semibold text-slate-400">hari</span></span>
+                                <span class="text-xs font-semibold text-slate-600">{{ __('Total Hari Kalender') }}</span>
+                                <span class="text-xl font-extrabold text-slate-900">{{ $durations['total_calendar_days'] }} <span class="text-xs font-semibold text-slate-400">{{ __('hari') }}</span></span>
                             </div>
                         </div>
                         @endif
@@ -169,10 +169,10 @@
             {{-- ═══ Right: Timeline ═══ --}}
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-2xl border border-slate-200 p-6">
-                    <h3 class="ui-heading mb-6">Timeline</h3>
+                    <h3 class="ui-heading mb-6">{{ __('Timeline') }}</h3>
 
                     @if($timeline->isEmpty())
-                    <p class="text-sm text-slate-400 text-center py-8">Belum ada aktivitas.</p>
+                    <p class="text-sm text-slate-400 text-center py-8">{{ __('Belum ada aktivitas.') }}</p>
                     @else
                     <div class="relative">
                         {{-- Vertical Line --}}
@@ -190,6 +190,12 @@
                                     'slate' => ['bg' => 'bg-slate-400', 'light' => 'bg-slate-50', 'text' => 'text-slate-500'],
                                 ];
                                 $c = $colorMap[$event['color']] ?? $colorMap['slate'];
+                                $eventDetail = $event['detail'];
+                                if (app()->getLocale() === 'en' && $eventDetail) {
+                                    $eventDetail = preg_replace_callback('/(^|\n)(Barang|Jumlah|Prioritas|Alasan|Keterangan):/u', fn ($matches) => $matches[1] . __($matches[2]) . ':', $eventDetail);
+                                    $eventDetail = preg_replace('/^Diterima (?=\d)/u', __('Diterima') . ' ', $eventDetail);
+                                    $eventDetail = preg_replace('/(?<=\d) dari (?=\d)/u', ' of ', $eventDetail);
+                                }
                             @endphp
                             <div class="relative flex items-start gap-4 pl-0 py-2">
                                 {{-- Dot --}}
@@ -200,15 +206,15 @@
                                 {{-- Content --}}
                                 <div class="flex-1 min-w-0 {{ !$isLast ? 'pb-3' : '' }}">
                                     <div class="flex items-center gap-2 flex-wrap">
-                                        <span class="text-sm font-semibold text-slate-900">{{ $event['label'] }}</span>
+                                        <span class="text-sm font-semibold text-slate-900">{{ __($event['label']) }}</span>
                                         <span class="text-xs font-medium uppercase text-slate-500">{{ $event['time']?->translatedFormat('d M H:i') ?? '—' }}</span>
                                     </div>
-                                    <p class="text-xs text-slate-500 mt-0.5">oleh <span class="font-medium text-slate-600">{{ $event['user'] }}</span></p>
+                                    <p class="text-xs text-slate-500 mt-0.5">{{ __('oleh') }} <span class="font-medium text-slate-600">{{ $event['user'] }}</span></p>
                                     @if(isset($event['decision']))
-                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $event['decision'] }} oleh {{ $event['processor'] }}</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ __($event['decision']) }} {{ __('oleh') }} {{ $event['processor'] }}</p>
                                     @endif
                                     @if($event['detail'])
-                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $event['detail'] }}</p>
+                                    <p class="text-xs text-slate-500 mt-1 leading-relaxed whitespace-pre-line">{{ $eventDetail }}</p>
                                     @endif
                                 </div>
                             </div>

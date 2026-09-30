@@ -1,8 +1,8 @@
 <x-layout>
-    <x-slot:title>{{ $guide->title }} — Bantuan</x-slot:title>
+    <x-slot:title>{{ $guide->title }} — {{ __('Bantuan') }}</x-slot:title>
     <x-slot:headerTitle>{{ $guide->title }}</x-slot:headerTitle>
     <div class="mx-auto max-w-5xl space-y-6">
-        <div class="flex flex-wrap items-center justify-between gap-3"><a href="{{ route('help.index') }}" class="inline-flex text-sm font-semibold text-corpblue-600 hover:text-corpblue-800">← Semua Panduan</a><button type="button" onclick="history.back()" class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:border-corpblue-300 hover:text-corpblue-700">← Kembali</button></div>
+        <div class="flex flex-wrap items-center justify-between gap-3"><a href="{{ route('help.index') }}" class="inline-flex text-sm font-semibold text-corpblue-600 hover:text-corpblue-800">← {{ __('Semua Panduan') }}</a><button type="button" onclick="history.back()" class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 shadow-sm hover:border-corpblue-300 hover:text-corpblue-700">← {{ __('Kembali') }}</button></div>
         <div class="rounded-xl border border-slate-200 bg-white p-6"><p class="text-xs font-bold uppercase tracking-widest text-corpblue-500">{{ $guide->category }}</p><h2 class="mt-2 text-2xl font-bold text-slate-900">{{ $guide->title }}</h2><p class="mt-2 text-sm leading-6 text-slate-500">{{ $guide->description }}</p></div>
         @foreach($guide->images as $image)
             <div class="rounded-xl border border-slate-200 bg-white p-4 md:p-6">

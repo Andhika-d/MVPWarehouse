@@ -18,13 +18,18 @@ class NewRequestNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
-        $item = $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang';
+        $item = $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang');
 
         return [
-            'title' => 'Permintaan Baru Masuk',
-            'message' => ($this->stockRequest->user?->name ?? 'Gudang')
-                . ' mengajukan ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
-                . ' ' . $item . ' (' . $this->stockRequest->priority . ').',
+            'title_key' => 'Permintaan Baru Masuk',
+            'message_key' => ':user mengajukan :quantity :unit :item (:priority).',
+            'params' => [
+                'user' => $this->stockRequest->user?->name ?? __('Gudang'),
+                'quantity' => $this->stockRequest->quantity,
+                'unit' => $this->stockRequest->unit,
+                'item' => $item,
+                'priority' => $this->stockRequest->priority,
+            ],
             'type' => 'new_request',
             'priority' => $this->stockRequest->priority,
             'url' => '/hr/approval',

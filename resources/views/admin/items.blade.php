@@ -1,4 +1,4 @@
-<x-layout :title="'Master Barang — THI2-WAREHOUSE'" :headerTitle="'Master Barang'">
+<x-layout :title="__('Master Barang') . ' — THI2-WAREHOUSE'" :headerTitle="__('Master Barang')">
     <div class="space-y-6">
 
         {{-- Stats --}}
@@ -9,7 +9,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-slate-900">{{ $totalItems }}</p>
-                    <p class="text-xs text-slate-500">Total Barang</p>
+                    <p class="text-xs text-slate-500">{{ __('Total Barang') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-slate-900">{{ $totalStock }}</p>
-                    <p class="text-xs text-slate-500">Total Stok</p>
+                    <p class="text-xs text-slate-500">{{ __('Total Stok') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -27,7 +27,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-slate-900">{{ $lowStockCount }}</p>
-                    <p class="text-xs text-slate-500">Stok Menipis</p>
+                    <p class="text-xs text-slate-500">{{ __('Stok Menipis') }}</p>
                 </div>
             </div>
         </div>
@@ -36,31 +36,31 @@
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form method="GET" action="{{ route('admin.items.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari nama, ukuran, atau sub lokasi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari nama, ukuran, atau sub lokasi...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="rack" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Rak</option>
+                    <option value="all">{{ __('Semua Rak') }}</option>
                     @foreach($racks as $rack)
-                    <option value="{{ $rack }}" {{ request('rack') === $rack ? 'selected' : '' }}>Rak {{ $rack }}</option>
+                    <option value="{{ $rack }}" {{ request('rack') === $rack ? 'selected' : '' }}>{{ __('Rak') }} {{ $rack }}</option>
                     @endforeach
                 </select>
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Status</option>
-                    <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>Terisi</option>
-                    <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>Kosong</option>
+                    <option value="all">{{ __('Semua Status') }}</option>
+                    <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>{{ __('Terisi') }}</option>
+                    <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>{{ __('Kosong') }}</option>
                 </select>
                 <select name="unit" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Satuan</option>
+                    <option value="all">{{ __('Semua Satuan') }}</option>
                     @foreach(\App\Models\Item::UNITS as $unit)
                     <option value="{{ $unit }}" {{ request('unit') === $unit ? 'selected' : '' }}>{{ $unit }}</option>
                     @endforeach
                 </select>
                 <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer">
                     <input type="checkbox" name="low_stock" value="1" {{ request('low_stock') ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
-                    <span class="text-slate-600">Stok &le; 5</span>
+                    <span class="text-slate-600">{{ __('Stok') }} &le; 5</span>
                 </label>
                 @if(request()->hasAny(['search', 'rack', 'status', 'unit', 'low_stock']))
-                <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
             </form>
         </div>
@@ -71,15 +71,15 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Sub Lokasi</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Nama Barang</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Ukuran</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Satuan</th>
-                            <th class="px-4 py-3 text-right font-semibold text-slate-600">Stok</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Rak</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Aksi</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Kode Tag') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Sub Lokasi') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Nama Barang') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Ukuran') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Satuan') }}</th>
+                            <th class="px-4 py-3 text-right font-semibold text-slate-600">{{ __('Stok') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Rak') }}</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Status') }}</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Aksi') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -99,7 +99,7 @@
                             <td class="px-4 py-3 font-medium text-slate-900">
                                 {{ $item->name }}
                                 @if($loc->items->count() > 1)
-                                <span class="text-[11px] font-semibold text-indigo-600 ml-1">(+{{ $loc->items->count() - 1 }} ditumpuk)</span>
+                                <span class="text-[11px] font-semibold text-indigo-600 ml-1">(+{{ $loc->items->count() - 1 }} {{ __('ditumpuk') }})</span>
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->size ?? '—' }}</td>
@@ -113,11 +113,11 @@
                             </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
-                                    <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">Edit</button>
-                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">Sesuaikan</button>
-                                    <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="Hapus barang {{ $item->name }}? Tindakan ini tidak dapat dibatalkan." data-confirm-title="Hapus Barang" data-confirm-tone="danger" class="inline">
+                                    <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">{{ __('Edit') }}</button>
+                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">{{ __('Sesuaikan') }}</button>
+                                    <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="{{ __('Hapus barang :name? Tindakan ini tidak dapat dibatalkan.', ['name' => $item->name]) }}" data-confirm-title="{{ __('Hapus Barang') }}" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
-                                        <button type="submit" class="action-link action-link--danger">Hapus</button>
+                                        <button type="submit" class="action-link action-link--danger">{{ __('Hapus') }}</button>
                                     </form>
                                 </div>
                             </td>
@@ -152,8 +152,8 @@
                             <td colspan="9" class="px-4 py-12 text-center">
                                 <div class="flex flex-col items-center gap-2">
                                     <svg class="text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    <p class="text-sm text-slate-400">Belum ada data lokasi</p>
-                                    <a href="{{ route('admin.import.index') }}" class="text-xs text-corpblue-600 hover:text-corpblue-700 font-semibold">Import dari Excel</a>
+                                    <p class="text-sm text-slate-400">{{ __('Belum ada data lokasi') }}</p>
+                                    <a href="{{ route('admin.import.index') }}" class="text-xs text-corpblue-600 hover:text-corpblue-700 font-semibold">{{ __('Import dari Excel') }}</a>
                                 </div>
                             </td>
                         </tr>
@@ -176,24 +176,24 @@
         <div id="editItemModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 id="editItemModalTitle" class="text-base font-semibold text-slate-900">Edit Barang</h3>
-                    <button onclick="closeModal('editItemModal')" aria-label="Tutup" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <h3 id="editItemModalTitle" class="text-base font-semibold text-slate-900">{{ __('Edit Barang') }}</h3>
+                    <button onclick="closeModal('editItemModal')" aria-label="{{ __('Tutup') }}" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
                 <form id="editItemForm" method="POST" class="p-5 space-y-4">
                     @csrf @method('PUT')
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Barang</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Nama Barang') }}</label>
                         <input type="text" name="name" id="edit_name" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     </div>
                     <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Ukuran</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Ukuran') }}</label>
                             <input type="text" name="size" id="edit_size" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                         </div>
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Satuan</label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Satuan') }}</label>
                             <select name="unit" id="edit_unit" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                                 @foreach(\App\Models\Item::UNITS as $u)
                                 <option value="{{ $u }}">{{ $u }}</option>
@@ -202,8 +202,8 @@
                         </div>
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeModal('editItemModal')" class="btn btn--secondary">Batal</button>
-                        <button type="submit" class="btn btn--primary">Simpan</button>
+                        <button type="button" onclick="closeModal('editItemModal')" class="btn btn--secondary">{{ __('Batal') }}</button>
+                        <button type="submit" class="btn btn--primary">{{ __('Simpan') }}</button>
                     </div>
                 </form>
             </div>
@@ -213,8 +213,8 @@
         <div id="adjustStockModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="adjustStockModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-                    <h3 id="adjustStockModalTitle" class="text-base font-semibold text-slate-900">Penyesuaian Stok</h3>
-                    <button onclick="closeModal('adjustStockModal')" aria-label="Tutup" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <h3 id="adjustStockModalTitle" class="text-base font-semibold text-slate-900">{{ __('Penyesuaian Stok') }}</h3>
+                    <button onclick="closeModal('adjustStockModal')" aria-label="{{ __('Tutup') }}" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -222,19 +222,19 @@
                     @csrf
                     <div class="bg-slate-50 rounded-lg p-3 text-sm">
                         <p class="font-medium text-slate-900" id="adjust_item_name"></p>
-                        <p class="text-slate-500 text-xs mt-1">Stok saat ini: <span id="adjust_current_stock" class="font-semibold"></span> <span id="adjust_item_unit"></span></p>
+                        <p class="text-slate-500 text-xs mt-1">{{ __('Stok saat ini') }}: <span id="adjust_current_stock" class="font-semibold"></span> <span id="adjust_item_unit"></span></p>
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Stok Baru</label>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Stok Baru') }}</label>
                         <input type="number" name="new_stock" id="adjust_new_stock" min="0" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Alasan <span class="text-red-500">*</span></label>
-                        <input type="text" name="reason" id="adjust_reason" required maxlength="255" placeholder="Contoh: Koreksi stok fisik, Hasil audit, dll." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Alasan') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="reason" id="adjust_reason" required maxlength="255" placeholder="{{ __('Contoh: Koreksi stok fisik, Hasil audit, dll.') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     </div>
                     <div class="flex justify-end gap-2 pt-2">
-                        <button type="button" onclick="closeModal('adjustStockModal')" class="btn btn--secondary">Batal</button>
-                        <button type="submit" class="btn btn--warning">Simpan Penyesuaian</button>
+                        <button type="button" onclick="closeModal('adjustStockModal')" class="btn btn--secondary">{{ __('Batal') }}</button>
+                        <button type="submit" class="btn btn--warning">{{ __('Simpan Penyesuaian') }}</button>
                     </div>
                 </form>
             </div>

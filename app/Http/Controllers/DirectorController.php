@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\LocationChangeRequest;
 use App\Models\MonitoringIssue;
@@ -13,7 +12,6 @@ use App\Support\PeriodRange;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\DB;
 
 class DirectorController extends Controller
 {
@@ -264,7 +262,7 @@ class DirectorController extends Controller
                     return $m->type === StockMovement::TYPE_IN;
                 });
 
-                $matchedMovement = $receiptMovements->first(function ($m) use ($cumulativeReceived) {
+                $matchedMovement = $receiptMovements->first(function ($m) {
                     return true;
                 });
 
@@ -359,7 +357,7 @@ class DirectorController extends Controller
         $firstReceiptMovement = $receiptMovements->first();
         $firstReceipt = $firstReceiptMovement?->occurred_at ?? $firstReceiptMovement?->created_at;
         $completedAt = $request->completed_at;
-        $formatDuration = fn ($start, $end) => $start->copy()->locale('id')->diffForHumans($end, true);
+        $formatDuration = fn ($start, $end) => $start->copy()->locale(app()->getLocale())->diffForHumans($end, true);
 
         $durations = [
             'request_to_approval' => null,
@@ -381,7 +379,7 @@ class DirectorController extends Controller
             $durations['request_to_approval'] = $formatDuration($createdAt, $firstApproval);
             $durations['request_to_approval_state'] = 'completed';
         } elseif ($request->isActionable()) {
-            $durations['request_to_approval'] = $formatDuration($createdAt, now()).' berjalan';
+            $durations['request_to_approval'] = $formatDuration($createdAt, now()).' '.__('berjalan');
             $durations['request_to_approval_state'] = 'ongoing';
         }
         if ($firstApproval && $firstReceipt) {
@@ -391,18 +389,18 @@ class DirectorController extends Controller
             $durations['request_to_first_receipt'] = $formatDuration($createdAt, $firstReceipt);
 
             if ($completedAt && $receiptMovements->count() === 1) {
-                $durations['fulfillment_duration'] = 'Langsung penuh';
+                $durations['fulfillment_duration'] = __('Langsung penuh');
                 $durations['fulfillment_state'] = 'completed';
             } elseif ($completedAt) {
                 $durations['fulfillment_duration'] = $formatDuration($firstReceipt, $completedAt);
                 $durations['fulfillment_state'] = 'completed';
             } elseif ($request->closed_at) {
                 $durations['fulfillment_duration'] = $request->status === 'Ditutup Sebagian'
-                    ? 'Ditutup setelah '.$formatDuration($firstReceipt, $request->closed_at)
-                    : 'Dibatalkan';
+                    ? __('Ditutup setelah :duration', ['duration' => $formatDuration($firstReceipt, $request->closed_at)])
+                    : __('Dibatalkan');
                 $durations['fulfillment_state'] = 'closed';
             } else {
-                $durations['fulfillment_duration'] = $formatDuration($firstReceipt, now()).' berjalan';
+                $durations['fulfillment_duration'] = $formatDuration($firstReceipt, now()).' '.__('berjalan');
                 $durations['fulfillment_state'] = 'ongoing';
             }
         }
@@ -548,10 +546,11 @@ class DirectorController extends Controller
                     'type' => $r->status === 'Ditutup Sebagian' ? 'Sisa Request Ditutup' : 'Request Dibatalkan',
                     'user' => $closer,
                     'detail' => "{$r->item_name} — {$r->remainingQuantity()} {$r->unit} ditutup"
-                        . ($r->close_note ? "\nAlasan: {$r->close_note}" : ''),
+                        .($r->close_note ? "\nAlasan: {$r->close_note}" : ''),
                     'icon' => 'status',
                 ]);
             }
+
             return $events;
         })->flatten(1);
 
@@ -576,13 +575,14 @@ class DirectorController extends Controller
                 'ADJUSTMENT' => 'Penyesuaian Stok',
                 default => $m->type,
             };
-            $detail = ($m->item?->name ?? '—') . " — {$m->quantity} {$m->unit}";
+            $detail = ($m->item?->name ?? '—')." — {$m->quantity} {$m->unit}";
             if ($m->reason) {
                 $detail .= "\nKeterangan: {$m->reason}";
             }
             if ($m->note) {
                 $detail .= "\nCatatan: {$m->note}";
             }
+
             return [
                 'time' => $m->occurred_at ?? $m->created_at,
                 'type' => $label,
@@ -598,8 +598,8 @@ class DirectorController extends Controller
         $locationEvents = $locationChanges->map(function ($lc) {
             $status = $lc->status;
             $detail = $lc->target_sub_location !== null
-                ? ($lc->item?->name ?? '—')." — ".($lc->fromLocation?->code ?? '—')." · ".($lc->from_sub_location ?? '—')." → ".($lc->toLocation?->code ?? '—')." · ".($lc->target_sub_location ?? '—')
-                : ($lc->item?->name ?? '—')." — ".($lc->fromLocation?->code ?? '—')." → ".($lc->toLocation?->code ?? '—');
+                ? ($lc->item?->name ?? '—').' — '.($lc->fromLocation?->code ?? '—').' · '.($lc->from_sub_location ?? '—').' → '.($lc->toLocation?->code ?? '—').' · '.($lc->target_sub_location ?? '—')
+                : ($lc->item?->name ?? '—').' — '.($lc->fromLocation?->code ?? '—').' → '.($lc->toLocation?->code ?? '—');
 
             return [
                 'time' => $lc->created_at,

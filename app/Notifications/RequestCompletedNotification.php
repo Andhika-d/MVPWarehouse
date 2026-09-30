@@ -19,12 +19,15 @@ class RequestCompletedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Belanja Selesai',
-            'message' => 'Barang ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
-                . ' ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' telah diterima Gudang.',
+            'title_key' => 'Belanja Selesai',
+            'message_key' => 'Barang :quantity :unit :item telah diterima Gudang.',
+            'params' => [
+                'quantity' => $this->stockRequest->quantity,
+                'unit' => $this->stockRequest->unit,
+                'item' => $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang'),
+            ],
             'type' => 'completed',
-            'url' => '/gudang/history/' . $this->stockRequest->id,
+            'url' => '/gudang/history/'.$this->stockRequest->id,
         ];
     }
 }

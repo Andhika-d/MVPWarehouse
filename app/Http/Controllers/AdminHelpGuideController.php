@@ -25,7 +25,7 @@ class AdminHelpGuideController extends Controller
     public function store(Request $request)
     {
         $guide = $this->saveGuide($request, new HelpGuide);
-        return redirect()->route('admin.help-guides.edit', $guide)->with('success', 'Panduan berhasil disimpan sebagai draft.');
+        return redirect()->route('admin.help-guides.edit', $guide)->with('success', __('Panduan berhasil disimpan sebagai draft.'));
     }
 
     public function edit(HelpGuide $helpGuide)
@@ -44,21 +44,21 @@ class AdminHelpGuideController extends Controller
     public function update(Request $request, HelpGuide $helpGuide)
     {
         $this->saveGuide($request, $helpGuide);
-        return back()->with('success', 'Panduan berhasil diperbarui.');
+        return back()->with('success', __('Panduan berhasil diperbarui.'));
     }
 
     public function publish(HelpGuide $helpGuide)
     {
         $helpGuide->update(['status' => 'published', 'published_at' => now()]);
         $this->audit('help_guide_published', $helpGuide, 'Mempublikasikan panduan '.$helpGuide->title);
-        return back()->with('success', 'Panduan berhasil dipublikasikan.');
+        return back()->with('success', __('Panduan berhasil dipublikasikan.'));
     }
 
     public function archive(HelpGuide $helpGuide)
     {
         $helpGuide->update(['status' => 'archived']);
         $this->audit('help_guide_archived', $helpGuide, 'Mengarsipkan panduan '.$helpGuide->title);
-        return back()->with('success', 'Panduan diarsipkan.');
+        return back()->with('success', __('Panduan diarsipkan.'));
     }
 
     public function destroy(HelpGuide $helpGuide)
@@ -68,7 +68,7 @@ class AdminHelpGuideController extends Controller
         }
         $this->audit('help_guide_deleted', $helpGuide, 'Menghapus panduan '.$helpGuide->title);
         $helpGuide->delete();
-        return redirect()->route('admin.help-guides.index')->with('success', 'Panduan dihapus.');
+        return redirect()->route('admin.help-guides.index')->with('success', __('Panduan dihapus.'));
     }
 
     private function saveGuide(Request $request, HelpGuide $guide): HelpGuide
@@ -111,7 +111,7 @@ class AdminHelpGuideController extends Controller
                         'number' => $index + 1,
                         'position_x' => max(0, min(100, (float) ($marker['x'] ?? 0))),
                         'position_y' => max(0, min(100, (float) ($marker['y'] ?? 0))),
-                        'title' => $marker['title'] ?? 'Langkah '.($index + 1),
+                        'title' => $marker['title'] ?? __('Langkah :number', ['number' => $index + 1]),
                         'description' => $marker['description'] ?? null,
                         'sort_order' => $index,
                     ]);

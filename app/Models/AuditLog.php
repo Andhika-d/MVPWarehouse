@@ -25,7 +25,7 @@ class AuditLog extends Model
 
     public function labelForAction(): string
     {
-        return static::actionLabels()[$this->action] ?? $this->action;
+        return __(static::actionLabels()[$this->action] ?? $this->action);
     }
 
     public function labelForTarget(): string
@@ -38,7 +38,7 @@ class AuditLog extends Model
 
         $name = static::targetLabels()[$type] ?? class_basename($type);
 
-        return $name . ($this->target_id ? ' #'.$this->target_id : '');
+        return __($name).($this->target_id ? ' #'.$this->target_id : '');
     }
 
     public static function actionLabels(): array
@@ -63,6 +63,7 @@ class AuditLog extends Model
             'reset_password' => 'Reset password',
             'toggle_user_status' => 'Mengubah status pengguna',
             'updated_user_role' => 'Mengubah peran pengguna',
+            'updated_user_locale' => 'Mengubah bahasa pengguna',
             'deleted_user' => 'Menghapus pengguna',
             'impersonated_user' => 'Login sebagai pengguna',
             'impersonation_stopped' => 'Menghentikan login sebagai',

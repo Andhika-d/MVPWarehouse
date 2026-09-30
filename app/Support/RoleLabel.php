@@ -7,10 +7,10 @@ final class RoleLabel
     public static function of(?string $role): string
     {
         return match ($role) {
-            'admin' => 'ADMIN',
-            'hr' => 'HR',
-            'director' => 'DIREKTUR',
-            'gudang' => 'GUDANG',
+            'admin' => __('ADMIN'),
+            'hr' => __('HR'),
+            'director' => __('DIREKTUR'),
+            'gudang' => __('GUDANG'),
             default => strtoupper((string) $role),
         };
     }

@@ -1,6 +1,6 @@
 <x-layout>
-    <x-slot:title>Barang Keluar — THI2-WAREHOUSE</x-slot:title>
-    <x-slot:headerTitle>Catat Barang Keluar</x-slot:headerTitle>
+    <x-slot:title>{{ __('Barang Keluar — THI2-WAREHOUSE') }}</x-slot:title>
+    <x-slot:headerTitle>{{ __('Catat Barang Keluar') }}</x-slot:headerTitle>
 
     <div class="space-y-4">
 
@@ -12,12 +12,12 @@
                     @csrf
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Nama Barang</label>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
                         <input type="hidden" name="item_id" id="item_id" value="">
                         <div class="relative">
                             <div class="flex gap-2">
                                 <div class="relative flex-1">
-                                    <input id="itemSearch" type="text" autocomplete="off" placeholder="Ketik untuk mencari barang..." oninput="filterItems()" onfocus="openItemList()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                                    <input id="itemSearch" type="text" autocomplete="off" placeholder="{{ __('Ketik untuk mencari barang...') }}" oninput="filterItems()" onfocus="openItemList()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                                     <button type="button" id="itemClear" onclick="clearItemSelection()" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                     </button>
@@ -25,16 +25,16 @@
                                 <div class="relative" id="rackDropdownWrap">
                                     <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
                                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                        <span id="rackDropdownLabel">Semua Rak</span>
+                                        <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
                                         <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                     </button>
                                     <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
                                         <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
-                                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> Semua Rak
+                                            <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
                                         </button>
                                         @foreach(['A','B','C','D','E'] as $rack)
                                         <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
-                                            <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> Rak {{ $rack }}
+                                            <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
                                         </button>
                                         @endforeach
                                     </div>
@@ -50,45 +50,45 @@
                                     <p id="infoItemDetail" class="text-xs text-slate-500 mt-0.5"></p>
                                 </div>
                                 <div class="text-right">
-                                    <p class="text-xs text-slate-500">Stok</p>
+                                    <p class="text-xs text-slate-500">{{ __('Stok') }}</p>
                                     <p id="infoItemStock" class="text-base font-bold text-slate-900"></p>
                                 </div>
                             </div>
                             <div class="mt-2 pt-2 border-t border-slate-200 flex items-center gap-4 text-xs text-slate-500">
-                                <span>Satuan: <strong id="infoItemUnit" class="text-slate-700"></strong></span>
-                                <span>Rak: <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
-                                <span id="infoSubLocWrap" class="hidden">Sub: <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
-                                <span id="infoTagWrap" class="hidden">Tag: <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                <span>{{ __('Satuan') }}: <strong id="infoItemUnit" class="text-slate-700"></strong></span>
+                                <span>{{ __('Rak') }}: <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
+                                <span id="infoSubLocWrap" class="hidden">{{ __('Sub') }}: <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                <span id="infoTagWrap" class="hidden">{{ __('Tag') }}: <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
                             </div>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Jumlah Keluar</label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Jumlah Keluar') }}</label>
                             <input type="number" name="quantity" id="qtyInput" min="1" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
-                            <p id="qtyHelper" class="text-[11px] text-slate-400 mt-1 hidden">Maksimal: <span id="qtyMax"></span></p>
+                            <p id="qtyHelper" class="text-[11px] text-slate-400 mt-1 hidden">{{ __('Maksimal') }}: <span id="qtyMax"></span></p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-slate-700 mb-1.5">Keperluan</label>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Keperluan') }}</label>
                             <select name="reason" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
-                                <option value="">Pilih keperluan...</option>
-                                <option value="Pemakaian produksi">Pemakaian produksi</option>
-                                <option value="Pemakaian kantor">Pemakaian kantor</option>
-                                <option value="Rusak / hilang">Rusak / hilang</option>
-                                <option value="Lainnya">Lainnya</option>
+                                <option value="">{{ __('Pilih keperluan...') }}</option>
+                                <option value="Pemakaian produksi">{{ __('Pemakaian produksi') }}</option>
+                                <option value="Pemakaian kantor">{{ __('Pemakaian kantor') }}</option>
+                                <option value="Rusak / hilang">{{ __('Rusak / hilang') }}</option>
+                                <option value="Lainnya">{{ __('Lainnya') }}</option>
                             </select>
                         </div>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">Catatan <span class="text-slate-400 font-normal">(opsional)</span></label>
-                        <textarea name="note" rows="2" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all placeholder:text-slate-400 resize-none" placeholder="Catatan tambahan..."></textarea>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Catatan') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
+                        <textarea name="note" rows="2" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all placeholder:text-slate-400 resize-none" placeholder="{{ __('Catatan tambahan...') }}"></textarea>
                     </div>
 
                     <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-                        <a href="/gudang/dashboard" class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all">Batal</a>
-                        <button type="submit" class="px-5 py-2.5 bg-corpblue-500 text-white font-semibold rounded-lg text-sm hover:bg-corpblue-600 transition-all min-h-[44px]">Catat Keluar</button>
+                        <a href="/gudang/dashboard" class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-lg text-sm font-medium hover:bg-slate-50 transition-all">{{ __('Batal') }}</a>
+                        <button type="submit" class="px-5 py-2.5 bg-corpblue-500 text-white font-semibold rounded-lg text-sm hover:bg-corpblue-600 transition-all min-h-[44px]">{{ __('Catat Keluar') }}</button>
                     </div>
                 </form>
             </div>
@@ -96,24 +96,24 @@
             {{-- Sidebar --}}
             <div class="space-y-4">
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 class="text-sm font-semibold text-slate-900 mb-2">Pencatatan Barang Keluar</h3>
-                    <p class="text-xs text-slate-500 mb-3">Catat setiap barang yang keluar dari gudang untuk keperluan produksi atau operasional.</p>
+                    <h3 class="text-sm font-semibold text-slate-900 mb-2">{{ __('Pencatatan Barang Keluar') }}</h3>
+                    <p class="text-xs text-slate-500 mb-3">{{ __('Catat setiap barang yang keluar dari gudang untuk keperluan produksi atau operasional.') }}</p>
                     <div class="space-y-2 text-xs text-slate-500">
                         <div class="flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-corpblue-500 rounded-full shrink-0"></span>
-                            <span>Pilih barang dari inventaris</span>
+                            <span>{{ __('Pilih barang dari inventaris') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-corpblue-500 rounded-full shrink-0"></span>
-                            <span>Isi jumlah yang keluar</span>
+                            <span>{{ __('Isi jumlah yang keluar') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-corpblue-500 rounded-full shrink-0"></span>
-                            <span>Pilih keperluan</span>
+                            <span>{{ __('Pilih keperluan') }}</span>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="w-1.5 h-1.5 bg-corpblue-500 rounded-full shrink-0"></span>
-                            <span>Stok otomatis berkurang</span>
+                            <span>{{ __('Stok otomatis berkurang') }}</span>
                         </div>
                     </div>
                 </div>
@@ -144,7 +144,7 @@
 
         function selectRack(rack) {
             selectedRack = rack;
-            document.getElementById('rackDropdownLabel').textContent = rack ? 'Rak ' + rack : 'Semua Rak';
+            document.getElementById('rackDropdownLabel').textContent = rack ? '{{ __('Rak') }} ' + rack : '{{ __('Semua Rak') }}';
             document.getElementById('rackDropdownMenu').classList.add('hidden');
 
             document.querySelectorAll('.rack-option').forEach((btn) => {
@@ -198,7 +198,7 @@
                 btn.type = 'button';
                 btn.dataset.id = item.id;
                 btn.className = 'w-full text-left px-3 py-2.5 text-sm text-slate-700 hover:bg-corpblue-50 hover:text-corpblue-700 font-medium transition-all flex items-center justify-between';
-                const location = item.sub_location ? ' · Lok ' + item.sub_location : '';
+                const location = item.sub_location ? ' · ' + @json(__('Lok')) + ' ' + item.sub_location : '';
                 btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + item.stock + ' ' + item.unit + location + '</span>';
                 btn.addEventListener('click', () => selectItem(item));
                 activeButtons.push(btn);
@@ -209,8 +209,8 @@
                 const empty = document.createElement('div');
                 empty.className = 'px-3 py-3 text-xs text-slate-400 text-center';
                 empty.textContent = selectedRack
-                    ? (q ? 'Barang "' + q + '" tidak ditemukan di Rak ' + selectedRack + '.' : 'Belum ada barang di Rak ' + selectedRack + '.')
-                    : 'Barang tidak ditemukan.';
+                    ? (q ? '{{ __('Barang') }} "' + q + '" {{ __('tidak ditemukan di Rak') }} ' + selectedRack + '.' : '{{ __('Belum ada barang di Rak') }} ' + selectedRack + '.')
+                    : '{{ __('Barang tidak ditemukan.') }}';
                 listBox.appendChild(empty);
             } else {
                 setActiveIndex(0);
@@ -239,7 +239,7 @@
             syncClearButton();
 
             document.getElementById('infoItemName').textContent = item.label;
-            document.getElementById('infoItemDetail').textContent = 'Tersedia';
+            document.getElementById('infoItemDetail').textContent = '{{ __('Tersedia') }}';
             document.getElementById('infoItemStock').textContent = item.stock;
             document.getElementById('infoItemStock').className = 'text-base font-bold ' + (item.stock > 0 ? 'text-slate-900' : 'text-red-500');
             document.getElementById('infoItemUnit').textContent = item.unit;
@@ -323,7 +323,7 @@
                 e.preventDefault();
                 searchInput.focus();
                 openItemList();
-                alert('Silakan pilih barang dari inventaris.');
+                alert('{{ __('Silakan pilih barang dari inventaris.') }}');
             }
         });
     </script>

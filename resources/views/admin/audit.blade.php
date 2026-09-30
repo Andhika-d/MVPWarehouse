@@ -1,23 +1,23 @@
-<x-layout :title="'Audit Log — THI2-WAREHOUSE'" :headerTitle="'Audit Log Global'">
+<x-layout :title="__('Audit Log — THI2-WAREHOUSE')" :headerTitle="__('Audit Log Global')">
     <div class="space-y-6">
 
         {{-- Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form id="auditFilters" method="GET" action="{{ route('admin.audit.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari detail atau aksi..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari detail atau aksi...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="action" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="">Semua Aksi</option>
+                    <option value="">{{ __('Semua Aksi') }}</option>
                     @foreach($actions as $action)
-                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ \App\Models\AuditLog::actionLabels()[$action] ?? $action }}</option>
+                    <option value="{{ $action }}" {{ request('action') === $action ? 'selected' : '' }}>{{ __(\App\Models\AuditLog::actionLabels()[$action] ?? $action) }}</option>
                     @endforeach
                 </select>
                 <x-period-filter-button :period="$period" />
                 @if(request()->filled('search') || request()->filled('action') || $period)
-                <a href="{{ route('admin.audit.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="{{ route('admin.audit.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
-                <a href="{{ route('admin.audit.export-preview', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">Preview Export</a>
+                <a href="{{ route('admin.audit.export-preview', request()->query()) }}" class="inline-flex items-center px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium transition-colors">{{ __('Preview Export') }}</a>
             </form>
         </div>
 
@@ -27,17 +27,17 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Waktu</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Pengguna</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Aksi</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Detail</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Waktu') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Pengguna') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Aksi') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Detail') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @forelse($logs as $log)
                         <tr class="hover:bg-slate-50 transition-colors">
                             <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">{{ $log->created_at->translatedFormat('d M Y, H:i') }}</td>
-                            <td class="px-4 py-3 font-medium text-slate-700">{{ $log->user?->name ?? 'Sistem' }}</td>
+                            <td class="px-4 py-3 font-medium text-slate-700">{{ $log->user?->name ?? __('Sistem') }}</td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-mono">{{ $log->labelForAction() }}</span>
                             </td>
@@ -45,7 +45,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-400">Belum ada audit log.</td>
+                            <td colspan="4" class="px-4 py-12 text-center text-sm text-slate-400">{{ __('Belum ada audit log.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>

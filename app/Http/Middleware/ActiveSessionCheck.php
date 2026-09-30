@@ -20,7 +20,7 @@ class ActiveSessionCheck
             }
 
             return redirect()->route('login')->withErrors([
-                'email' => 'Akun Anda telah dinonaktifkan. Hubungi administrator.',
+                'email' => __('Akun Anda telah dinonaktifkan. Hubungi administrator.'),
             ]);
         }
 

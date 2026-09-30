@@ -18,8 +18,10 @@ class User extends Authenticatable
         'is_active' => true,
     ];
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'is_active', 'must_change_password'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'is_active', 'must_change_password', 'locale'];
+
     protected $hidden = ['password', 'remember_token'];
+
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable, SoftDeletes;
 

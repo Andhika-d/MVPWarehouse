@@ -59,7 +59,7 @@ class HelpGuideTest extends TestCase
                 ->get(route('help.index'))
                 ->assertOk()
                 ->assertSee('Pengguna '.ucfirst($role))
-                ->assertSee($navigationLabel, false)
+                ->assertSee($navigationLabel)
                 ->assertSee('aria-controls="sidebar"', false);
         }
     }

@@ -2,16 +2,16 @@
     $currentUser = auth()->user();
     $currentRole = $currentUser?->role ?? 'gudang';
     $roleLabel = match ($currentRole) {
-        'admin' => 'Administrator',
-        'hr' => 'HRD',
-        'director' => 'Direktur',
-        default => 'Gudang',
+        'admin' => __('Administrator'),
+        'hr' => __('HRD'),
+        'director' => __('Direktur'),
+        default => __('Gudang'),
     };
     $roleDescription = match ($currentRole) {
-        'admin' => 'Pengguna Super',
-        'hr' => 'HR Taehang',
-        'director' => 'Monitoring Eksekutif',
-        default => 'PIC Gudang',
+        'admin' => __('Pengguna Super'),
+        'hr' => __('HR Taehang'),
+        'director' => __('Monitoring Eksekutif'),
+        default => __('PIC Gudang'),
     };
     $roleInitials = match ($currentRole) {
         'admin' => 'AD',
@@ -26,11 +26,11 @@
     };
 @endphp
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ app()->getLocale() }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Dashboard Perusahaan' }}</title>
+    <title>{{ $title ?? __('Dashboard Perusahaan') }}</title>
     
     <!-- Memanggil Tailwind CSS Lokal Menggunakan Vite -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -123,17 +123,17 @@
 
     @if(setting('dev_mode'))
     <div class="bg-red-600 text-white text-center text-xs font-bold px-4 py-2 no-print">
-        ⚠️ DEV MODE AKTIF — Seluruh pembatasan peran dibuka untuk keperluan testing.
-        <a href="/admin/dashboard" class="underline hover:text-red-100 ml-1">Kelola</a>
+        {{ __('⚠️ DEV MODE AKTIF — Seluruh pembatasan peran dibuka untuk keperluan testing.') }}
+        <a href="/admin/dashboard" class="underline hover:text-red-100 ml-1">{{ __('Kelola') }}</a>
     </div>
     @endif
 
     @if(session('impersonate_by'))
     <div class="bg-slate-900 text-white text-center text-xs font-semibold px-4 py-2 flex items-center justify-center space-x-3 no-print">
-        <span>Anda sedang login sebagai <strong>{{ auth()->user()->name }}</strong> ({{ match (auth()->user()->role) { 'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => auth()->user()->role } }})</span>
+        <span>{{ __('Anda sedang login sebagai') }} <strong>{{ auth()->user()->name }}</strong> ({{ match (auth()->user()->role) { 'admin' => __('Admin'), 'hr' => __('HR'), 'director' => __('Direktur'), 'gudang' => __('Gudang'), default => auth()->user()->role } }})</span>
         <form method="POST" action="/admin/impersonation/stop" class="inline">
             @csrf
-            <button type="submit" class="bg-white text-slate-900 px-3 py-1 rounded-md font-bold hover:bg-slate-200 transition-colors cursor-pointer">Kembali ke Admin</button>
+            <button type="submit" class="bg-white text-slate-900 px-3 py-1 rounded-md font-bold hover:bg-slate-200 transition-colors cursor-pointer">{{ __('Kembali ke Admin') }}</button>
         </form>
     </div>
     @endif
@@ -141,10 +141,10 @@
     <div id="appShell" class="flex min-h-0 flex-1 overflow-hidden">
 
     <!-- MOBILE OVERLAY -->
-    <button type="button" id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" onclick="closeSidebar()" aria-label="Tutup menu"></button>
+    <button type="button" id="sidebarOverlay" class="fixed inset-0 z-40 hidden bg-slate-900/50 lg:hidden" onclick="closeSidebar()" aria-label="{{ __('Tutup menu') }}"></button>
 
     <!-- SIDEBAR -->
-    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col bg-white border-r border-slate-200 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0" aria-label="Navigasi utama">
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-40 flex w-64 shrink-0 -translate-x-full transform flex-col bg-white border-r border-slate-200 transition-transform duration-200 ease-in-out lg:relative lg:translate-x-0" aria-label="{{ __('Navigasi utama') }}">
             <div class="flex min-h-0 flex-1 flex-col">
                 <!-- Brand / Logo Perusahaan -->
                 <div class="flex items-center gap-3 px-5 py-4 border-b border-slate-100">
@@ -182,7 +182,7 @@
                         <span class="text-[10px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1">THI2-WAREHOUSE</span>
                     </div>
                     @endif
-                    <button type="button" onclick="closeSidebar()" class="touch-target ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 lg:hidden" aria-label="Tutup menu">
+                    <button type="button" onclick="closeSidebar()" class="touch-target ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-800 lg:hidden" aria-label="{{ __('Tutup menu') }}">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
@@ -195,237 +195,237 @@
                         <a href="{{ route('admin.dashboard') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.dashboard'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.dashboard') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-                            <span>Dashboard</span>
+                            <span>{{ __('Dashboard') }}</span>
                         </a>
 
                         <!-- Group: Master Data -->
-                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Master Data</div>
+                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Master Data') }}</div>
 
                         <a href="{{ route('admin.items.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.items.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.items.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.items.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            <span>Master Barang</span>
+                            <span>{{ __('Master Barang') }}</span>
                         </a>
 
                         <a href="{{ route('admin.import.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.import.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.import.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.import.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            <span>Import Barang</span>
+                            <span>{{ __('Import Barang') }}</span>
                         </a>
 
                         <a href="{{ route('admin.locations.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.locations.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.locations.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.locations.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                            <span>Lokasi Rak</span>
+                            <span>{{ __('Lokasi Rak') }}</span>
                         </a>
 
                         <!-- Group: Pengguna & Akses -->
-                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pengguna & Akses</div>
+                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Pengguna & Akses') }}</div>
 
                         <a href="{{ route('admin.users.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.users.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.users.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.users.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                            <span>Daftar Pengguna</span>
+                            <span>{{ __('Daftar Pengguna') }}</span>
                         </a>
 
                         <a href="{{ route('admin.location-changes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.location-changes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.location-changes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.location-changes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                            <span>Approval Lokasi</span>
+                            <span>{{ __('Approval Lokasi') }}</span>
                         </a>
 
                         <!-- Group: Monitoring & Sistem -->
-                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monitoring & Sistem</div>
+                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Monitoring & Sistem') }}</div>
 
                         <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <span>Riwayat Pengadaan</span>
+                            <span>{{ __('Riwayat Pengadaan') }}</span>
                         </a>
 
                         <a href="{{ route('admin.audit.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.audit.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.audit.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.audit.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <span>Audit Log</span>
+                            <span>{{ __('Audit Log') }}</span>
                         </a>
 
                         <a href="{{ route('admin.backups.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.backups.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.backups.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.backups.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                            <span>Backup & Pemulihan</span>
+                            <span>{{ __('Backup & Pemulihan') }}</span>
                         </a>
 
                         <a href="{{ route('admin.reset.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.reset.*') ? 'bg-red-50 text-red-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.reset.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-red-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.reset.*') ? 'text-red-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                            <span>Maintenance Data</span>
+                            <span>{{ __('Maintenance Data') }}</span>
                         </a>
 
                         <a href="{{ route('admin.help-guides.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.help-guides.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.help-guides.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <span class="flex h-[18px] w-[18px] items-center justify-center rounded-full border text-[11px] font-bold {{ request()->routeIs('admin.help-guides.*') ? 'border-corpblue-500 text-corpblue-500' : 'border-slate-400 text-slate-400 group-hover:border-slate-600 group-hover:text-slate-600' }}">?</span>
-                            <span>Kelola Bantuan</span>
+                            <span>{{ __('Kelola Bantuan') }}</span>
                         </a>
 
                         @elseif($currentRole === 'hr')
                         <!-- ================= MENU UNTUK HRD ================= -->
 
                         <!-- Group: Workflow -->
-                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Alur Kerja</div>
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Alur Kerja') }}</div>
 
                         <a href="/hr/dashboard" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('hr/dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('hr/dashboard'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('hr/dashboard') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-                            <span>Dashboard Permintaan</span>
+                            <span>{{ __('Dashboard Permintaan') }}</span>
                         </a>
 
                         <a href="/hr/approval" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('hr/approval*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('hr/approval*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('hr/approval*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <span>Verifikasi & Approval</span>
+                            <span>{{ __('Verifikasi & Approval') }}</span>
                         </a>
 
                         <!-- Divider -->
                         <div class="my-2 mx-4 border-t border-slate-100"></div>
 
                         <!-- Group: Monitoring -->
-                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monitoring</div>
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Monitoring') }}</div>
 
                         <a href="/hr/stock" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('hr/stock*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('hr/stock*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('hr/stock*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            <span>Stok Barang</span>
+                            <span>{{ __('Stok Barang') }}</span>
                         </a>
 
                         <a href="{{ route('hr.movements') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('hr.movements') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('hr.movements'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('hr.movements') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 19V9m5 10V5m5 14v-7m5 7V3"/></svg>
-                            <span>Perubahan Stok</span>
+                            <span>{{ __('Perubahan Stok') }}</span>
                         </a>
 
                         <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Riwayat Pengadaan</span>
+                            <span>{{ __('Riwayat Pengadaan') }}</span>
                         </a>
 
                         <a href="{{ route('hr.issues') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('hr.issues') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('hr.issues'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('hr.issues') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <span>Masalah & Analisis</span>
+                            <span>{{ __('Masalah & Analisis') }}</span>
                         </a>
                     @elseif($currentRole === 'gudang')
                         <!-- ================= MENU UNTUK GUDANG ================= -->
 
                         <!-- Group: Operasional -->
-                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Operasional</div>
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Operasional') }}</div>
 
                         <a href="/gudang/dashboard" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/dashboard'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/dashboard') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-                            <span>Dashboard</span>
+                            <span>{{ __('Dashboard') }}</span>
                         </a>
 
                         <a href="/gudang/request-barang" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/request-barang*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/request-barang*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/request-barang*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
-                            <span>Request Barang</span>
+                            <span>{{ __('Request Barang') }}</span>
                         </a>
 
                         <a href="/gudang/penerimaan" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/penerimaan*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/penerimaan*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/penerimaan*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
-                            <span>Penerimaan Barang</span>
+                            <span>{{ __('Penerimaan Barang') }}</span>
                         </a>
 
                         <a href="/gudang/barang-keluar" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/barang-keluar*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/barang-keluar*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/barang-keluar*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-4 0V4m0 0l-2 2m2-2l2 2"/></svg>
-                            <span>Barang Keluar</span>
+                            <span>{{ __('Barang Keluar') }}</span>
                         </a>
 
                         <a href="/gudang/location-change" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/location-change*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/location-change*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/location-change*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
-                            <span>Pengajuan Lokasi</span>
+                            <span>{{ __('Pengajuan Lokasi') }}</span>
                         </a>
 
                         <!-- Divider -->
                         <div class="my-2 mx-4 border-t border-slate-100"></div>
 
                         <!-- Group: Stok & Riwayat -->
-                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Stok & Riwayat</div>
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Stok & Riwayat') }}</div>
 
                         <a href="/gudang/stock" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/stock*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/stock*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/stock*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            <span>Stok Barang</span>
+                            <span>{{ __('Stok Barang') }}</span>
                         </a>
 
                         <a href="/gudang/movements" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/movements*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/movements*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/movements*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                            <span>Riwayat Perubahan Stok</span>
+                            <span>{{ __('Riwayat Perubahan Stok') }}</span>
                         </a>
 
                         <a href="/gudang/history" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->is('gudang/history*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->is('gudang/history*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->is('gudang/history*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Riwayat Permintaan</span>
+                            <span>{{ __('Riwayat Permintaan') }}</span>
                         </a>
 
                         <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Riwayat Pengadaan</span>
+                            <span>{{ __('Riwayat Pengadaan') }}</span>
                         </a>
                     @elseif($currentRole === 'director')
                         <!-- ================= MENU UNTUK DIREKTUR ================= -->
 
-                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monitoring Eksekutif</div>
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Monitoring Eksekutif') }}</div>
 
                         <a href="{{ route('director.dashboard') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.dashboard') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.dashboard'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.dashboard') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
-                            <span>Dashboard</span>
+                            <span>{{ __('Dashboard') }}</span>
                         </a>
 
-                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Monitoring</div>
+                        <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Monitoring') }}</div>
 
                         <a href="{{ route('director.requests') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.requests*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.requests*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.requests*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <span>Semua Request</span>
+                            <span>{{ __('Semua Request') }}</span>
                         </a>
 
                         <a href="{{ route('director.stock') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.stock*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.stock*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.stock*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                            <span>Stok Barang</span>
+                            <span>{{ __('Stok Barang') }}</span>
                         </a>
 
                         <a href="{{ route('director.movements') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.movements*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.movements*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.movements*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
-                            <span>Perubahan Stok</span>
+                            <span>{{ __('Perubahan Stok') }}</span>
                         </a>
 
                         <a href="{{ route('director.timeline') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.timeline*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.timeline*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.timeline*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                            <span>Timeline Aktivitas</span>
+                            <span>{{ __('Timeline Aktivitas') }}</span>
                         </a>
 
                         <a href="{{ route('procurement-notes.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('procurement-notes.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('procurement-notes.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('procurement-notes.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                            <span>Riwayat Pengadaan</span>
+                            <span>{{ __('Riwayat Pengadaan') }}</span>
                         </a>
 
                         <a href="{{ route('director.issues') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('director.issues*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('director.issues*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.issues*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-                            <span>Masalah & Analisis</span>
+                            <span>{{ __('Masalah & Analisis') }}</span>
                         </a>
                     @endif
                 </nav>
@@ -440,11 +440,11 @@
                         <span class="text-[10px] text-slate-500 font-medium">{{ $roleDescription }}</span>
                     </div>
                 </div>
-                <form method="POST" action="{{ route('logout') }}" class="w-full" data-confirm="Yakin ingin keluar?" data-confirm-title="Keluar Akun" data-confirm-tone="danger" data-confirm-button="Keluar">
+                <form method="POST" action="{{ route('logout') }}" class="w-full" data-confirm="{{ __('Yakin ingin keluar?') }}" data-confirm-title="{{ __('Keluar Akun') }}" data-confirm-tone="danger" data-confirm-button="{{ __('Keluar') }}">
                     @csrf
                     <button type="submit" class="flex w-full items-center gap-3 px-4 py-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg text-xs font-medium transition-all cursor-pointer">
                         <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                        <span>Keluar</span>
+                        <span>{{ __('Keluar') }}</span>
                     </button>
                 </form>
             </div>
@@ -456,15 +456,25 @@
                 <header class="flex h-16 shrink-0 items-center justify-between gap-2 border-b border-slate-200 bg-white px-4 lg:px-8">
                     <div class="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
                         <!-- Hamburger button (mobile only) -->
-                        <button id="hamburgerBtn" onclick="openSidebar()" class="touch-target -ml-2 shrink-0 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:hidden" aria-label="Buka menu" aria-controls="sidebar" aria-expanded="false">
+                        <button id="hamburgerBtn" onclick="openSidebar()" class="touch-target -ml-2 shrink-0 rounded-lg p-2 text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-900 lg:hidden" aria-label="{{ __('Buka menu') }}" aria-controls="sidebar" aria-expanded="false">
                             <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         </button>
-                        <h1 class="truncate text-sm font-semibold text-slate-900 sm:text-base lg:text-lg">{{ $headerTitle ?? 'Selamat Datang' }}</h1>
+                        <h1 class="truncate text-sm font-semibold text-slate-900 sm:text-base lg:text-lg">{{ $headerTitle ?? __('Selamat Datang') }}</h1>
                     </div>
                     
                     <!-- Area Kanan Header (Notifikasi Dinamis & Profil Peran) -->
                     <div class="flex shrink-0 items-center gap-1 sm:gap-2 md:gap-4">
-                        <a href="{{ route('help.index') }}" aria-label="Bantuan" title="Bantuan" class="touch-target flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600">?</a>
+                        <a href="{{ route('help.index') }}" aria-label="{{ __('Bantuan') }}" title="{{ __('Bantuan') }}" class="touch-target flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-sm font-bold text-slate-500 transition hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-600">?</a>
+                        <form method="POST" action="{{ route('language.switch') }}" class="flex h-10 items-center gap-1.5 rounded-full border border-slate-200 bg-white px-2 sm:px-3">
+                            @csrf
+                            <label for="lang-select" class="sr-only">{{ __('Bahasa') }}</label>
+                            <svg class="shrink-0 text-slate-500" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path stroke-linecap="round" stroke-linejoin="round" d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            <select id="lang-select" name="locale" onchange="this.form.submit()" class="max-w-[5.5rem] cursor-pointer border-0 bg-transparent py-1 pl-0 pr-5 text-xs font-medium text-slate-600 focus:outline-none focus:ring-0 sm:max-w-[6.5rem]">
+                                @foreach (config('language.supported') as $code => $name)
+                                    <option value="{{ $code }}" @selected(app()->getLocale() === $code)>{{ $name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
                         
                         <!-- NOTIFIKASI DROPDOWN -->
                         <x-notifications-dropdown />
@@ -505,13 +515,13 @@
                     <svg class="text-red-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
                 </div>
                 <div class="min-w-0 flex-1">
-                    <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">Konfirmasi</h3>
-                    <p id="confirmModalMessage" class="text-sm text-slate-600 mt-1.5 leading-relaxed">Apakah Anda yakin?</p>
+                    <h3 id="confirmModalTitle" class="text-base font-bold text-slate-900">{{ __('Konfirmasi') }}</h3>
+                    <p id="confirmModalMessage" class="text-sm text-slate-600 mt-1.5 leading-relaxed">{{ __('Apakah Anda yakin?') }}</p>
                 </div>
             </div>
             <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-end gap-3">
-                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded-xl font-medium transition-colors cursor-pointer">Batal</button>
-                <button type="button" id="confirmModalBtn" onclick="confirmModalAction()" class="px-5 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors cursor-pointer">Lanjutkan</button>
+                <button type="button" onclick="closeConfirmModal()" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-200 rounded-xl font-medium transition-colors cursor-pointer">{{ __('Batal') }}</button>
+                <button type="button" id="confirmModalBtn" onclick="confirmModalAction()" class="px-5 py-2 text-sm bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-colors cursor-pointer">{{ __('Lanjutkan') }}</button>
             </div>
         </div>
     </div>
@@ -648,8 +658,8 @@
             _confirmSubmitter = submitter || null;
             _confirmOpener = document.activeElement;
             var tone = opts.tone || 'danger';
-            var title = opts.title || 'Konfirmasi';
-            var button = opts.button || 'Lanjutkan';
+            var title = opts.title || @json(__('Konfirmasi'));
+            var button = opts.button || @json(__('Lanjutkan'));
             var ts = _toneStyles[tone] || _toneStyles.danger;
 
             document.getElementById('confirmModalTitle').textContent = title;
@@ -730,9 +740,9 @@
 
             e.preventDefault();
             openConfirmModal(form, form.getAttribute('data-confirm'), {
-                title: form.getAttribute('data-confirm-title') || 'Konfirmasi',
+                title: form.getAttribute('data-confirm-title') || @json(__('Konfirmasi')),
                 tone: form.getAttribute('data-confirm-tone') || 'danger',
-                button: form.getAttribute('data-confirm-button') || 'Lanjutkan',
+                button: form.getAttribute('data-confirm-button') || @json(__('Lanjutkan')),
             }, e.submitter);
         });
 
@@ -744,7 +754,7 @@
                 }
                 if (_openModals.length > 0) {
                     var modal = _openModals[_openModals.length - 1];
-                    var closeButton = modal.querySelector('button[aria-label="Tutup"]');
+                    var closeButton = modal.querySelector('button[aria-label="' + @json(__('Tutup')) + '"]');
                     if (closeButton) closeButton.click();
                     else closeModal(modal.id);
                     return;

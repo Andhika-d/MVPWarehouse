@@ -4,21 +4,21 @@
 @endphp
 
 <div class="relative">
-    <button type="button" id="notifToggle" class="touch-target relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900" aria-label="Buka notifikasi" aria-controls="notifPanel" aria-expanded="false">
+    <button type="button" id="notifToggle" class="touch-target relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900" aria-label="{{ __('Buka notifikasi') }}" aria-controls="notifPanel" aria-expanded="false">
         <span id="notifBadge" class="{{ $initialUnread > 0 ? '' : 'hidden' }} absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white ring-2 ring-white transition-transform" aria-live="polite">{{ $initialUnread > 0 ? $initialUnread : '' }}</span>
         <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
     </button>
 
     <div id="notifPanel" class="fixed left-4 right-4 z-50 hidden max-h-[calc(100dvh-5rem)] overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xl sm:absolute sm:left-auto sm:right-0 sm:top-full sm:mt-1 sm:w-80" role="region" aria-labelledby="notifTitle" tabindex="-1">
         <div class="p-4 border-b border-slate-100 flex items-center justify-between">
-            <h3 id="notifTitle" class="text-sm font-semibold text-slate-900">Notifikasi</h3>
-            <button type="button" id="notifMarkAllRead" class="{{ $initialUnread > 0 ? '' : 'hidden' }} min-h-10 rounded-lg px-2 text-xs font-semibold text-corpblue-600 hover:bg-corpblue-50">Tandai semua dibaca</button>
+            <h3 id="notifTitle" class="text-sm font-semibold text-slate-900">{{ __('Notifikasi') }}</h3>
+            <button type="button" id="notifMarkAllRead" class="{{ $initialUnread > 0 ? '' : 'hidden' }} min-h-10 rounded-lg px-2 text-xs font-semibold text-corpblue-600 hover:bg-corpblue-50">{{ __('Tandai semua dibaca') }}</button>
         </div>
 
         <div id="notifList" class="notification-list overflow-y-auto divide-y divide-slate-50">
             @forelse($initialNotifications as $notification)
                 @php
-                    $data = $notification->data;
+                    $data = \App\Support\NotificationText::resolve($notification->data);
                     $type = $data['type'] ?? 'info';
                     $styles = [
                         'new_request' => ['dot' => 'bg-blue-500', 'badge' => 'bg-blue-50 text-blue-700'],
@@ -35,15 +35,15 @@
                         <div class="flex items-start space-x-3">
                             <div class="w-2 h-2 mt-1.5 {{ $styles['dot'] }} rounded-full shrink-0 {{ $notification->read_at ? '' : 'animate-pulse' }}"></div>
                             <div class="flex-1 min-w-0">
-                                <p class="text-xs font-semibold {{ $styles['badge'] }} px-2 py-0.5 rounded w-max mb-1">{{ $data['title'] ?? 'Notifikasi' }}</p>
+                                <p class="text-xs font-semibold {{ $styles['badge'] }} px-2 py-0.5 rounded w-max mb-1">{{ $data['title'] ?? __('Notifikasi') }}</p>
                                 <p class="text-xs text-slate-600 leading-normal">{{ $data['message'] ?? '' }}</p>
-                                <span class="text-[10px] text-slate-400 block mt-1">{{ $notification->created_at->diffForHumans(['locale' => 'id']) }}</span>
+                                <span class="text-[10px] text-slate-400 block mt-1">{{ $notification->created_at->diffForHumans(['locale' => app()->getLocale()]) }}</span>
                             </div>
                         </div>
                     </button>
                 </form>
             @empty
-                <p class="text-xs text-slate-400 py-8 text-center">Tidak ada notifikasi.</p>
+                <p class="text-xs text-slate-400 py-8 text-center">{{ __('Tidak ada notifikasi.') }}</p>
             @endforelse
         </div>
         <p id="notifStatus" class="sr-only" aria-live="polite"></p>
@@ -63,6 +63,21 @@
         completed:   { dot: 'bg-indigo-500', badge: 'bg-indigo-50 text-indigo-700' },
     };
     const DEFAULT_STYLE = { dot: 'bg-slate-400', badge: 'bg-slate-100 text-slate-600' };
+    const NOTIFICATION_TEXT = {
+        empty: @json(__('Tidak ada notifikasi.')),
+        fallbackTitle: @json(__('Notifikasi')),
+        justNow: @json(__('baru saja')),
+        minutesAgo: @json(__(':count menit yang lalu')),
+        hoursAgo: @json(__(':count jam yang lalu')),
+        daysAgo: @json(__(':count hari yang lalu')),
+        loadError: @json(__('Gagal memuat notifikasi.')),
+        updateError: @json(__('Notifikasi belum dapat diperbarui.')),
+        markReadError: @json(__('Gagal menandai notifikasi.')),
+        statusUpdateError: @json(__('Status notifikasi belum dapat diperbarui.')),
+        updating: @json(__('Memperbarui notifikasi.')),
+        allRead: @json(__('Semua notifikasi ditandai sudah dibaca.')),
+        markAllError: @json(__('Gagal menandai semua notifikasi.')),
+    };
 
     let prevUnreadCount = {{ $initialUnread }};
     let lastPoll = Date.now();
@@ -76,13 +91,13 @@
 
     function timeAgo(isoString) {
         const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000);
-        if (diff < 60) return 'baru saja';
+        if (diff < 60) return NOTIFICATION_TEXT.justNow;
         const mins = Math.floor(diff / 60);
-        if (mins < 60) return mins + ' menit yang lalu';
+        if (mins < 60) return NOTIFICATION_TEXT.minutesAgo.replace(':count', mins);
         const hours = Math.floor(mins / 60);
-        if (hours < 24) return hours + ' jam yang lalu';
+        if (hours < 24) return NOTIFICATION_TEXT.hoursAgo.replace(':count', hours);
         const days = Math.floor(hours / 24);
-        return days + ' hari yang lalu';
+        return NOTIFICATION_TEXT.daysAgo.replace(':count', days);
     }
 
     function escapeHtml(text) {
@@ -101,7 +116,7 @@
                 '<div class="flex items-start space-x-3">' +
                     '<div class="w-2 h-2 mt-1.5 ' + s.dot + ' rounded-full shrink-0 ' + (unread ? 'animate-pulse' : '') + '"></div>' +
                     '<div class="flex-1 min-w-0">' +
-                        '<p class="text-xs font-semibold ' + s.badge + ' px-2 py-0.5 rounded w-max mb-1">' + escapeHtml(n.data.title || 'Notifikasi') + '</p>' +
+                        '<p class="text-xs font-semibold ' + s.badge + ' px-2 py-0.5 rounded w-max mb-1">' + escapeHtml(n.data.title || NOTIFICATION_TEXT.fallbackTitle) + '</p>' +
                         '<p class="text-xs text-slate-600 leading-normal">' + escapeHtml(n.data.message || '') + '</p>' +
                         '<span class="text-[10px] text-slate-400 block mt-1">' + timeAgo(n.created_at) + '</span>' +
                     '</div>' +
@@ -130,7 +145,7 @@
     function poll() {
         return fetch('/notifications/poll', { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
             .then(function (r) {
-                if (!r.ok) throw new Error('Gagal memuat notifikasi.');
+                if (!r.ok) throw new Error(NOTIFICATION_TEXT.loadError);
                 return r.json();
             })
             .then(function (data) {
@@ -140,7 +155,7 @@
                 var preserveFocusedItem = focusedElement !== panel && panel.contains(focusedElement);
                 if (!preserveFocusedItem) {
                     if (data.notifications.length === 0) {
-                        list.innerHTML = '<p class="text-xs text-slate-500 py-8 text-center">Tidak ada notifikasi.</p>';
+                        list.innerHTML = '<p class="text-xs text-slate-500 py-8 text-center">' + escapeHtml(NOTIFICATION_TEXT.empty) + '</p>';
                     } else {
                         list.innerHTML = data.notifications.map(renderNotification).join('');
                         bindNotifClicks();
@@ -150,7 +165,7 @@
                 lastPoll = Date.now();
                 status.textContent = '';
             })
-            .catch(function () { status.textContent = 'Notifikasi belum dapat diperbarui.'; });
+            .catch(function () { status.textContent = NOTIFICATION_TEXT.updateError; });
     }
 
     function markAsRead(notifId, formEl) {
@@ -159,7 +174,7 @@
             headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: '_token=' + encodeURIComponent(CSRF_TOKEN)
         }).then(function (response) {
-            if (!response.ok) throw new Error('Gagal menandai notifikasi.');
+            if (!response.ok) throw new Error(NOTIFICATION_TEXT.markReadError);
             return response.json();
         }).then(function (data) {
             if (formEl) {
@@ -169,7 +184,7 @@
             }
             return data;
         }).catch(function () {
-            status.textContent = 'Status notifikasi belum dapat diperbarui.';
+            status.textContent = NOTIFICATION_TEXT.statusUpdateError;
             return null;
         });
     }
@@ -177,17 +192,17 @@
     function markAllAsRead() {
         if (document.activeElement === markAllBtn) panel.focus();
         markAllBtn.disabled = true;
-        status.textContent = 'Memperbarui notifikasi.';
+        status.textContent = NOTIFICATION_TEXT.updating;
         fetch('/notifications/read-all', {
             method: 'POST',
             headers: { 'X-CSRF-TOKEN': CSRF_TOKEN, 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/x-www-form-urlencoded' },
             body: '_token=' + encodeURIComponent(CSRF_TOKEN)
         }).then(function (response) {
-            if (!response.ok) throw new Error('Gagal menandai semua notifikasi.');
-            status.textContent = 'Semua notifikasi ditandai sudah dibaca.';
+            if (!response.ok) throw new Error(NOTIFICATION_TEXT.markAllError);
+            status.textContent = NOTIFICATION_TEXT.allRead;
             return poll();
         }).catch(function () {
-            status.textContent = 'Notifikasi belum dapat diperbarui.';
+            status.textContent = NOTIFICATION_TEXT.updateError;
         }).finally(function () {
             markAllBtn.disabled = false;
         });

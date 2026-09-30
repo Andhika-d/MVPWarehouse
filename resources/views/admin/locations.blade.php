@@ -1,4 +1,4 @@
-<x-layout :title="'Lokasi Rak — THI2-WAREHOUSE'" :headerTitle="'Tata Letak Rak'">
+<x-layout :title="__('Lokasi Rak') . ' — THI2-WAREHOUSE'" :headerTitle="__('Tata Letak Rak')">
     <div class="space-y-6">
 
         {{-- Stats --}}
@@ -9,7 +9,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-slate-900">{{ $totalLocations }}</p>
-                    <p class="text-xs text-slate-500">Total Slot</p>
+                    <p class="text-xs text-slate-500">{{ __('Total Slot') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -18,7 +18,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-emerald-600">{{ $totalEmpty }}</p>
-                    <p class="text-xs text-slate-500">Kosong</p>
+                    <p class="text-xs text-slate-500">{{ __('Kosong') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -27,7 +27,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-amber-600">{{ $totalOccupied }}</p>
-                    <p class="text-xs text-slate-500">Terisi</p>
+                    <p class="text-xs text-slate-500">{{ __('Terisi') }}</p>
                 </div>
             </div>
         </div>
@@ -48,15 +48,15 @@
             <form method="GET" action="{{ route('admin.locations.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
                 <input type="hidden" name="rack" value="{{ $activeRack }}">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari kode, sub lokasi, atau nama barang..." class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari kode, sub lokasi, atau nama barang...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
                 <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">Semua Status</option>
-                    <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>Terisi</option>
-                    <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>Kosong</option>
+                    <option value="all">{{ __('Semua Status') }}</option>
+                    <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>{{ __('Terisi') }}</option>
+                    <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>{{ __('Kosong') }}</option>
                 </select>
                 @if(request()->filled('search') || (request()->filled('status') && request('status') !== 'all'))
-                <a href="{{ route('admin.locations.index', ['rack' => $activeRack]) }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">Reset</a>
+                <a href="{{ route('admin.locations.index', ['rack' => $activeRack]) }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
             </form>
         </div>
@@ -67,12 +67,12 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Kode Tag</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Lokasi Rak</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Sub Lokasi</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">Status</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Barang</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">Detail</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Kode Tag') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Lokasi Rak') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Sub Lokasi') }}</th>
+                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Status') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Barang') }}</th>
+                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Detail') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -107,16 +107,16 @@
                                 @forelse($loc->items as $item)
                                 <div>
                                     {{ $item->size ?: '' }} &middot; {{ $item->stock }} {{ $item->unit }}
-                                    @if($loc->items->count() > 1)<span class="text-indigo-600 font-semibold ml-1">(ditumpuk)</span>@endif
+                                    @if($loc->items->count() > 1)<span class="text-indigo-600 font-semibold ml-1">({{ __('ditumpuk') }})</span>@endif
                                 </div>
                                 @empty
-                                Slot tersedia
+                                {{ __('Slot tersedia') }}
                                 @endforelse
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-400">Tidak ada data lokasi.</td>
+                            <td colspan="6" class="px-4 py-12 text-center text-sm text-slate-400">{{ __('Tidak ada data lokasi.') }}</td>
                         </tr>
                         @endforelse
                     </tbody>
