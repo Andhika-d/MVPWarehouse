@@ -14,5 +14,5 @@
     data-mode="{{ $isCancellation ? 'cancel' : 'close' }}"
     {{ $attributes->class(['action-link', $isCancellation ? 'action-link--danger' : 'action-link--warning']) }}
 >
-    {{ $isCancellation ? 'Batalkan Request' : 'Tutup Sisa' }}
+    {{ $isCancellation ? __('Batalkan Request') : __('Tutup Sisa') }}
 </button>

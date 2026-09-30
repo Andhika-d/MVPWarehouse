@@ -151,6 +151,13 @@
             var itemOptions = Array.from(document.querySelectorAll('#itemOptions > div'));
             var activeItemIndex = -1;
 
+            var ITEM_PICKER_TEXT = {
+                noMatch: @json(__('Tidak ada barang yang cocok.')),
+                noLocation: @json(__('Tanpa lokasi')),
+                rak: @json(__('Rak')),
+                stok: @json(__('Stok')),
+            };
+
             function renderItemResults(query) {
                 itemResults.innerHTML = '';
                 var needle = query.trim().toLowerCase();
@@ -158,7 +165,7 @@
                     return [opt.dataset.name, opt.dataset.size, opt.dataset.code, opt.dataset.rack, opt.dataset.subLocation].join(' ').toLowerCase().includes(needle);
                 });
                 if (!matches.length) {
-                    itemResults.innerHTML = '<div class="px-3 py-3 text-xs text-slate-400">Tidak ada barang yang cocok.</div>';
+                    itemResults.innerHTML = '<div class="px-3 py-3 text-xs text-slate-400">' + ITEM_PICKER_TEXT.noMatch + '</div>';
                     return;
                 }
                 matches.slice(0, 50).forEach(function (opt, index) {
@@ -167,10 +174,10 @@
                     button.dataset.index = index;
                     button.className = 'item-result w-full text-left px-3 py-2.5 border-b border-slate-100 last:border-0 hover:bg-corpblue-50 cursor-pointer';
                     var name = opt.dataset.name + (opt.dataset.size ? ' (' + opt.dataset.size + ')' : '');
-                    var location = opt.dataset.code || 'Tanpa lokasi';
-                    if (opt.dataset.rack) location += ' · Rak ' + opt.dataset.rack;
+                    var location = opt.dataset.code || ITEM_PICKER_TEXT.noLocation;
+                    if (opt.dataset.rack) location += ' · ' + ITEM_PICKER_TEXT.rak + ' ' + opt.dataset.rack;
                     if (opt.dataset.subLocation) location += ' · ' + opt.dataset.subLocation;
-                    button.innerHTML = '<span class="block text-sm font-semibold text-slate-800">' + name + '</span><span class="mt-0.5 block text-[11px] text-slate-400">' + location + ' · Stok ' + opt.dataset.stock + ' ' + opt.dataset.unit + '</span>';
+                    button.innerHTML = '<span class="block text-sm font-semibold text-slate-800">' + name + '</span><span class="mt-0.5 block text-[11px] text-slate-400">' + location + ' · ' + ITEM_PICKER_TEXT.stok + ' ' + opt.dataset.stock + ' ' + opt.dataset.unit + '</span>';
                     button.addEventListener('click', function () { selectItem(opt); });
                     itemResults.appendChild(button);
                 });
@@ -180,12 +187,12 @@
                 itemSelect.value = opt.dataset.id;
                 itemSearch.value = opt.dataset.name + (opt.dataset.size ? ' (' + opt.dataset.size + ')' : '');
                 document.getElementById('itemSelectedName').textContent = itemSearch.value;
-                document.getElementById('itemSelectedMeta').textContent = (opt.dataset.code || 'Tanpa lokasi') + (opt.dataset.subLocation ? ' · ' + opt.dataset.subLocation : '') + ' · Stok ' + opt.dataset.stock + ' ' + opt.dataset.unit;
+                document.getElementById('itemSelectedMeta').textContent = (opt.dataset.code || ITEM_PICKER_TEXT.noLocation) + (opt.dataset.subLocation ? ' · ' + opt.dataset.subLocation : '') + ' · ' + ITEM_PICKER_TEXT.stok + ' ' + opt.dataset.stock + ' ' + opt.dataset.unit;
                 itemSelected.classList.remove('hidden');
                 itemResults.classList.add('hidden');
                 var detail = document.getElementById('itemDetail');
                 document.getElementById('itemFromCode').textContent = opt.dataset.code || '—';
-                document.getElementById('itemFromRack').textContent = opt.dataset.rack ? '(Rak ' + opt.dataset.rack + ')' : '';
+                document.getElementById('itemFromRack').textContent = opt.dataset.rack ? '(' + ITEM_PICKER_TEXT.rak + ' ' + opt.dataset.rack + ')' : '';
                 document.getElementById('itemFromSub').textContent = opt.dataset.subLocation || '—';
                 document.getElementById('itemStock').textContent = opt.dataset.stock + ' ' + opt.dataset.unit;
                 detail.classList.remove('hidden');
@@ -252,7 +259,7 @@
                                     targetId.value = slot.id;
                                     searchInput.value = slot.code + ' · ' + slot.sub_location;
                                     document.getElementById('slotSelectedCode').textContent = slot.code;
-                                    document.getElementById('slotSelectedRack').textContent = slot.rack ? '(Rak ' + slot.rack + ')' : '';
+                                    document.getElementById('slotSelectedRack').textContent = slot.rack ? '(' + @json(__('Rak')) + ' ' + slot.rack + ')' : '';
                                     document.getElementById('slotSelectedSub').textContent = slot.sub_location;
                                     document.getElementById('slotSelectedStatus').textContent = slot.status === 'Terisi' ? @json(__('Terisi')) : @json(__('Kosong'));
                                     document.getElementById('slotSelectedItems').textContent = slot.status === 'Terisi' ? ' (' + slot.items_count + ' ' + @json(__('barang')) + ')' : '';
