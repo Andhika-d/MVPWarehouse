@@ -18,7 +18,7 @@
         <div id="notifList" class="notification-list overflow-y-auto divide-y divide-slate-50">
             @forelse($initialNotifications as $notification)
                 @php
-                    $data = $notification->data;
+                    $data = \App\Support\NotificationText::resolve($notification->data);
                     $type = $data['type'] ?? 'info';
                     $styles = [
                         'new_request' => ['dot' => 'bg-blue-500', 'badge' => 'bg-blue-50 text-blue-700'],

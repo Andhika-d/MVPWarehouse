@@ -19,12 +19,15 @@ class RequestApprovedNotification extends Notification
     public function toArray(object $notifiable): array
     {
         return [
-            'title' => 'Permintaan Disetujui',
-            'message' => 'Permintaan ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
-                . ' ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' telah disetujui HR dan siap dibelanjakan.',
+            'title_key' => 'Permintaan Disetujui',
+            'message_key' => 'Permintaan :quantity :unit :item telah disetujui HR dan siap dibelanjakan.',
+            'params' => [
+                'quantity' => $this->stockRequest->quantity,
+                'unit' => $this->stockRequest->unit,
+                'item' => $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang'),
+            ],
             'type' => 'approved',
-            'url' => '/gudang/history/' . $this->stockRequest->id,
+            'url' => '/gudang/history/'.$this->stockRequest->id,
         ];
     }
 }

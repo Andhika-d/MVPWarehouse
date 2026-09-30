@@ -21,12 +21,18 @@ class RequestRejectedNotification extends Notification
         $note = $this->stockRequest->review_note;
 
         return [
-            'title' => 'Permintaan Ditolak',
-            'message' => 'Permintaan ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
-                . ' ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' ditolak HR.' . ($note ? ' Alasan: ' . $note : ''),
+            'title_key' => 'Permintaan Ditolak',
+            'message_key' => $note
+                ? 'Permintaan :quantity :unit :item ditolak HR. Alasan: :note'
+                : 'Permintaan :quantity :unit :item ditolak HR.',
+            'params' => [
+                'quantity' => $this->stockRequest->quantity,
+                'unit' => $this->stockRequest->unit,
+                'item' => $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang'),
+                'note' => $note ?? '',
+            ],
             'type' => 'rejected',
-            'url' => '/gudang/history/' . $this->stockRequest->id,
+            'url' => '/gudang/history/'.$this->stockRequest->id,
         ];
     }
 }

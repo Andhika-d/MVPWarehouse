@@ -21,12 +21,18 @@ class RequestDelayedNotification extends Notification
         $note = $this->stockRequest->review_note;
 
         return [
-            'title' => 'Permintaan Ditunda',
-            'message' => 'Permintaan ' . $this->stockRequest->quantity . ' ' . $this->stockRequest->unit
-                . ' ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' ditunda oleh HR (Pending).' . ($note ? ' Catatan: ' . $note : ''),
+            'title_key' => 'Permintaan Ditunda',
+            'message_key' => $note
+                ? 'Permintaan :quantity :unit :item ditunda oleh HR (Pending). Catatan: :note'
+                : 'Permintaan :quantity :unit :item ditunda oleh HR (Pending).',
+            'params' => [
+                'quantity' => $this->stockRequest->quantity,
+                'unit' => $this->stockRequest->unit,
+                'item' => $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang'),
+                'note' => $note ?? '',
+            ],
             'type' => 'delayed',
-            'url' => '/gudang/history/' . $this->stockRequest->id,
+            'url' => '/gudang/history/'.$this->stockRequest->id,
         ];
     }
 }

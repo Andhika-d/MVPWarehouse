@@ -18,17 +18,24 @@ class RequestClosedNotification extends Notification
 
     public function toArray(object $notifiable): array
     {
-        $status = $this->stockRequest->status === 'Ditutup Sebagian' ? 'Ditutup Sebagian' : 'Dibatalkan';
-        $remaining = $this->stockRequest->remainingQuantity();
+        $partial = $this->stockRequest->status === 'Ditutup Sebagian';
+        $status = $partial ? 'Ditutup Sebagian' : 'Dibatalkan';
+        $note = $this->stockRequest->close_note;
 
         return [
-            'title' => $status,
-            'message' => 'Sisa ' . $remaining . ' ' . $this->stockRequest->unit
-                . ' dari ' . ($this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? 'Barang')
-                . ' ditutup. Status:' . $status . '.'
-                . ($this->stockRequest->close_note ? ' Alasan: ' . $this->stockRequest->close_note : ''),
-            'type' => $this->stockRequest->status === 'Ditutup Sebagian' ? 'closed' : 'cancelled',
-            'url' => '/director/requests/' . $this->stockRequest->id,
+            'title_key' => $status,
+            'message_key' => $note
+                ? 'Sisa :remaining :unit dari :item ditutup. Status: :status. Alasan: :note'
+                : 'Sisa :remaining :unit dari :item ditutup. Status: :status.',
+            'params' => [
+                'remaining' => $this->stockRequest->remainingQuantity(),
+                'unit' => $this->stockRequest->unit,
+                'item' => $this->stockRequest->item?->name ?? $this->stockRequest->item_name ?? __('Barang'),
+                'status' => $status,
+                'note' => $note ?? '',
+            ],
+            'type' => $partial ? 'closed' : 'cancelled',
+            'url' => '/director/requests/'.$this->stockRequest->id,
         ];
     }
 }

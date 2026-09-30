@@ -9,6 +9,7 @@ use App\Notifications\NewRequestNotification;
 use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
+use App\Support\NotificationText;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\MessageBag;
@@ -100,7 +101,7 @@ class NotificationTest extends TestCase
 
         $notification = $gudang->notifications()->where('type', RequestRejectedNotification::class)->first();
         $this->assertNotNull($notification);
-        $this->assertStringContainsString('Stok kosong', $notification->data['message']);
+        $this->assertStringContainsString('Stok kosong', NotificationText::resolve($notification->data)['message']);
     }
 
     public function test_delaying_request_notifies_requester(): void
