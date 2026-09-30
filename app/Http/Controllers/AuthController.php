@@ -27,7 +27,7 @@ class AuthController extends Controller
 
             if (! $user->is_active) {
                 Auth::logout();
-                return back()->withErrors(['email' => 'Email atau password yang Anda masukkan tidak sesuai. Jika membutuhkan bantuan, hubungi administrator.']);
+                return back()->withErrors(['email' => __('Email atau password yang Anda masukkan tidak sesuai. Jika membutuhkan bantuan, hubungi administrator.')]);
             }
 
             $request->session()->regenerate();
@@ -61,7 +61,7 @@ class AuthController extends Controller
             return redirect()->intended('/gudang/dashboard');
         }
 
-        return back()->withErrors(['email' => 'Email atau password yang Anda masukkan tidak sesuai. Pastikan data sudah benar.']);
+        return back()->withErrors(['email' => __('Email atau password yang Anda masukkan tidak sesuai. Pastikan data sudah benar.')]);
     }
 
     public function logout(Request $request)
@@ -101,7 +101,7 @@ class AuthController extends Controller
         $user = Auth::user();
 
         if (! Hash::check($data['current_password'], $user->password)) {
-            return back()->withErrors(['current_password' => 'Password saat ini tidak sesuai.']);
+            return back()->withErrors(['current_password' => __('Password saat ini tidak sesuai.')]);
         }
 
         $user->update([
@@ -117,7 +117,7 @@ class AuthController extends Controller
             'details' => 'User ' . $user->name . ' mengubah password sendiri',
         ]);
 
-        return redirect($this->homeFor($user->role))->with('success', 'Password berhasil diubah.');
+        return redirect($this->homeFor($user->role))->with('success', __('Password berhasil diubah.'));
     }
 
     protected function homeFor(string $role): string

@@ -122,7 +122,7 @@ class AdminController extends Controller
             $location = StorageLocation::lockForUpdate()->find($data['storage_location_id']);
 
             if ($location->isOccupied()) {
-                return back()->with('error', 'Lokasi '.$location->code.' sudah terisi.');
+                return back()->with('error', __('Lokasi :code sudah terisi.', ['code' => $location->code]));
             }
 
             $item = Item::create($data);
@@ -137,7 +137,7 @@ class AdminController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil ditambahkan.');
+        return redirect()->route('admin.items.index')->with('success', __('Barang berhasil ditambahkan.'));
     }
 
     public function updateItem(Request $request, Item $item)
@@ -158,7 +158,7 @@ class AdminController extends Controller
             'details' => 'Mengubah data barang '.$item->name,
         ]);
 
-        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil diperbarui.');
+        return redirect()->route('admin.items.index')->with('success', __('Barang berhasil diperbarui.'));
     }
 
     public function adjustStock(Request $request, Item $item)
@@ -198,7 +198,7 @@ class AdminController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.items.index')->with('success', 'Stok '.$item->name.' berhasil disesuaikan.');
+        return redirect()->route('admin.items.index')->with('success', __('Stok :name berhasil disesuaikan.', ['name' => $item->name]));
     }
 
     public function destroyItem(Item $item)
@@ -222,7 +222,7 @@ class AdminController extends Controller
             'details' => 'Menghapus barang '.$name,
         ]);
 
-        return redirect()->route('admin.items.index')->with('success', 'Barang berhasil dihapus.');
+        return redirect()->route('admin.items.index')->with('success', __('Barang berhasil dihapus.'));
     }
 
     // â”€â”€ Import Excel â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -269,7 +269,7 @@ class AdminController extends Controller
         $columns = $this->mapImportHeaders($headers);
 
         if ($columns['name'] === null) {
-            return back()->with('error', 'Kolom "Nama Barang" tidak ditemukan di file Excel.');
+            return back()->with('error', __('Kolom "Nama Barang" tidak ditemukan di file Excel.'));
         }
 
         $preview = [];
@@ -339,7 +339,7 @@ class AdminController extends Controller
     {
         $sessionData = session('import_preview');
         if (! $sessionData || ! isset($sessionData['rack'], $sessionData['items'])) {
-            return redirect()->route('admin.import.index')->with('error', 'Sesi import kedaluwarsa. Silakan upload ulang.');
+            return redirect()->route('admin.import.index')->with('error', __('Sesi import kedaluwarsa. Silakan upload ulang.'));
         }
 
         $rack = $sessionData['rack'];
@@ -430,9 +430,9 @@ class AdminController extends Controller
             'details' => 'Mengimpor '.$imported.' barang dan '.$locationsCreated.' lokasi kosong ke Rak '.$rack,
         ]);
 
-        $message = $imported.' barang berhasil diimpor ke Rak '.$rack.'.';
+        $message = __(':count barang berhasil diimpor ke Rak :rack.', ['count' => $imported, 'rack' => $rack]);
         if ($locationsCreated > 0) {
-            $message .= ' '.$locationsCreated.' lokasi kosong juga dibuat.';
+            $message .= ' '.__(':count lokasi kosong juga dibuat.', ['count' => $locationsCreated]);
         }
 
         return redirect()->route('admin.items.index')->with('success', $message);
@@ -505,7 +505,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         $export = new LocationChangeExport($rows);
@@ -520,7 +520,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'admin')->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->exportPreview(
@@ -541,7 +541,7 @@ class AdminController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return LocationChangePdf::render(
@@ -557,7 +557,7 @@ class AdminController extends Controller
     public function approveLocationChange(LocationChangeRequest $change, Request $httpRequest)
     {
         if (! $change->isPending()) {
-            return back()->with('error', 'Permintaan ini sudah diproses.');
+            return back()->with('error', __('Permintaan ini sudah diproses.'));
         }
 
         $data = $httpRequest->validate([
@@ -641,10 +641,10 @@ class AdminController extends Controller
         });
 
         return match ($result) {
-            'already_processed' => back()->with('error', 'Permintaan ini sudah diproses.'),
-            'location_changed' => back()->with('error', 'Lokasi item sudah berubah sejak pengajuan dibuat.'),
-            'invalid_location' => back()->with('error', 'Lokasi tidak valid.'),
-            'invalid_swap_item' => back()->with('error', 'Pilih barang di slot tujuan yang akan ditukar.'),
+            'already_processed' => back()->with('error', __('Permintaan ini sudah diproses.')),
+            'location_changed' => back()->with('error', __('Lokasi item sudah berubah sejak pengajuan dibuat.')),
+            'invalid_location' => back()->with('error', __('Lokasi tidak valid.')),
+            'invalid_swap_item' => back()->with('error', __('Pilih barang di slot tujuan yang akan ditukar.')),
             default => $this->finishLocationApproval($change, $result),
         };
     }
@@ -655,10 +655,10 @@ class AdminController extends Controller
 
         $details = 'Menyetujui ';
         $message = match ($result) {
-            'approved_move' => 'Pengajuan pemindahan lokasi berhasil diproses.',
-            'approved_swap' => 'Pengajuan pertukaran lokasi berhasil diproses.',
-            'approved_stack' => 'Pengajuan penumpukan lokasi berhasil diproses.',
-            default => 'Pengajuan lokasi berhasil diproses.',
+            'approved_move' => __('Pengajuan pemindahan lokasi berhasil diproses.'),
+            'approved_swap' => __('Pengajuan pertukaran lokasi berhasil diproses.'),
+            'approved_stack' => __('Pengajuan penumpukan lokasi berhasil diproses.'),
+            default => __('Pengajuan lokasi berhasil diproses.'),
         };
 
         if ($result === 'approved_move') {
@@ -673,7 +673,7 @@ class AdminController extends Controller
         } elseif ($result === 'approved_stack') {
             $details .= 'penumpukan: '.$change->item->name.' → '.$change->toLocation->code.' (ditumpuk dengan barang lain)';
         } else {
-            return back()->with('error', 'Pengajuan sudah diproses.');
+            return back()->with('error', __('Pengajuan sudah diproses.'));
         }
 
         AuditLog::create([
@@ -690,7 +690,7 @@ class AdminController extends Controller
     public function rejectLocationChange(LocationChangeRequest $change, Request $httpRequest)
     {
         if (! $change->isPending()) {
-            return back()->with('error', 'Permintaan ini sudah diproses.');
+            return back()->with('error', __('Permintaan ini sudah diproses.'));
         }
 
         $data = $httpRequest->validate([
@@ -707,7 +707,7 @@ class AdminController extends Controller
             'details' => 'Menolak perubahan lokasi item '.$change->item->name,
         ]);
 
-        return back()->with('success', 'Perubahan lokasi ditolak.');
+        return back()->with('success', __('Perubahan lokasi ditolak.'));
     }
 
     // â”€â”€ Users â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -762,9 +762,9 @@ class AdminController extends Controller
             'details' => 'Membuat akun '.$user->email,
         ]);
 
-        $message = 'Pengguna berhasil ditambahkan.';
+        $message = __('Pengguna berhasil ditambahkan.');
         if (blank($data['password'] ?? null)) {
-            $message .= ' Password sementara: '.$generatedPassword;
+            $message .= ' '.__('Password sementara: :password', ['password' => $generatedPassword]);
         }
 
         return redirect()->route('admin.users.index')->with('success', $message);
@@ -788,17 +788,17 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.users.index')
-            ->with('success', 'Password direset. Password sementara: '.$generatedPassword);
+            ->with('success', __('Password direset. Password sementara: :password', ['password' => $generatedPassword]));
     }
 
     public function toggleUserStatus(User $user)
     {
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Tidak bisa mengubah status akun sendiri.');
+            return back()->with('error', __('Tidak bisa mengubah status akun sendiri.'));
         }
 
         if ($user->is_active && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Tidak bisa menonaktifkan admin aktif terakhir.');
+            return back()->with('error', __('Tidak bisa menonaktifkan admin aktif terakhir.'));
         }
 
         $user->update(['is_active' => ! $user->is_active]);
@@ -811,7 +811,7 @@ class AdminController extends Controller
             'details' => ($user->is_active ? 'Mengaktifkan' : 'Menonaktifkan').' akun '.$user->email,
         ]);
 
-        return back()->with('success', 'Status akun berhasil diperbarui.');
+        return back()->with('success', __('Status akun berhasil diperbarui.'));
     }
 
     public function updateUserRole(Request $request, User $user)
@@ -821,11 +821,11 @@ class AdminController extends Controller
         ]);
 
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Tidak bisa mengubah peran akun sendiri.');
+            return back()->with('error', __('Tidak bisa mengubah peran akun sendiri.'));
         }
 
         if ($user->role === 'admin' && $user->is_active && $data['role'] !== 'admin' && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Tidak bisa mengubah peran admin aktif terakhir.');
+            return back()->with('error', __('Tidak bisa mengubah peran admin aktif terakhir.'));
         }
 
         $user->update(['role' => $data['role']]);
@@ -840,7 +840,7 @@ class AdminController extends Controller
             },
         ]);
 
-        return back()->with('success', 'Peran pengguna berhasil diperbarui.');
+        return back()->with('success', __('Peran pengguna berhasil diperbarui.'));
     }
 
     public function updateUserLocale(Request $request, User $user)
@@ -865,11 +865,11 @@ class AdminController extends Controller
     public function deleteUser(User $user)
     {
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Tidak bisa menghapus akun sendiri.');
+            return back()->with('error', __('Tidak bisa menghapus akun sendiri.'));
         }
 
         if ($user->role === 'admin' && $user->is_active && $this->isLastActiveAdmin($user)) {
-            return back()->with('error', 'Tidak bisa menghapus admin aktif terakhir.');
+            return back()->with('error', __('Tidak bisa menghapus admin aktif terakhir.'));
         }
 
         $email = $user->email;
@@ -883,7 +883,7 @@ class AdminController extends Controller
             'details' => 'Menghapus akun '.$email,
         ]);
 
-        return back()->with('success', 'Pengguna berhasil dihapus.');
+        return back()->with('success', __('Pengguna berhasil dihapus.'));
     }
 
     public function loginAs(User $user, Request $request)
@@ -891,15 +891,15 @@ class AdminController extends Controller
         abort_unless(Auth::user()->role === 'admin', 403);
 
         if ($user->id === Auth::id()) {
-            return back()->with('error', 'Tidak bisa login sebagai diri sendiri.');
+            return back()->with('error', __('Tidak bisa login sebagai diri sendiri.'));
         }
 
         if ($user->role === 'admin') {
-            return back()->with('error', 'Login sebagai hanya untuk akun non-admin.');
+            return back()->with('error', __('Login sebagai hanya untuk akun non-admin.'));
         }
 
         if (! $user->is_active) {
-            return back()->with('error', 'Akun target nonaktif.');
+            return back()->with('error', __('Akun target nonaktif.'));
         }
 
         $adminId = Auth::id();
@@ -985,7 +985,7 @@ class AdminController extends Controller
         $rows = $this->buildAuditExportRows($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         $export = new AuditLogExport($rows);
@@ -1000,7 +1000,7 @@ class AdminController extends Controller
         $rows = $this->buildAuditExportRows($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->exportPreview(
@@ -1067,7 +1067,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.dashboard')->with(
             'success',
-            $nowActive ? 'Developer Mode aktif.' : 'Developer Mode nonaktif.'
+            $nowActive ? __('Developer Mode aktif.') : __('Developer Mode nonaktif.')
         );
     }
 
@@ -1097,7 +1097,7 @@ class AdminController extends Controller
         }
 
         if (! is_file($dbPath)) {
-            return back()->with('error', 'Backup gagal: file database tidak ditemukan.');
+            return back()->with('error', __('Backup gagal: file database tidak ditemukan.'));
         }
 
         $dir = storage_path('app/backups');
@@ -1109,7 +1109,7 @@ class AdminController extends Controller
         $zip = new \ZipArchive;
 
         if ($zip->open($dir.'/'.$filename, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            return back()->with('error', 'Backup gagal: tidak dapat membuat arsip.');
+            return back()->with('error', __('Backup gagal: tidak dapat membuat arsip.'));
         }
 
         $zip->addFile($dbPath, 'database.sqlite');
@@ -1126,7 +1126,7 @@ class AdminController extends Controller
         ]);
 
         return redirect()->route('admin.backups.index')
-            ->with('success', 'Backup berhasil: '.$filename);
+            ->with('success', __('Backup berhasil: :filename', ['filename' => $filename]));
     }
 
     public function downloadBackup(string $file)
@@ -1143,7 +1143,7 @@ class AdminController extends Controller
     {
         $path = $this->resolveBackupPath($file);
         if ($path === null) {
-            return redirect()->route('admin.backups.index')->with('error', 'File backup tidak ditemukan.');
+            return redirect()->route('admin.backups.index')->with('error', __('File backup tidak ditemukan.'));
         }
 
         unlink($path);
@@ -1156,14 +1156,14 @@ class AdminController extends Controller
             'details' => 'Menghapus backup '.$file,
         ]);
 
-        return redirect()->route('admin.backups.index')->with('success', 'Backup berhasil dihapus.');
+        return redirect()->route('admin.backups.index')->with('success', __('Backup berhasil dihapus.'));
     }
 
     public function restoreBackup(string $file, Request $httpRequest)
     {
         $path = $this->resolveBackupPath($file);
         if ($path === null) {
-            return redirect()->route('admin.backups.index')->with('error', 'File backup tidak ditemukan.');
+            return redirect()->route('admin.backups.index')->with('error', __('File backup tidak ditemukan.'));
         }
 
         $dbPath = config('database.connections.sqlite.database');
@@ -1190,7 +1190,7 @@ class AdminController extends Controller
         if ($zip->open($path) !== true) {
             $this->deleteDir($tmpDir);
 
-            return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: arsip backup rusak.');
+            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: arsip backup rusak.'));
         }
 
         $zip->extractTo($tmpDir);
@@ -1200,13 +1200,13 @@ class AdminController extends Controller
         if (! is_file($extracted)) {
             $this->deleteDir($tmpDir);
 
-            return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: isi arsip tidak valid.');
+            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: isi arsip tidak valid.'));
         }
 
         if (! $this->isValidSqlite($extracted)) {
             $this->deleteDir($tmpDir);
 
-            return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: database backup rusak.');
+            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: database backup rusak.'));
         }
 
         $admin = Auth::user();
@@ -1220,7 +1220,7 @@ class AdminController extends Controller
         try {
             DB::connection()->getPdo()->query('SELECT 1');
         } catch (\Throwable) {
-            return redirect()->route('admin.backups.index')->with('error', 'Restore gagal: database hasil restore rusak.');
+            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: database hasil restore rusak.'));
         }
 
         AuditLog::create([
@@ -1236,7 +1236,7 @@ class AdminController extends Controller
             $httpRequest->session()->regenerate();
         }
 
-        return redirect()->route('admin.backups.index')->with('success', 'Database berhasil dipulihkan dari '.$file.'.');
+        return redirect()->route('admin.backups.index')->with('success', __('Database berhasil dipulihkan dari :name.', ['name' => $file]));
     }
 
     // â”€â”€ Reset Maintenance â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
@@ -1279,7 +1279,7 @@ class AdminController extends Controller
             'details' => 'Reset Master Barang: '.$count.' item dan seluruh lokasi di-reset.',
         ]);
 
-        return back()->with('success', 'Master Barang berhasil di-reset. '.$count.' item dihapus, seluruh lokasi dikosongkan.');
+        return back()->with('success', __('Master Barang berhasil di-reset. :count item dihapus, seluruh lokasi dikosongkan.', ['count' => $count]));
     }
 
     public function resetStockMovements()
@@ -1303,7 +1303,7 @@ class AdminController extends Controller
             'details' => 'Reset Pergerakan Stok: '.$count.' record dihapus. Stok seluruh item di-reset ke 0.',
         ]);
 
-        return back()->with('success', 'Pergerakan Stok berhasil di-reset. '.$count.' record dihapus. Stok seluruh item di-reset ke 0.');
+        return back()->with('success', __('Pergerakan Stok berhasil di-reset. :count record dihapus. Stok seluruh item di-reset ke 0.', ['count' => $count]));
     }
 
     public function resetStockRequests()
@@ -1327,7 +1327,7 @@ class AdminController extends Controller
             'details' => 'Reset Request Barang: '.$count.' request dihapus.',
         ]);
 
-        return back()->with('success', 'Request Barang berhasil di-reset. '.$count.' request dihapus.');
+        return back()->with('success', __('Request Barang berhasil di-reset. :count request dihapus.', ['count' => $count]));
     }
 
     public function resetLocationChanges()
@@ -1345,7 +1345,7 @@ class AdminController extends Controller
             'details' => 'Reset Pengajuan Lokasi: '.$count.' pengajuan dihapus.',
         ]);
 
-        return back()->with('success', 'Pengajuan Lokasi berhasil di-reset. '.$count.' pengajuan dihapus.');
+        return back()->with('success', __('Pengajuan Lokasi berhasil di-reset. :count pengajuan dihapus.', ['count' => $count]));
     }
 
     // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€

@@ -132,7 +132,7 @@ class RequestController extends Controller
             Notification::send($hrUsers, new NewRequestNotification($stockRequest));
         }
 
-        return redirect('/gudang/history')->with('success', 'Permintaan berhasil dibuat.');
+        return redirect('/gudang/history')->with('success', __('Permintaan berhasil dibuat.'));
     }
 
     public function history(Request $request)
@@ -208,7 +208,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($requests);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk dicetak dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk dicetak dengan filter yang dipilih.'));
         }
 
         $backQuery = $request->except('orientation');
@@ -233,7 +233,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($requests);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->downloadPdf(
@@ -262,7 +262,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($requests);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         $date = $this->safeDate($request->input('date'));
@@ -411,7 +411,7 @@ class RequestController extends Controller
         $rows = $this->buildExportRows($this->buildExportQuery($request, $scope)->latest()->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->exportPreview(
@@ -447,10 +447,10 @@ class RequestController extends Controller
         $applied = $this->applyApproval($request, Auth::id(), $data['note'] ?? null);
 
         if (! $applied) {
-            return redirect()->back()->with('error', 'Permintaan sudah diproses, tidak bisa diulang.');
+            return redirect()->back()->with('error', __('Permintaan sudah diproses, tidak bisa diulang.'));
         }
 
-        return redirect('/hr/approval')->with('success', 'Permintaan disetujui dan menunggu penerimaan Gudang.');
+        return redirect('/hr/approval')->with('success', __('Permintaan disetujui dan menunggu penerimaan Gudang.'));
     }
 
     public function reject(StockRequest $request, Request $httpRequest)
@@ -462,10 +462,10 @@ class RequestController extends Controller
         $applied = $this->applyRejection($request, Auth::id(), $data['note']);
 
         if (! $applied) {
-            return redirect()->back()->with('error', 'Permintaan sudah diproses, tidak bisa diulang.');
+            return redirect()->back()->with('error', __('Permintaan sudah diproses, tidak bisa diulang.'));
         }
 
-        return redirect('/hr/approval')->with('success', 'Permintaan ditolak.');
+        return redirect('/hr/approval')->with('success', __('Permintaan ditolak.'));
     }
 
     public function delay(StockRequest $request, Request $httpRequest)
@@ -477,10 +477,10 @@ class RequestController extends Controller
         $applied = $this->applyDelay($request, Auth::id(), $data['note'] ?? null);
 
         if (! $applied) {
-            return redirect()->back()->with('error', 'Permintaan sudah diproses, tidak bisa diulang.');
+            return redirect()->back()->with('error', __('Permintaan sudah diproses, tidak bisa diulang.'));
         }
 
-        return redirect('/hr/approval')->with('success', 'Permintaan ditunda (Pending).');
+        return redirect('/hr/approval')->with('success', __('Permintaan ditunda (Pending).'));
     }
 
     public function approveAll(Request $httpRequest)
@@ -507,7 +507,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan berhasil disetujui.');
+        return redirect('/hr/approval')->with('success', __(':count request yang ditampilkan berhasil disetujui.', ['count' => $count]));
     }
 
     public function rejectAll(Request $httpRequest)
@@ -534,7 +534,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan berhasil ditolak.');
+        return redirect('/hr/approval')->with('success', __(':count request yang ditampilkan berhasil ditolak.', ['count' => $count]));
     }
 
     public function delayAll(Request $httpRequest)
@@ -561,7 +561,7 @@ class RequestController extends Controller
             return $count;
         });
 
-        return redirect('/hr/approval')->with('success', $count.' request yang ditampilkan ditunda (Pending).');
+        return redirect('/hr/approval')->with('success', __(':count request yang ditampilkan ditunda (Pending).', ['count' => $count]));
     }
 
     protected function applyApproval(StockRequest $request, int $userId, ?string $note): bool

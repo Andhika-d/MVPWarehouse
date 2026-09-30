@@ -44,24 +44,24 @@ class GudangController extends Controller
             $stockRequest = StockRequest::lockForUpdate()->find($data['stock_request_id']);
 
             if (! $stockRequest->canReceive()) {
-                return back()->with('error', 'Permintaan ini tidak dapat diterima.');
+                return back()->with('error', __('Permintaan ini tidak dapat diterima.'));
             }
 
             if (! $stockRequest->item) {
-                return back()->with('error', 'Item terkait permintaan ini tidak ditemukan di master item.');
+                return back()->with('error', __('Item terkait permintaan ini tidak ditemukan di master item.'));
             }
 
             $remaining = $stockRequest->remainingQuantity();
             $receiveQty = (int) $data['received_quantity'];
 
             if ($receiveQty > $remaining) {
-                return back()->with('error', 'Jumlah diterima ('.$receiveQty.') melebihi sisa yang belum diterima ('.$remaining.' '.$stockRequest->unit.').');
+                return back()->with('error', __('Jumlah diterima (:receive) melebihi sisa yang belum diterima (:remaining :unit).', ['receive' => $receiveQty, 'remaining' => $remaining, 'unit' => $stockRequest->unit]));
             }
 
             $item = Item::lockForUpdate()->find($stockRequest->item_id);
 
             if ($item->unit !== $stockRequest->unit) {
-                return back()->with('error', 'Satuan tidak cocok: item menggunakan satuan "'.$item->unit.'" sedangkan permintaan menggunakan "'.$stockRequest->unit.'". Hubungi admin untuk memperbaiki data.');
+                return back()->with('error', __('Satuan tidak cocok: item menggunakan satuan ":itemUnit" sedangkan permintaan menggunakan ":requestUnit". Hubungi admin untuk memperbaiki data.', ['itemUnit' => $item->unit, 'requestUnit' => $stockRequest->unit]));
             }
 
             $stockRequest->increment('received_quantity', $receiveQty);
@@ -99,7 +99,7 @@ class GudangController extends Controller
                 'note' => 'Diterima '.$receiveQty.' '.$stockRequest->unit.(($data['note'] ?? null) ? ' — '.$data['note'] : ''),
             ]);
 
-            return back()->with('success', $receiveQty.' '.$stockRequest->unit.' berhasil diterima dan stok telah bertambah.');
+            return back()->with('success', __(':quantity :unit berhasil diterima dan stok telah bertambah.', ['quantity' => $receiveQty, 'unit' => $stockRequest->unit]));
         });
     }
 
@@ -113,7 +113,7 @@ class GudangController extends Controller
         $stockRequest = StockRequest::find($data['stock_request_id']);
 
         if (! $stockRequest) {
-            return back()->with('error', 'Request tidak ditemukan.');
+            return back()->with('error', __('Request tidak ditemukan.'));
         }
 
         $result = $stockRequest->closeRemaining(Auth::id(), trim($data['note']));
@@ -159,7 +159,7 @@ class GudangController extends Controller
             $item = Item::lockForUpdate()->find($data['item_id']);
 
             if ($item->stock < $data['quantity']) {
-                return back()->with('error', 'Stok tidak mencukupi. Stok saat ini: '.$item->stock.' '.$item->unit);
+                return back()->with('error', __('Stok tidak mencukupi. Stok saat ini: :stock :unit', ['stock' => $item->stock, 'unit' => $item->unit]));
             }
 
             $balanceBefore = $item->stock;
@@ -180,7 +180,7 @@ class GudangController extends Controller
                 'occurred_at' => now(),
             ]);
 
-            return back()->with('success', $data['quantity'].' '.$item->unit.' '.$item->name.' berhasil dicatat keluar. Stok tersisa: '.$item->stock);
+            return back()->with('success', __(':quantity :unit :name berhasil dicatat keluar. Stok tersisa: :stock', ['quantity' => $data['quantity'], 'unit' => $item->unit, 'name' => $item->name, 'stock' => $item->stock]));
         });
     }
 
@@ -318,18 +318,18 @@ class GudangController extends Controller
         $item = Item::with('storageLocation')->find($data['item_id']);
 
         if (! $item->storageLocation) {
-            return back()->with('error', 'Barang ini belum memiliki lokasi.');
+            return back()->with('error', __('Barang ini belum memiliki lokasi.'));
         }
 
         $fromLocation = $item->storageLocation;
         $toLocation = StorageLocation::find($data['target_location_id']);
 
         if (! $toLocation) {
-            return back()->with('error', 'Lokasi tujuan tidak valid.');
+            return back()->with('error', __('Lokasi tujuan tidak valid.'));
         }
 
         if ($fromLocation->id === $toLocation->id) {
-            return back()->with('error', 'Slot asal dan tujuan sama.');
+            return back()->with('error', __('Slot asal dan tujuan sama.'));
         }
 
         $pendingCount = LocationChangeRequest::where('item_id', $item->id)
@@ -338,7 +338,7 @@ class GudangController extends Controller
             ->count();
 
         if ($pendingCount > 0) {
-            return back()->with('error', 'Sudah ada pengajuan pending untuk barang ini.');
+            return back()->with('error', __('Sudah ada pengajuan pending untuk barang ini.'));
         }
 
         LocationChangeRequest::create([
@@ -352,7 +352,13 @@ class GudangController extends Controller
             'reason' => $data['reason'],
         ]);
 
-        return back()->with('success', 'Pengajuan pemindahan lokasi dikirim: '.$item->name.' ('.$fromLocation->code.' · '.($fromLocation->sub_location ?? '—').' → '.$toLocation->code.' · '.($toLocation->sub_location ?? '—').'). Menunggu persetujuan admin.');
+        return back()->with('success', __('Pengajuan pemindahan lokasi dikirim: :item (:from · :fromSub → :to · :toSub). Menunggu persetujuan admin.', [
+            'item' => $item->name,
+            'from' => $fromLocation->code,
+            'fromSub' => $fromLocation->sub_location ?? '—',
+            'to' => $toLocation->code,
+            'toSub' => $toLocation->sub_location ?? '—',
+        ]));
     }
 
     public function exportMovementExcel(Request $request)
@@ -360,7 +366,7 @@ class GudangController extends Controller
         [, $rows, $filename] = $this->movementExportData($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         $export = new StockMovementExport($rows);
@@ -375,7 +381,7 @@ class GudangController extends Controller
         [, $rows] = $this->movementExportData($request);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->exportPreview(
@@ -455,7 +461,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows(LocationChangeExporter::query($request, 'gudang')->get());
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return $this->exportPreview(
@@ -476,7 +482,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         $export = new LocationChangeExport($rows);
@@ -492,7 +498,7 @@ class GudangController extends Controller
         $rows = LocationChangeExporter::buildRows($changes);
 
         if (empty($rows)) {
-            return back()->with('error', 'Tidak ada data untuk diekspor dengan filter yang dipilih.');
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
         }
 
         return LocationChangePdf::render(

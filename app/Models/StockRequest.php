@@ -115,7 +115,7 @@ class StockRequest extends Model
             if (! $locked) {
                 return [
                     'success' => false,
-                    'message' => 'Request tidak ditemukan.',
+                    'message' => __('Request tidak ditemukan.'),
                     'status' => null,
                 ];
             }
@@ -126,7 +126,7 @@ class StockRequest extends Model
 
                 return [
                     'success' => false,
-                    'message' => "Request ini sudah ditutup oleh {$closerName} pada {$closerTime}.",
+                    'message' => __('Request ini sudah ditutup oleh :name pada :time.', ['name' => $closerName, 'time' => $closerTime]),
                     'status' => null,
                 ];
             }
@@ -134,7 +134,7 @@ class StockRequest extends Model
             if (! $locked->canClose()) {
                 return [
                     'success' => false,
-                    'message' => 'Request ini sudah tidak bisa ditutup atau sudah diproses.',
+                    'message' => __('Request ini sudah tidak bisa ditutup atau sudah diproses.'),
                     'status' => null,
                 ];
             }
@@ -142,7 +142,7 @@ class StockRequest extends Model
             if (trim($note) === '') {
                 return [
                     'success' => false,
-                    'message' => 'Alasan penutupan wajib diisi.',
+                    'message' => __('Alasan penutupan wajib diisi.'),
                     'status' => null,
                 ];
             }
@@ -185,7 +185,7 @@ class StockRequest extends Model
 
             return [
                 'success' => true,
-                'message' => 'Sisa ' . $remaining . ' ' . $locked->unit . ' ditutup. Status: ' . $newStatus,
+                'message' => __('Sisa :remaining :unit ditutup. Status: :status', ['remaining' => $remaining, 'unit' => $locked->unit, 'status' => $newStatus]),
                 'status' => $newStatus,
             ];
         });
