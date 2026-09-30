@@ -44,7 +44,7 @@
                 </div>
                 <div class>
                     <p class="text-xs text-slate-500">{{ __('Catatan Review') }}</p>
-                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->review_note ?: '—' }}</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ \App\Support\StoredText::translate($request->review_note) ?: '—' }}</p>
                 </div>
                 <div>
                     <p class="text-xs text-slate-500">{{ __('Diterima') }}</p>
@@ -66,7 +66,7 @@
             @if($request->close_note)
             <div class="mt-4 pt-4 border-t border-slate-100">
                 <p class="text-xs text-slate-500">{{ __('Alasan Penutupan') }}</p>
-                <p class="text-sm text-slate-700 mt-0.5">{{ $request->close_note }}</p>
+                <p class="text-sm text-slate-700 mt-0.5">{{ \App\Support\StoredText::translate($request->close_note) }}</p>
             </div>
             @endif
             @endif
@@ -74,7 +74,7 @@
             @if($request->reason)
             <div class="mt-4 pt-4 border-t border-slate-100">
                 <p class="text-xs text-slate-500">{{ __('Alasan') }}</p>
-                <p class="text-sm text-slate-700 mt-0.5">{{ $request->reason }}</p>
+                <p class="text-sm text-slate-700 mt-0.5">{{ \App\Support\StoredText::translate($request->reason) }}</p>
             </div>
             @endif
 
@@ -113,7 +113,7 @@
                     <div class="pb-4">
                         <p class="text-sm font-medium text-slate-900">{{ __($history->status) }}</p>
                         @if($history->note)
-                            <p class="text-sm text-slate-600 mt-0.5">{{ $history->note }}</p>
+                            <p class="text-sm text-slate-600 mt-0.5">{{ \App\Support\StoredText::translate($history->note) }}</p>
                         @endif
                         <p class="mt-1 text-xs text-slate-500">{{ $history->user?->name ?? __('Sistem') }} &middot; {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
                     </div>

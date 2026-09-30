@@ -76,12 +76,12 @@
                         </div>
                         <div class="py-2">
                             <span class="mb-1 block text-xs text-slate-500">{{ __('Alasan') }}</span>
-                            <p class="text-sm text-slate-600 leading-relaxed">{{ $request->reason ?: '—' }}</p>
+                            <p class="text-sm text-slate-600 leading-relaxed">{{ \App\Support\StoredText::translate($request->reason) ?: '—' }}</p>
                         </div>
                         @if($request->isClosed() && $request->close_note)
                         <div class="py-2">
                             <span class="mb-1 block text-xs text-slate-500">{{ __('Alasan Penutupan') }}</span>
-                            <p class="text-sm text-slate-600 leading-relaxed">{{ $request->close_note }}</p>
+                            <p class="text-sm text-slate-600 leading-relaxed">{{ \App\Support\StoredText::translate($request->close_note) }}</p>
                         </div>
                         @endif
                     </div>

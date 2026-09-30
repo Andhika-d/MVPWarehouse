@@ -62,8 +62,8 @@
                             @php $count = $processBottlenecks['active_counts'][$key]; @endphp
                             <div>
                                 <div class="mb-1 flex items-center justify-between gap-3">
-                                    <span class="text-xs font-medium text-slate-600">{{ $label }}</span>
-                                    <span class="text-xs font-bold {{ $count > 0 ? 'text-red-600' : 'text-slate-400' }}">{{ $count }} request</span>
+                                    <span class="text-xs font-medium text-slate-600">{{ __($label) }}</span>
+                                    <span class="text-xs font-bold {{ $count > 0 ? 'text-red-600' : 'text-slate-400' }}">{{ $count }} {{ __('request') }}</span>
                                 </div>
                                 <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {{ $count > 0 ? 'bg-red-400' : 'bg-slate-300' }}" style="width: {{ ($count / $maxActiveDelay) * 100 }}%"></div></div>
                             </div>
@@ -77,7 +77,7 @@
                         <div class="divide-y divide-slate-100">
                             @foreach($processBottlenecks['active_items'] as $item)
                             <a href="{{ route('director.request-detail', $item['request']) }}" class="flex items-center justify-between gap-3 py-2.5 hover:bg-slate-50">
-                                <div class="min-w-0"><p class="truncate text-xs font-semibold text-slate-800">{{ $item['request']->item?->name ?? $item['request']->item_name ?? __('Barang') }}</p><p class="mt-0.5 truncate text-xs text-slate-500">{{ $item['stage_label'] }} · {{ $item['request']->user?->name ?? '—' }}</p></div>
+                                <div class="min-w-0"><p class="truncate text-xs font-semibold text-slate-800">{{ $item['request']->item?->name ?? $item['request']->item_name ?? __('Barang') }}</p><p class="mt-0.5 truncate text-xs text-slate-500">{{ __($item['stage_label']) }} · {{ $item['request']->user?->name ?? '—' }}</p></div>
                                 <span class="shrink-0 text-xs font-bold text-red-600">{{ $item['days_open'] }} {{ __('hari') }}</span>
                             </a>
                             @endforeach
@@ -91,7 +91,7 @@
                             @foreach($processBottlenecks['labels'] as $key => $label)
                             @php $count = $processBottlenecks['historical_counts'][$key]; @endphp
                             <div>
-                                <div class="mb-1 flex items-center justify-between gap-3"><span class="text-xs font-medium text-slate-600">{{ $label }}</span><span class="text-xs font-bold {{ $count > 0 ? 'text-amber-600' : 'text-slate-400' }}">{{ $count }} {{ __('kasus') }}</span></div>
+                                <div class="mb-1 flex items-center justify-between gap-3"><span class="text-xs font-medium text-slate-600">{{ __($label) }}</span><span class="text-xs font-bold {{ $count > 0 ? 'text-amber-600' : 'text-slate-400' }}">{{ $count }} {{ __('kasus') }}</span></div>
                                 <div class="h-1.5 w-full overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full {{ $count > 0 ? 'bg-amber-400' : 'bg-slate-300' }}" style="width: {{ ($count / $maxHistoricalDelay) * 100 }}%"></div></div>
                             </div>
                             @endforeach

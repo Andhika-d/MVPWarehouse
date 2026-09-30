@@ -50,7 +50,7 @@
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4 md:col-span-2">
                     <p class="ui-heading">{{ __('Alasan') }}</p>
-                    <p class="mt-1 text-sm text-slate-700">{{ $request->reason ?? '-' }}</p>
+                    <p class="mt-1 text-sm text-slate-700">{{ \App\Support\StoredText::translate($request->reason) ?? '-' }}</p>
                 </div>
             </div>
 
@@ -101,7 +101,7 @@
                         <div class="mt-1 h-2.5 w-2.5 rounded-full {{ $historyDot }}"></div>
                         <div>
                             <p class="text-sm font-semibold text-slate-900">{{ __($history->status) }}</p>
-                            <p class="text-sm text-slate-600">{{ $history->note }}</p>
+                            <p class="text-sm text-slate-600">{{ \App\Support\StoredText::translate($history->note) }}</p>
                             <p class="mt-1 text-xs text-slate-500">{{ __('Oleh') }} {{ $history->user?->name ?? __('Sistem') }} • {{ $history->created_at->translatedFormat('d M Y, H:i') }}</p>
                         </div>
                     </div>

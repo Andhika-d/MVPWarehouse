@@ -60,7 +60,7 @@
                                 @endif
                             </td>
                             <td class="px-5 py-3 text-slate-600">{{ $mov->user?->name ?? '—' }}</td>
-                            <td class="px-5 py-3 text-slate-500 text-xs max-w-[200px] truncate">{{ $mov->reason }}{{ $mov->note ? " ({$mov->note})" : '' }}</td>
+                            <td class="px-5 py-3 text-slate-500 text-xs max-w-[200px] truncate">{{ \App\Support\StoredText::translate($mov->reason) }}{{ $mov->note ? ' ('.\App\Support\StoredText::translate($mov->note).')' : '' }}</td>
                         </tr>
                         @empty
                         <tr><td colspan="7" class="px-5 py-8 text-center text-sm text-slate-400">{{ __('Tidak ada data.') }}</td></tr>

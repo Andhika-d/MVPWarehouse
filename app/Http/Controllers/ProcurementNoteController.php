@@ -88,7 +88,7 @@ class ProcurementNoteController extends Controller
             ->sortBy('created_at')
             ->map(fn ($history) => [
                 'status' => $history->status,
-                'user' => $history->user?->name ?? 'Sistem',
+                'user' => $history->user?->name,
                 'time' => $history->created_at,
                 'note' => $history->note,
             ]);

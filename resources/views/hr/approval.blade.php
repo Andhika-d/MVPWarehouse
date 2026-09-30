@@ -59,10 +59,10 @@
                             {{ __('Setujui Semua yang Ditampilkan') }}
                         </button>
                     </form>
-                    <button type="button" data-action="{{ route('hr.requests.bulk-reject') }}" data-request-ids='@json($requestIds)' data-label="{{ $notaItems->count() }} request yang ditampilkan" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="{{ route('hr.requests.bulk-reject') }}" data-request-ids='@json($requestIds)' data-label="{{ __(':count request yang ditampilkan', ['count' => $notaItems->count()]) }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         {{ __('Tolak Semua') }}
                     </button>
-                    <button type="button" data-action="{{ route('hr.requests.bulk-delay') }}" data-request-ids='@json($requestIds)' data-label="{{ $notaItems->count() }} request yang ditampilkan" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                    <button type="button" data-action="{{ route('hr.requests.bulk-delay') }}" data-request-ids='@json($requestIds)' data-label="{{ __(':count request yang ditampilkan', ['count' => $notaItems->count()]) }}" onclick="openDelayModal(this)" class="px-3 py-2 bg-amber-50 text-amber-700 hover:bg-amber-600 hover:text-white border border-amber-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         {{ __('Tunda Semua') }}
                     </button>
                 </div>
@@ -87,7 +87,7 @@
                             <td class="py-4 px-6 font-bold text-slate-900 text-sm">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }} @if($request->attachment_path)<span title="{{ __('Ada lampiran/foto') }}" class="ml-1">📎</span>@endif</td>
                             <td class="py-4 px-6"><span class="text-slate-600 font-bold block font-mono text-xs whitespace-nowrap">{{ $request->item?->storageLocation?->code ?? '-' }}</span></td>
                             <td class="py-4 px-6 text-sm font-bold text-slate-900">{{ $request->quantity }} <span class="text-xs font-medium text-slate-500">{{ $request->unit }}</span></td>
-                            <td class="py-4 px-6 text-slate-500 max-w-xs leading-relaxed">{{ $request->reason ?? '-' }}</td>
+                            <td class="py-4 px-6 text-slate-500 max-w-xs leading-relaxed">{{ \App\Support\StoredText::translate($request->reason) ?? '-' }}</td>
                             <td class="py-4 px-6 text-center">
                                 <x-status-badge domain="request" :status="$request->status" />
                             </td>

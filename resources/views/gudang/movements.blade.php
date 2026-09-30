@@ -78,7 +78,7 @@
                                 </span>
                                 @endif
                             </td>
-                            <td class="py-3 px-5 text-xs text-slate-500 max-w-[200px] truncate">{{ $m->reason }}</td>
+                            <td class="py-3 px-5 text-xs text-slate-500 max-w-[200px] truncate">{{ \App\Support\StoredText::translate($m->reason) }}</td>
                             <td class="py-3 px-5 text-xs text-slate-500">{{ $m->user?->name ?? '—' }}</td>
                         </tr>
                         @empty
@@ -131,7 +131,7 @@
                     </span>
                 </div>
                 @if($m->reason)
-                <p class="text-[11px] text-slate-400 mt-2">{{ $m->reason }} &middot; {{ $m->user?->name ?? '—' }}</p>
+                <p class="text-[11px] text-slate-400 mt-2">{{ \App\Support\StoredText::translate($m->reason) }} &middot; {{ $m->user?->name ?? '—' }}</p>
                 @endif
             </div>
             @empty

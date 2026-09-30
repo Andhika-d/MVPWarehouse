@@ -73,7 +73,7 @@
                                 <span class="block"><span class="text-slate-400">{{ __('Sisa') }}</span> <b class="text-slate-900">{{ $activeRemaining ?? $closedQuantity ?? '—' }}</b></span>
                             </td>
                             <td class="px-4 py-4"><x-status-badge domain="request" :status="$stockRequest->status" :label="__($stockRequest->status)" /></td>
-                            <td class="max-w-xs px-4 py-4 text-xs text-slate-500">{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
+                            <td class="max-w-xs px-4 py-4 text-xs text-slate-500">{{ \App\Support\StoredText::translate($stockRequest->close_note ?? $stockRequest->review_note) ?? '—' }}</td>
                             <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.requests.show', [$procurementNote, $stockRequest]) }}" class="action-link">{{ __('Detail Riwayat') }}</a>@if(auth()->user()->role === 'hr' && $stockRequest->canClose())<x-hr-request-close-button :request="$stockRequest" class="whitespace-nowrap" />@endif</td>
                         </tr>
                         @endforeach

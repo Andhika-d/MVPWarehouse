@@ -223,7 +223,7 @@
             btn.type = 'button';
             btn.dataset.id = item.id;
             btn.className = 'w-full text-left px-3 py-2.5 text-sm text-slate-700 hover:bg-corpblue-50 hover:text-corpblue-700 font-medium transition-all flex items-center justify-between';
-            const location = item.sub_location ? ' · Lok ' + item.sub_location : '';
+            const location = item.sub_location ? ' · ' + @json(__('Lok')) + ' ' + item.sub_location : '';
             btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + item.stock + ' ' + item.unit + location + '</span>';
             btn.addEventListener('click', () => selectItem(item));
             activeButtons.push(btn);

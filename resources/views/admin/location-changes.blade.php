@@ -97,7 +97,7 @@
                         <p class="text-xs text-slate-500 mt-1 italic">"{{ $change->reason }}"</p>
                         @endif
                         @if($change->admin_note)
-                        <p class="text-xs text-blue-600 mt-1">{{ __('Catatan Admin') }}: {{ $change->admin_note }}</p>
+                        <p class="text-xs text-blue-600 mt-1">{{ __('Catatan Admin') }}: {{ \App\Support\StoredText::translate($change->admin_note) }}</p>
                         @endif
                     </div>
 

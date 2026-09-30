@@ -48,7 +48,7 @@
                                     <button
                                         onclick="openCloseModal(this)"
                                         data-id="{{ $req->id }}"
-                                        data-name="{{ $req->item?->name ?? $req->item_name ?? 'Barang' }}"
+                                        data-name="{{ $req->item?->name ?? $req->item_name ?? __('Barang') }}"
                                         data-remain="{{ $req->remainingQuantity() }}"
                                         data-unit="{{ $req->unit }}"
                                         class="action-link action-link--warning">{{ __('Tutup Sisa') }}</button>

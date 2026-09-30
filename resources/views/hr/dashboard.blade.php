@@ -83,7 +83,7 @@
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                     </div>
                     @if($urgentRequests > 0)
-                    <x-status-badge domain="priority" status="Mendesak" label="Mendesak" />
+                    <x-status-badge domain="priority" status="Mendesak" :label="__('Mendesak')" />
                     @endif
                 </div>
                 <div>
@@ -173,7 +173,7 @@
                                 <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-xs font-semibold">{{ __('Biasa') }}</span>
                                 @endif
                             </td>
-                            <td class="py-4 px-6 text-xs text-slate-500 max-w-[200px] truncate">{{ $request->reason }}</td>
+                            <td class="py-4 px-6 text-xs text-slate-500 max-w-[200px] truncate">{{ \App\Support\StoredText::translate($request->reason) }}</td>
                         </tr>
                         @empty
                         <tr>
@@ -198,12 +198,12 @@
                             <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; {{ __('Stok') }} {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</p>
                         </div>
                         @if($request->priority === 'Mendesak')
-                        <x-status-badge domain="priority" status="Mendesak" label="Mendesak" class="shrink-0" />
+                        <x-status-badge domain="priority" status="Mendesak" :label="__('Mendesak')" class="shrink-0" />
                         @endif
                     </div>
                     <div class="flex items-center gap-3 text-xs text-slate-500">
                         <span class="font-semibold text-slate-700">{{ $request->quantity }} {{ $request->unit }}</span>
-                        <span class="truncate">{{ $request->reason }}</span>
+                        <span class="truncate">{{ \App\Support\StoredText::translate($request->reason) }}</span>
                     </div>
                     <a href="/hr/requests/{{ $request->id }}" class="mt-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 bg-corpblue-50 text-corpblue-600 rounded-lg text-xs font-semibold border border-corpblue-100 hover:bg-corpblue-500 hover:text-white transition-all min-h-[40px]">
                         <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
