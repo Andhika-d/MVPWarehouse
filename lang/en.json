@@ -859,5 +859,19 @@
     "Disetujui oleh HR, menunggu proses pembelian": "Approved by HR, waiting for the purchasing process",
     "Permintaan ditunda oleh HR": "Request delayed by HR",
     "Dibatalkan otomatis: lokasi item sudah berubah.": "Automatically cancelled: the item location has changed.",
-    "Tidak dapat membuka file Excel (.xlsx).": "Unable to open the Excel file (.xlsx)."
+    "Tidak dapat membuka file Excel (.xlsx).": "Unable to open the Excel file (.xlsx).",
+    "Permintaan Baru Masuk": "New Request",
+    ":user mengajukan :quantity :unit :item (:priority).": ":user requested :quantity :unit of :item (:priority).",
+    "Permintaan Disetujui": "Request Approved",
+    "Permintaan :quantity :unit :item telah disetujui HR dan siap dibelanjakan.": "HR approved the request for :quantity :unit of :item. It is ready for purchase.",
+    "Permintaan Ditolak": "Request Rejected",
+    "Permintaan :quantity :unit :item ditolak HR.": "HR rejected the request for :quantity :unit of :item.",
+    "Permintaan :quantity :unit :item ditolak HR. Alasan: :note": "HR rejected the request for :quantity :unit of :item. Reason: :note",
+    "Permintaan Ditunda": "Request Delayed",
+    "Permintaan :quantity :unit :item ditunda oleh HR (Pending).": "HR delayed the request for :quantity :unit of :item (Pending).",
+    "Permintaan :quantity :unit :item ditunda oleh HR (Pending). Catatan: :note": "HR delayed the request for :quantity :unit of :item (Pending). Note: :note",
+    "Belanja Selesai": "Purchase Completed",
+    "Barang :quantity :unit :item telah diterima Gudang.": "The warehouse received :quantity :unit of :item.",
+    "Sisa :remaining :unit dari :item ditutup. Status: :status.": "Remaining :remaining :unit of :item closed. Status: :status.",
+    "Sisa :remaining :unit dari :item ditutup. Status: :status. Alasan: :note": "Remaining :remaining :unit of :item closed. Status: :status. Reason: :note"
 }

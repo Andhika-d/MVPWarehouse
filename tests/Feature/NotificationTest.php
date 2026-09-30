@@ -234,6 +234,136 @@ class NotificationTest extends TestCase
         $this->assertStringContainsString('Please check the information you entered.', $flashHtml);
     }
 
+    public function test_notification_payloads_resolve_in_english(): void
+    {
+        app()->setLocale('en');
+
+        $payloads = [
+            [
+                'data' => [
+                    'title_key' => 'Permintaan Baru Masuk',
+                    'message_key' => ':user mengajukan :quantity :unit :item (:priority).',
+                    'params' => ['user' => 'Andi', 'quantity' => 2, 'unit' => 'pcs', 'item' => 'Kertas', 'priority' => 'Biasa'],
+                ],
+                'title' => 'New Request',
+                'message' => 'Andi requested 2 pcs of Kertas (Normal).',
+            ],
+            [
+                'data' => [
+                    'title_key' => 'Permintaan Disetujui',
+                    'message_key' => 'Permintaan :quantity :unit :item telah disetujui HR dan siap dibelanjakan.',
+                    'params' => ['quantity' => 2, 'unit' => 'pcs', 'item' => 'Kertas'],
+                ],
+                'title' => 'Request Approved',
+                'message' => 'HR approved the request for 2 pcs of Kertas. It is ready for purchase.',
+            ],
+            [
+                'data' => [
+                    'title_key' => 'Permintaan Ditolak',
+                    'message_key' => 'Permintaan :quantity :unit :item ditolak HR. Alasan: :note',
+                    'params' => ['quantity' => 2, 'unit' => 'pcs', 'item' => 'Kertas', 'note' => 'stok habis'],
+                ],
+                'title' => 'Request Rejected',
+                'message' => 'HR rejected the request for 2 pcs of Kertas. Reason: stok habis',
+            ],
+            [
+                'data' => [
+                    'title_key' => 'Permintaan Ditunda',
+                    'message_key' => 'Permintaan :quantity :unit :item ditunda oleh HR (Pending). Catatan: :note',
+                    'params' => ['quantity' => 2, 'unit' => 'pcs', 'item' => 'Kertas', 'note' => 'tunggu anggaran'],
+                ],
+                'title' => 'Request Delayed',
+                'message' => 'HR delayed the request for 2 pcs of Kertas (Pending). Note: tunggu anggaran',
+            ],
+            [
+                'data' => [
+                    'title_key' => 'Belanja Selesai',
+                    'message_key' => 'Barang :quantity :unit :item telah diterima Gudang.',
+                    'params' => ['quantity' => 2, 'unit' => 'pcs', 'item' => 'Kertas'],
+                ],
+                'title' => 'Purchase Completed',
+                'message' => 'The warehouse received 2 pcs of Kertas.',
+            ],
+            [
+                'data' => [
+                    'title_key' => 'Ditutup Sebagian',
+                    'message_key' => 'Sisa :remaining :unit dari :item ditutup. Status: :status.',
+                    'params' => ['remaining' => 1, 'unit' => 'pcs', 'item' => 'Kertas', 'status' => 'Ditutup Sebagian'],
+                ],
+                'title' => 'Partially Closed',
+                'message' => 'Remaining 1 pcs of Kertas closed. Status: Partially Closed.',
+            ],
+        ];
+
+        foreach ($payloads as $payload) {
+            $resolved = NotificationText::resolve($payload['data']);
+            $this->assertSame($payload['title'], $resolved['title']);
+            $this->assertSame($payload['message'], $resolved['message']);
+        }
+    }
+
+    public function test_legacy_notification_payloads_are_translated_at_render_time(): void
+    {
+        $legacyPayloads = [
+            [
+                'type' => 'new_request',
+                'title' => 'Permintaan Baru Masuk',
+                'message' => 'Andi mengajukan 2 pcs Kertas (Biasa).',
+                'expected_title' => 'New Request',
+                'expected_message' => 'Andi requested 2 pcs Kertas (Normal).',
+            ],
+            [
+                'type' => 'approved',
+                'title' => 'Permintaan Disetujui',
+                'message' => 'Permintaan 2 pcs Kertas telah disetujui HR dan siap dibelanjakan.',
+                'expected_title' => 'Request Approved',
+                'expected_message' => 'Request 2 pcs Kertas was approved by HR and is ready for purchase.',
+            ],
+            [
+                'type' => 'rejected',
+                'title' => 'Permintaan Ditolak',
+                'message' => 'Permintaan 2 pcs Kertas ditolak HR. Alasan: Permintaan barang, stok habis',
+                'expected_title' => 'Request Rejected',
+                'expected_message' => 'Request 2 pcs Kertas was rejected by HR. Reason: Permintaan barang, stok habis',
+            ],
+            [
+                'type' => 'delayed',
+                'title' => 'Permintaan Ditunda',
+                'message' => 'Permintaan 2 pcs Kertas ditunda oleh HR (Pending). Catatan: tunggu anggaran',
+                'expected_title' => 'Request Delayed',
+                'expected_message' => 'Request 2 pcs Kertas was delayed by HR (Pending). Note: tunggu anggaran',
+            ],
+            [
+                'type' => 'completed',
+                'title' => 'Belanja Selesai',
+                'message' => 'Barang 2 pcs Kertas telah diterima Gudang.',
+                'expected_title' => 'Purchase Completed',
+                'expected_message' => 'Item 2 pcs Kertas was received by the warehouse.',
+            ],
+            [
+                'type' => 'closed',
+                'title' => 'Ditutup Sebagian',
+                'message' => 'Sisa 1 pcs dari Kertas ditutup. Status:Ditutup Sebagian. Alasan: Dibatalkan otomatis, tidak dibutuhkan',
+                'expected_title' => 'Partially Closed',
+                'expected_message' => 'Remaining 1 pcs of Kertas closed. Status: Partially Closed. Reason: Dibatalkan otomatis, tidak dibutuhkan',
+            ],
+        ];
+
+        app()->setLocale('en');
+        foreach ($legacyPayloads as $legacy) {
+            $resolved = NotificationText::resolve($legacy);
+            $this->assertSame($legacy['expected_title'], $resolved['title']);
+            $this->assertSame($legacy['expected_message'], $resolved['message']);
+        }
+
+        app()->setLocale('id');
+        foreach ($legacyPayloads as $legacy) {
+            $resolved = NotificationText::resolve($legacy);
+            $this->assertSame($legacy['title'], $resolved['title']);
+            $this->assertSame($legacy['message'], $resolved['message']);
+        }
+    }
+
     public function test_gudang_cannot_mark_others_notification_as_read(): void
     {
         $gudangA = $this->makeUser('gudang');
