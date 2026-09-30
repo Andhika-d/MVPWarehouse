@@ -8,7 +8,7 @@
     type="button"
     onclick="openHrRequestCloseModal(this)"
     data-url="{{ route('hr.requests.close', $request) }}"
-    data-name="{{ $request->item?->name ?? $request->item_name ?? 'Barang' }}"
+    data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}"
     data-remain="{{ $request->remainingQuantity() }}"
     data-unit="{{ $request->unit }}"
     data-mode="{{ $isCancellation ? 'cancel' : 'close' }}"

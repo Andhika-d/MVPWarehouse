@@ -658,8 +658,8 @@
             _confirmSubmitter = submitter || null;
             _confirmOpener = document.activeElement;
             var tone = opts.tone || 'danger';
-            var title = opts.title || 'Konfirmasi';
-            var button = opts.button || 'Lanjutkan';
+            var title = opts.title || @json(__('Konfirmasi'));
+            var button = opts.button || @json(__('Lanjutkan'));
             var ts = _toneStyles[tone] || _toneStyles.danger;
 
             document.getElementById('confirmModalTitle').textContent = title;
@@ -740,9 +740,9 @@
 
             e.preventDefault();
             openConfirmModal(form, form.getAttribute('data-confirm'), {
-                title: form.getAttribute('data-confirm-title') || 'Konfirmasi',
+                title: form.getAttribute('data-confirm-title') || @json(__('Konfirmasi')),
                 tone: form.getAttribute('data-confirm-tone') || 'danger',
-                button: form.getAttribute('data-confirm-button') || 'Lanjutkan',
+                button: form.getAttribute('data-confirm-button') || @json(__('Lanjutkan')),
             }, e.submitter);
         });
 
@@ -754,7 +754,7 @@
                 }
                 if (_openModals.length > 0) {
                     var modal = _openModals[_openModals.length - 1];
-                    var closeButton = modal.querySelector('button[aria-label="Tutup"]');
+                    var closeButton = modal.querySelector('button[aria-label="' + @json(__('Tutup')) + '"]');
                     if (closeButton) closeButton.click();
                     else closeModal(modal.id);
                     return;

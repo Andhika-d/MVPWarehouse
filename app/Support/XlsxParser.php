@@ -26,9 +26,9 @@ class XlsxParser
      */
     public static function parse(string $path): array
     {
-        $zip = new ZipArchive();
+        $zip = new ZipArchive;
         if ($zip->open($path) !== true) {
-            throw new \RuntimeException('Tidak dapat membuka file Excel (.xlsx).');
+            throw new \RuntimeException(__('Tidak dapat membuka file Excel (.xlsx).'));
         }
 
         $sharedStrings = self::readSharedStrings($zip);
@@ -40,7 +40,7 @@ class XlsxParser
             return [];
         }
 
-        $xml = $zip->getFromName('xl/' . $sheetTarget);
+        $xml = $zip->getFromName('xl/'.$sheetTarget);
         $zip->close();
 
         if ($xml === false) {
@@ -139,7 +139,7 @@ class XlsxParser
         }
 
         $relXpath = new \DOMXPath($relDoc);
-        $relNodes = $relXpath->query('//*[local-name()="Relationship"][@Id="' . $rid . '"]');
+        $relNodes = $relXpath->query('//*[local-name()="Relationship"][@Id="'.$rid.'"]');
         if ($relNodes === false || $relNodes->length === 0) {
             return null;
         }
@@ -227,7 +227,7 @@ class XlsxParser
 
     private static function loadXml(string $xml): ?\DOMDocument
     {
-        $doc = new \DOMDocument();
+        $doc = new \DOMDocument;
         $previous = libxml_use_internal_errors(true);
         $loaded = $doc->loadXML($xml);
         libxml_clear_errors();

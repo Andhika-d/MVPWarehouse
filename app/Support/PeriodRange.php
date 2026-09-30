@@ -101,10 +101,10 @@ class PeriodRange
         }
 
         if ($this->start) {
-            return 'Mulai '.$this->start->translatedFormat('d M Y');
+            return __('Mulai :date', ['date' => $this->start->translatedFormat('d M Y')]);
         }
 
-        return 'Sampai '.$this->end?->translatedFormat('d M Y');
+        return __('Sampai :date', ['date' => $this->end?->translatedFormat('d M Y')]);
     }
 
     private static function flexible(CarbonImmutable $start, ?string $end): self

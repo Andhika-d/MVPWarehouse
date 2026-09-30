@@ -100,7 +100,7 @@
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
                 <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
                     <h3 id="addUserModalTitle" class="text-base font-semibold text-slate-900">{{ __('Tambah Pengguna') }}</h3>
-                    <button onclick="closeModal('addUserModal')" aria-label="Tutup" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                    <button onclick="closeModal('addUserModal')" aria-label="{{ __('Tutup') }}" class="text-slate-400 hover:text-slate-600 cursor-pointer">
                         <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
                     </button>
                 </div>
