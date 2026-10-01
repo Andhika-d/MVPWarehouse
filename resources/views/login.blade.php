@@ -122,7 +122,7 @@
                                 value="{{ old('email') }}"
                                 required
                                 class="w-full rounded-lg border border-slate-200 bg-slate-50 pl-10 pr-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-corpblue-500 focus:bg-white"
-                                placeholder="nama@email.com"
+                                placeholder="{{__('nama@email.com')}}"
                             >
                         </div>
                     </div>
