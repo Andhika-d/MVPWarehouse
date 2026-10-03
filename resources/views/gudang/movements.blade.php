@@ -52,9 +52,9 @@
                             <td class="py-3 px-5 font-semibold text-slate-900">{{ $m->item?->name ?? '—' }}</td>
                             <td class="py-3 px-5 text-center">
                                 @if($m->type === 'IN')
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">{{ __('Masuk') }}</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-[11px] font-bold">{{ __('Stock Masuk') }}</span>
                                 @elseif($m->type === 'OUT')
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">{{ __('Keluar') }}</span>
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-red-50 text-red-700 rounded-full text-[11px] font-bold">{{ __('Stock Keluar') }}</span>
                                 @else
                                     <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[11px] font-bold">{{ __('Penyesuaian') }}</span>
                                 @endif

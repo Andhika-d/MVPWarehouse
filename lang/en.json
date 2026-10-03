@@ -488,6 +488,8 @@
     "Tanggal & Waktu": "Date & Time",
     "Tipe": "Type",
     "Keterangan": "Description",
+    "Stock Masuk" : "Incoming Stock",
+    "Stock Keluar" : "Outgoing Stock",
     "Penyesuaian": "Adjustment",
     "Lihat detail saldo": "View balance details",
     "Stok sebelum:": "Previous stock:",
