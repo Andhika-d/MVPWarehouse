@@ -38,9 +38,9 @@
                             <td class="px-5 py-3 font-medium text-slate-900">{{ $mov->item?->name ?? '—' }}</td>
                             <td class="px-5 py-3">
                                 @if($mov->type === 'IN')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">{{ __('Barang Masuk') }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-xs font-semibold">{{ __('Stock Masuk') }}</span>
                                 @elseif($mov->type === 'OUT')
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">{{ __('Barang Keluar') }}</span>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-red-50 text-red-700 text-xs font-semibold">{{ __('Stock Keluar') }}</span>
                                 @else
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 text-xs font-semibold">{{ __('Penyesuaian') }}</span>
                                 @endif
