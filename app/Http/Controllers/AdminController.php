@@ -1250,6 +1250,7 @@ class AdminController extends Controller
             'stock_requests' => StockRequest::count(),
             'location_change_requests' => LocationChangeRequest::count(),
             'audit_logs' => AuditLog::count(),
+            'procurement_notes' => \App\Models\ProcurementNote::count(),
         ];
 
         return view('admin.reset', compact('stats'));
@@ -1348,7 +1349,32 @@ class AdminController extends Controller
         return back()->with('success', __('Pengajuan Lokasi berhasil di-reset. :count pengajuan dihapus.', ['count' => $count]));
     }
 
-    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    public function resetProcurementNotes()
+    {
+        $this->createSafetyBackup();
+
+        $noteCount = \App\Models\ProcurementNote::count();
+
+        DB::transaction(function () {
+            // Set procurement_note_id to null in stock_requests first (foreign key constraint)
+            DB::table('stock_requests')->update(['procurement_note_id' => null]);
+
+            // Delete procurement notes
+            \App\Models\ProcurementNote::query()->forceDelete();
+        });
+
+        AuditLog::create([
+            'user_id' => Auth::id(),
+            'action' => 'reset_procurement_notes',
+            'target_type' => null,
+            'target_id' => null,
+            'details' => 'Reset Riwayat Pengadaan: '.$noteCount.' nota dihapus.',
+        ]);
+
+        return back()->with('success', __('Riwayat Pengadaan berhasil di-reset. :count nota dihapus.', ['count' => $noteCount]));
+    }
+
+    // â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     protected function createSafetyBackup(): void
     {

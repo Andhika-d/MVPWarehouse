@@ -191,10 +191,13 @@
                                 ];
                                 $c = $colorMap[$event['color']] ?? $colorMap['slate'];
                                 $eventDetail = $event['detail'];
+                                $eventDetail = \App\Support\StoredText::translate($eventDetail);
                                 if (app()->getLocale() === 'en' && $eventDetail) {
                                     $eventDetail = preg_replace_callback('/(^|\n)(Barang|Jumlah|Prioritas|Alasan|Keterangan):/u', fn ($matches) => $matches[1] . __($matches[2]) . ':', $eventDetail);
                                     $eventDetail = preg_replace('/^Diterima (?=\d)/u', __('Diterima') . ' ', $eventDetail);
                                     $eventDetail = preg_replace('/(?<=\d) dari (?=\d)/u', ' of ', $eventDetail);
+                                    $eventDetail = preg_replace('/\bditerima\b/u', __('diterima'), $eventDetail);
+                                    $eventDetail = preg_replace('/\bditutup\b/u', __('ditutup'), $eventDetail);
                                 }
                             @endphp
                             <div class="relative flex items-start gap-4 pl-0 py-2">
