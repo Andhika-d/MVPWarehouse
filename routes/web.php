@@ -168,6 +168,7 @@ Route::middleware('auth')->group(function () {
         Route::post('/reset/stock-movements', [AdminController::class, 'resetStockMovements'])->name('reset.stock-movements');
         Route::post('/reset/stock-requests', [AdminController::class, 'resetStockRequests'])->name('reset.stock-requests');
         Route::post('/reset/location-changes', [AdminController::class, 'resetLocationChanges'])->name('reset.location-changes');
+        Route::post('/reset/procurement-notes', [AdminController::class, 'resetProcurementNotes'])->name('reset.procurement-notes');
     });
 
     Route::middleware('role:director')->prefix('director')->name('director.')->group(function () {

@@ -107,6 +107,27 @@
             </div>
         </div>
 
+        {{-- 5. Riwayat Pengadaan (Nota) --}}
+        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">{{ __('Riwayat Pengadaan (Nota)') }}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">{{ __('Hapus semua nota pengadaan.') }}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-lg font-bold text-slate-900">{{ $stats['procurement_notes'] }}</p>
+                    <p class="text-[10px] text-slate-400">{{ __('nota') }}</p>
+                </div>
+            </div>
+            <div class="px-5 py-3 bg-slate-50 flex items-center justify-between">
+                <p class="text-xs text-slate-500">{{ __('Menghapus: semua nota pengadaan') }}</p>
+                <form method="POST" action="{{ route('admin.reset.procurement-notes') }}" data-confirm="{{ __('Hapus SEMUA nota pengadaan? Backup akan dibuat otomatis.') }}" data-confirm-title="{{ __('Reset Riwayat Pengadaan') }}" data-confirm-tone="danger" data-confirm-button="{{ __('Ya, Reset Sekarang') }}">
+                    @csrf
+                    <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer">{{ __('Reset Riwayat Pengadaan') }}</button>
+                </form>
+            </div>
+        </div>
+
         {{-- What is preserved --}}
         <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
             <div class="flex items-start gap-3">
