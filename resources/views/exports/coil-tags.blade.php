@@ -14,10 +14,14 @@
             'printedRole' => $printedRole,
         ])
 
+        <section class="summary">
+            <div>{{ __('Total Coil') }}<strong>{{ number_format($coilTags->count()) }}</strong></div>
+            <div>{{ __('Berat Bersih') }}<strong>{{ number_format((float) $coilTags->sum('berat'), 3, '.', '') }}</strong></div>
+            <div>{{ __('Lokasi') }}<strong>{{ number_format($coilTags->pluck('lokasi_coil')->filter()->unique()->count()) }}</strong></div>
+        </section>
+
         <div class="filters">
             <span><strong>{{ __('Periode') }}:</strong> {{ $periodLabel }}</span>
-            <span><strong>{{ __('Qty') }}:</strong> {{ $coilTags->count() }}</span>
-            <span><strong>{{ __('Berat Bersih') }}:</strong> {{ number_format((float) $coilTags->sum('berat'), 3, '.', '') }} kg</span>
             @foreach($filters as $label => $value)<span><strong>{{ $label }}:</strong> {{ $value }}</span>@endforeach
         </div>
 

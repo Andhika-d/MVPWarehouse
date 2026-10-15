@@ -191,6 +191,8 @@ class AdminCoilTagOutputTest extends TestCase
             ->assertSee('HKG0268302')
             ->assertDontSee('HKF9999999')
             ->assertSee('Berat Bersih')
+            ->assertSee('class="summary"', false)
+            ->assertSee('Total Coil')
             ->assertSee('23.760')
             ->assertSee('11.730')
             ->assertSee('@page', false)
