@@ -5,23 +5,31 @@
         'admin' => __('Administrator'),
         'hr' => __('HRD'),
         'director' => __('Direktur'),
+        'checker' => __('Checker'),
+        'admin_coil' => __('Admin Coil'),
         default => __('Gudang'),
     };
     $roleDescription = match ($currentRole) {
         'admin' => __('Pengguna Super'),
         'hr' => __('HR Taehang'),
         'director' => __('Monitoring Eksekutif'),
+        'checker' => __('Operator Scan Coil'),
+        'admin_coil' => __('Monitoring Coil Tag'),
         default => __('PIC Gudang'),
     };
     $roleInitials = match ($currentRole) {
         'admin' => 'AD',
         'hr' => 'HR',
         'director' => 'DR',
+        'checker' => 'CK',
+        'admin_coil' => 'AC',
         default => 'GD',
     };
     $roleAvatarClass = match ($currentRole) {
         'admin' => 'bg-slate-800',
         'director' => 'bg-indigo-700',
+        'checker' => 'bg-corpblue-600',
+        'admin_coil' => 'bg-corpblue-700',
         default => 'bg-corpblue-500',
     };
 @endphp
@@ -130,7 +138,7 @@
 
     @if(session('impersonate_by'))
     <div class="bg-slate-900 text-white text-center text-xs font-semibold px-4 py-2 flex items-center justify-center space-x-3 no-print">
-        <span>{{ __('Anda sedang login sebagai') }} <strong>{{ auth()->user()->name }}</strong> ({{ match (auth()->user()->role) { 'admin' => __('Admin'), 'hr' => __('HR'), 'director' => __('Direktur'), 'gudang' => __('Gudang'), default => auth()->user()->role } }})</span>
+        <span>{{ __('Anda sedang login sebagai') }} <strong>{{ auth()->user()->name }}</strong> ({{ match (auth()->user()->role) { 'admin' => __('Admin'), 'hr' => __('HR'), 'director' => __('Direktur'), 'gudang' => __('Gudang'), 'checker' => __('Checker'), 'admin_coil' => __('Admin Coil'), default => auth()->user()->role } }})</span>
         <form method="POST" action="/admin/impersonation/stop" class="inline">
             @csrf
             <button type="submit" class="bg-white text-slate-900 px-3 py-1 rounded-md font-bold hover:bg-slate-200 transition-colors cursor-pointer">{{ __('Kembali ke Admin') }}</button>
@@ -157,7 +165,7 @@
                         <span class="text-[10px] font-medium text-slate-400 leading-none mt-0.5">Plan Dua</span>
                         <span class="text-[9px] font-semibold text-corpblue-500 uppercase tracking-widest leading-none mt-1.5">THI2-WAREHOUSE</span>
                     </div>
-                    @elseif($currentRole === 'gudang')
+                    @elseif($currentRole === 'gudang' || $currentRole === 'checker' || $currentRole === 'admin_coil')
                     <div class="w-9 h-9 rounded-lg bg-corpblue-500 flex items-center justify-center shrink-0 shadow-sm">
                         <svg class="text-white" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                     </div>
@@ -426,6 +434,26 @@
                             @if(request()->routeIs('director.issues*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('director.issues*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                             <span>{{ __('Masalah & Analisis') }}</span>
+                        </a>
+                    @elseif($currentRole === 'checker')
+                        <!-- ================= MENU UNTUK CHECKER ================= -->
+
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Operasional') }}</div>
+
+                        <a href="{{ route('checker.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('checker.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('checker.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('checker.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                            <span>{{ __('Coil Checker') }}</span>
+                        </a>
+                    @elseif($currentRole === 'admin_coil')
+                        <!-- ================= MENU UNTUK ADMIN COIL ================= -->
+
+                        <div class="px-4 pt-1 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Data Output') }}</div>
+
+                        <a href="{{ route('admin-coil.coil-tags.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin-coil.coil-tags.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('admin-coil.coil-tags.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('admin-coil.coil-tags.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                            <span>{{ __('Data Coil Tag') }}</span>
                         </a>
                     @endif
                 </nav>

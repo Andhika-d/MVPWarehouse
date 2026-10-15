@@ -13,6 +13,8 @@
                     <option value="hr" {{ request('role') === 'hr' ? 'selected' : '' }}>{{ __('HR') }}</option>
                     <option value="director" {{ request('role') === 'director' ? 'selected' : '' }}>{{ __('Direktur') }}</option>
                     <option value="gudang" {{ request('role') === 'gudang' ? 'selected' : '' }}>{{ __('Gudang') }}</option>
+                    <option value="checker" {{ request('role') === 'checker' ? 'selected' : '' }}>{{ __('Checker') }}</option>
+                    <option value="admin_coil" {{ request('role') === 'admin_coil' ? 'selected' : '' }}>{{ __('Admin Coil') }}</option>
                 </select>
                 @if(request()->filled('search') || (request()->filled('role') && request('role') !== 'all'))
                 <a href="{{ route('admin.users.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
@@ -126,6 +128,8 @@
                                 <option value="hr">{{ __('HR') }}</option>
                                 <option value="director">{{ __('Direktur') }}</option>
                                 <option value="admin">{{ __('Admin') }}</option>
+                                <option value="checker">{{ __('Checker') }}</option>
+                                <option value="admin_coil">{{ __('Admin Coil') }}</option>
                             </select>
                         </div>
                     </div>

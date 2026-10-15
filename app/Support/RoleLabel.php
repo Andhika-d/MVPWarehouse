@@ -11,6 +11,8 @@ final class RoleLabel
             'hr' => __('HR'),
             'director' => __('DIREKTUR'),
             'gudang' => __('GUDANG'),
+            'checker' => __('CHECKER'),
+            'admin_coil' => __('ADMIN COIL'),
             default => strtoupper((string) $role),
         };
     }

@@ -14,6 +14,10 @@ class User extends Authenticatable
 {
     public const ROLE_DIRECTOR = 'director';
 
+    public const ROLE_CHECKER = 'checker';
+
+    public const ROLE_ADMIN_COIL = 'admin_coil';
+
     protected $attributes = [
         'is_active' => true,
     ];

@@ -27,6 +27,7 @@ class AuthController extends Controller
 
             if (! $user->is_active) {
                 Auth::logout();
+
                 return back()->withErrors(['email' => __('Email atau password yang Anda masukkan tidak sesuai. Jika membutuhkan bantuan, hubungi administrator.')]);
             }
 
@@ -37,28 +38,16 @@ class AuthController extends Controller
                 'action' => 'user_login',
                 'target_type' => User::class,
                 'target_id' => $user->id,
-                'details' => 'Pengguna ' . $user->name . ' ('.match ($user->role) {
-                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
-            }.') berhasil login',
+                'details' => 'Pengguna '.$user->name.' ('.match ($user->role) {
+                    'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', 'checker' => 'Checker', 'admin_coil' => 'Admin Coil', default => $user->role,
+                }.') berhasil login',
             ]);
 
             if ($user->must_change_password) {
                 return redirect()->route('password.change');
             }
 
-            if ($user->role === 'hr') {
-                return redirect()->intended('/hr/dashboard');
-            }
-
-            if ($user->role === 'admin') {
-                return redirect()->intended('/admin/dashboard');
-            }
-
-            if ($user->role === 'director') {
-                return redirect()->intended('/director/dashboard');
-            }
-
-            return redirect()->intended('/gudang/dashboard');
+            return redirect()->intended($this->homeFor($user->role));
         }
 
         return back()->withErrors(['email' => __('Email atau password yang Anda masukkan tidak sesuai. Pastikan data sudah benar.')]);
@@ -73,9 +62,9 @@ class AuthController extends Controller
                 'action' => 'user_logout',
                 'target_type' => User::class,
                 'target_id' => $user->id,
-                'details' => 'Pengguna ' . $user->name . ' ('.match ($user->role) {
-                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
-            }.') berhasil logout',
+                'details' => 'Pengguna '.$user->name.' ('.match ($user->role) {
+                    'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', 'checker' => 'Checker', 'admin_coil' => 'Admin Coil', default => $user->role,
+                }.') berhasil logout',
             ]);
         }
 
@@ -114,7 +103,7 @@ class AuthController extends Controller
             'action' => 'changed_password',
             'target_type' => User::class,
             'target_id' => $user->id,
-            'details' => 'User ' . $user->name . ' mengubah password sendiri',
+            'details' => 'User '.$user->name.' mengubah password sendiri',
         ]);
 
         return redirect($this->homeFor($user->role))->with('success', __('Password berhasil diubah.'));
@@ -126,6 +115,8 @@ class AuthController extends Controller
             'hr' => '/hr/dashboard',
             'admin' => '/admin/dashboard',
             'director' => '/director/dashboard',
+            'checker' => '/checker',
+            'admin_coil' => '/admin-coil/coil-tags',
             default => '/gudang/dashboard',
         };
     }
