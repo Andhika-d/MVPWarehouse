@@ -33,6 +33,10 @@ class AdminCoilTagOutputTest extends TestCase
             ->assertSee('09-020')
             ->assertSee('name="search"', false)
             ->assertSee('name="location"', false)
+            ->assertSee('id="coilTagFilters"', false)
+            ->assertSee('name="period_mode"', false)
+            ->assertSee('Pilih Periode')
+            ->assertSee('id="periodFilterModal"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.print').'"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.export').'"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.show', $record).'"', false);
@@ -89,7 +93,7 @@ class AdminCoilTagOutputTest extends TestCase
         }
     }
 
-    public function test_today_and_custom_date_range_filter_the_database_results(): void
+    public function test_period_filter_limits_the_database_results(): void
     {
         $today = $this->createCoilTag(['scanned_at' => now()->startOfDay()->addHours(2)]);
         $this->createCoilTag([
@@ -98,12 +102,12 @@ class AdminCoilTagOutputTest extends TestCase
             'scanned_at' => now()->subDays(4),
         ]);
 
-        $this->get('/admin-coil/coil-tags?date_filter=today')
+        $this->get('/admin-coil/coil-tags?period_mode=weekly&period_start='.now()->toDateString())
             ->assertOk()
             ->assertSee($today->nomor_coil)
             ->assertDontSee('HKF9999999');
 
-        $this->get('/admin-coil/coil-tags?date_filter=custom&date_from='.now()->toDateString().'&date_to='.now()->toDateString())
+        $this->get('/admin-coil/coil-tags?period_mode=flexible&period_start='.now()->toDateString().'&period_end='.now()->toDateString())
             ->assertOk()
             ->assertSee($today->nomor_coil)
             ->assertDontSee('HKF9999999');
@@ -130,9 +134,9 @@ class AdminCoilTagOutputTest extends TestCase
         $today = now()->toDateString();
         $response = $this->get('/admin-coil/coil-tags/export?'.http_build_query([
             'search' => 'HKG0268301',
-            'date_filter' => 'custom',
-            'date_from' => $today,
-            'date_to' => $today,
+            'period_mode' => 'flexible',
+            'period_start' => $today,
+            'period_end' => $today,
             'location' => 'AL',
         ]));
 

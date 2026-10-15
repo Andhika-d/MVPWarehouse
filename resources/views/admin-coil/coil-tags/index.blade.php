@@ -3,28 +3,12 @@
 
         {{-- Toolbar / Filter --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin-coil.coil-tags.index') }}" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
+            <form id="coilTagFilters" method="GET" action="{{ route('admin-coil.coil-tags.index') }}" class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
                 <div class="lg:col-span-2">
                     <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Pencarian') }}</label>
                     <input type="text" name="search" value="{{ $filters['search'] }}" placeholder="{{ __('Nomor coil, tag, grade, lokasi') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Tanggal') }}</label>
-                    <select name="date_filter" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                        <option value="all" @selected($filters['date_filter'] === 'all')>{{ __('Semua') }}</option>
-                        <option value="today" @selected($filters['date_filter'] === 'today')>{{ __('Hari ini') }}</option>
-                        <option value="custom" @selected($filters['date_filter'] === 'custom')>{{ __('Rentang') }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Dari') }}</label>
-                    <input type="date" name="date_from" value="{{ $filters['date_from'] }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                </div>
-                <div>
-                    <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Sampai') }}</label>
-                    <input type="date" name="date_to" value="{{ $filters['date_to'] }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                </div>
-                <div>
+                <div class="lg:col-span-2">
                     <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Lokasi') }}</label>
                     <select name="location" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                         <option value="">{{ __('Semua lokasi') }}</option>
@@ -33,9 +17,15 @@
                         @endforeach
                     </select>
                 </div>
+                <div class="lg:col-span-2">
+                    <label class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Periode') }}</label>
+                    <x-period-filter-button :period="$period" />
+                </div>
                 <div class="flex items-end gap-2 sm:col-span-2 lg:col-span-6">
                     <button type="submit" class="btn btn--primary">{{ __('Filter') }}</button>
-                    <a href="{{ route('admin-coil.coil-tags.index') }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">{{ __('Reset') }}</a>
+                    @if (request()->hasAny(['search', 'location', 'period_mode']) || $period)
+                        <a href="{{ route('admin-coil.coil-tags.index') }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700">{{ __('Reset') }}</a>
+                    @endif
                 </div>
             </form>
         </div>
@@ -117,4 +107,8 @@
             @endif
         </div>
     </div>
+
+    <x-slot:modals>
+        <x-period-filter-modal :period="$period" form-id="coilTagFilters" />
+    </x-slot:modals>
 </x-layout>

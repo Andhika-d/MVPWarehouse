@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CoilTag;
 use App\Support\PdfFonts;
 use App\Support\PdfFooter;
+use App\Support\PeriodRange;
 use App\Support\PrintOrientation;
 use App\Support\RoleLabel;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -21,7 +22,8 @@ class CoilTagController extends Controller
     public function index(Request $request): View
     {
         $filters = $this->validatedFilters($request);
-        $query = $this->filteredQuery($filters);
+        $period = PeriodRange::fromRequest($request);
+        $query = $this->filteredQuery($filters, $period);
         $coilTags = (clone $query)->paginate(25)->withQueryString();
         $totalWeight = number_format((float) (clone $query)->sum('berat'), 3, '.', '');
 
@@ -30,7 +32,8 @@ class CoilTagController extends Controller
             'totalQuantity' => $coilTags->total(),
             'totalWeight' => $totalWeight,
             'filters' => $filters,
-            'filterDescription' => $this->filterDescription($filters),
+            'period' => $period,
+            'filterDescription' => $this->filterDescription($filters, $period),
         ]);
     }
 
@@ -42,14 +45,15 @@ class CoilTagController extends Controller
     public function print(Request $request): View
     {
         $filters = $this->validatedFilters($request);
+        $period = PeriodRange::fromRequest($request);
         $orientation = PrintOrientation::resolve($request, $filters['orientation']);
-        $coilTags = $this->filteredQuery($filters)->get();
+        $coilTags = $this->filteredQuery($filters, $period)->get();
 
         return view('exports.coil-tags', [
             'coilTags' => $coilTags,
             'title' => 'LAPORAN TAEHANG / COIL TAGGING',
             'orientation' => $orientation,
-            'periodLabel' => $this->periodLabel($filters),
+            'periodLabel' => $this->periodLabel($period),
             'filters' => $this->exportFilters($filters),
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
@@ -62,8 +66,9 @@ class CoilTagController extends Controller
     public function pdf(Request $request): Response
     {
         $filters = $this->validatedFilters($request);
+        $period = PeriodRange::fromRequest($request);
         $orientation = PrintOrientation::resolve($request, $filters['orientation']);
-        $coilTags = $this->filteredQuery($filters)->get();
+        $coilTags = $this->filteredQuery($filters, $period)->get();
 
         PdfFonts::register();
 
@@ -71,7 +76,7 @@ class CoilTagController extends Controller
             'coilTags' => $coilTags,
             'title' => 'LAPORAN TAEHANG / COIL TAGGING',
             'orientation' => $orientation,
-            'periodLabel' => $this->periodLabel($filters),
+            'periodLabel' => $this->periodLabel($period),
             'filters' => $this->exportFilters($filters),
             'printedAt' => now(),
             'printedBy' => Auth::user()->name,
@@ -88,7 +93,8 @@ class CoilTagController extends Controller
     public function export(Request $request): Response
     {
         $filters = $this->validatedFilters($request);
-        $rows = $this->filteredQuery($filters)->get()
+        $period = PeriodRange::fromRequest($request);
+        $rows = $this->filteredQuery($filters, $period)->get()
             ->values()
             ->map(fn (CoilTag $coilTag, int $index): array => [
                 $index + 1,
@@ -113,34 +119,28 @@ class CoilTagController extends Controller
     }
 
     /**
-     * @return array{search: string, date_filter: string, date_from: ?string, date_to: ?string, location: string, orientation: string}
+     * @return array{search: string, location: string, orientation: string}
      */
     private function validatedFilters(Request $request): array
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:150'],
-            'date_filter' => ['nullable', 'in:all,today,custom'],
-            'date_from' => ['nullable', 'required_if:date_filter,custom', 'date_format:Y-m-d'],
-            'date_to' => ['nullable', 'required_if:date_filter,custom', 'date_format:Y-m-d', 'after_or_equal:date_from'],
             'location' => ['nullable', 'in:AL,AR,BL,BR,CL,CR'],
             'orientation' => ['nullable', 'in:landscape,portrait'],
         ]);
 
         return [
             'search' => trim((string) ($validated['search'] ?? '')),
-            'date_filter' => $validated['date_filter'] ?? 'all',
-            'date_from' => $validated['date_from'] ?? null,
-            'date_to' => $validated['date_to'] ?? null,
             'location' => $validated['location'] ?? '',
             'orientation' => $validated['orientation'] ?? 'landscape',
         ];
     }
 
     /**
-     * @param  array{search: string, date_filter: string, date_from: ?string, date_to: ?string, location: string, orientation: string}  $filters
+     * @param  array{search: string, location: string, orientation: string}  $filters
      * @return Builder<CoilTag>
      */
-    private function filteredQuery(array $filters): Builder
+    private function filteredQuery(array $filters, ?PeriodRange $period): Builder
     {
         $query = CoilTag::query();
 
@@ -154,50 +154,42 @@ class CoilTagController extends Controller
             });
         }
 
-        if ($filters['date_filter'] === 'today') {
-            $query->whereDate('scanned_at', now()->toDateString());
-        } elseif ($filters['date_filter'] === 'custom') {
-            $query->whereDate('scanned_at', '>=', $filters['date_from'])
-                ->whereDate('scanned_at', '<=', $filters['date_to']);
-        }
-
         if ($filters['location'] !== '') {
             $query->where('lokasi_coil', $filters['location']);
         }
+
+        $period?->apply($query, 'scanned_at');
 
         return $query->orderByDesc('scanned_at')->orderByDesc('id');
     }
 
     /**
-     * @param  array{search: string, date_filter: string, date_from: ?string, date_to: ?string, location: string, orientation: string}  $filters
+     * @param  array{search: string, location: string, orientation: string}  $filters
      */
-    private function filterDescription(array $filters): string
+    private function filterDescription(array $filters, ?PeriodRange $period): string
     {
-        $dateDescription = match ($filters['date_filter']) {
-            'today' => __('Hari ini').' ('.now()->toDateString().')',
-            'custom' => $filters['date_from'].' s/d '.$filters['date_to'],
-            default => __('Semua tanggal'),
-        };
+        $parts = [];
 
-        $locationDescription = $filters['location'] !== '' ? __('Lokasi').': '.$filters['location'].' | ' : '';
+        if ($filters['location'] !== '') {
+            $parts[] = __('Lokasi').': '.$filters['location'];
+        }
 
-        return $locationDescription.($filters['search'] !== '' ? __('Pencarian').': '.$filters['search'].' | ' : '').$dateDescription;
+        if ($filters['search'] !== '') {
+            $parts[] = __('Pencarian').': '.$filters['search'];
+        }
+
+        $parts[] = $period?->label() ?? __('Semua Periode');
+
+        return implode(' | ', $parts);
+    }
+
+    private function periodLabel(?PeriodRange $period): string
+    {
+        return $period?->label() ?? __('Semua Periode');
     }
 
     /**
-     * @param  array{search: string, date_filter: string, date_from: ?string, date_to: ?string, location: string, orientation: string}  $filters
-     */
-    private function periodLabel(array $filters): string
-    {
-        return match ($filters['date_filter']) {
-            'today' => now()->translatedFormat('d F Y'),
-            'custom' => $filters['date_from'].' - '.$filters['date_to'],
-            default => __('Semua Periode'),
-        };
-    }
-
-    /**
-     * @param  array{search: string, date_filter: string, date_from: ?string, date_to: ?string, location: string, orientation: string}  $filters
+     * @param  array{search: string, location: string, orientation: string}  $filters
      * @return array<string, string>
      */
     private function exportFilters(array $filters): array
