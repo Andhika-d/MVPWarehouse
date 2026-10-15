@@ -13,24 +13,27 @@ use App\Support\RoleLabel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class CoilTagController extends Controller
 {
+    /** @var list<string> */
+    private const LOCATIONS = ['AL', 'AR', 'BL', 'BR', 'CL', 'CR'];
+
     public function index(Request $request): View
     {
         $filters = $this->validatedFilters($request);
         $period = PeriodRange::fromRequest($request);
-        $query = $this->filteredQuery($filters, $period);
-        $coilTags = (clone $query)->paginate(25)->withQueryString();
-        $totalWeight = number_format((float) (clone $query)->sum('berat'), 3, '.', '');
+        $coilTags = $this->filteredQuery($filters, $period)->paginate(25)->withQueryString();
 
         return view('admin-coil.coil-tags.index', [
             'coilTags' => $coilTags,
-            'totalQuantity' => $coilTags->total(),
-            'totalWeight' => $totalWeight,
+            'summary' => $this->summary(),
+            'locationData' => $this->locationData(),
             'filters' => $filters,
             'period' => $period,
             'filterDescription' => $this->filterDescription($filters, $period),
@@ -125,7 +128,7 @@ class CoilTagController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:150'],
-            'location' => ['nullable', 'in:AL,AR,BL,BR,CL,CR'],
+            'location' => ['nullable', Rule::in(self::LOCATIONS)],
             'orientation' => ['nullable', 'in:landscape,portrait'],
         ]);
 
@@ -186,6 +189,36 @@ class CoilTagController extends Controller
     private function periodLabel(?PeriodRange $period): string
     {
         return $period?->label() ?? __('Semua Periode');
+    }
+
+    /**
+     * @return array{total_qty: int, total_weight: float, today: int, locations: int}
+     */
+    private function summary(): array
+    {
+        return [
+            'total_qty' => CoilTag::count(),
+            'total_weight' => (float) CoilTag::sum('berat'),
+            'today' => CoilTag::whereDate('scanned_at', now()->toDateString())->count(),
+            'locations' => CoilTag::whereNotNull('lokasi_coil')->distinct()->count('lokasi_coil'),
+        ];
+    }
+
+    /**
+     * @return Collection<int, array{location: string, total: int}>
+     */
+    private function locationData(): Collection
+    {
+        $counts = CoilTag::query()
+            ->whereIn('lokasi_coil', self::LOCATIONS)
+            ->selectRaw('lokasi_coil, COUNT(*) as total')
+            ->groupBy('lokasi_coil')
+            ->pluck('total', 'lokasi_coil');
+
+        return collect(self::LOCATIONS)->map(fn (string $location): array => [
+            'location' => $location,
+            'total' => (int) ($counts[$location] ?? 0),
+        ]);
     }
 
     /**
