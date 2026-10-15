@@ -7,6 +7,7 @@ use App\Exports\LocationChangeExport;
 use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\LocationChangeRequest;
+use App\Models\ProcurementNote;
 use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Models\StockRequest;
@@ -739,7 +740,7 @@ class AdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
             'password' => ['nullable', 'string', 'min:6'],
-            'role' => ['required', 'in:gudang,hr,admin,director'],
+            'role' => ['required', 'in:gudang,hr,admin,director,checker,admin_coil'],
             'locale' => ['nullable', Rule::in(array_keys(config('language.supported')))],
         ]);
 
@@ -817,7 +818,7 @@ class AdminController extends Controller
     public function updateUserRole(Request $request, User $user)
     {
         $data = $request->validate([
-            'role' => ['required', 'in:gudang,hr,admin,director'],
+            'role' => ['required', 'in:gudang,hr,admin,director,checker,admin_coil'],
         ]);
 
         if ($user->id === Auth::id()) {
@@ -836,7 +837,7 @@ class AdminController extends Controller
             'target_type' => User::class,
             'target_id' => $user->id,
             'details' => 'Mengubah peran akun '.$user->email.' menjadi '.match ($data['role']) {
-                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $data['role'],
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', 'checker' => 'Checker', 'admin_coil' => 'Admin Coil', default => $data['role'],
             },
         ]);
 
@@ -910,7 +911,7 @@ class AdminController extends Controller
             'target_type' => User::class,
             'target_id' => $user->id,
             'details' => 'Admin login sebagai '.$user->email.' ('.match ($user->role) {
-                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', default => $user->role,
+                'admin' => 'Admin', 'hr' => 'HR', 'director' => 'Direktur', 'gudang' => 'Gudang', 'checker' => 'Checker', 'admin_coil' => 'Admin Coil', default => $user->role,
             }.')',
         ]);
 
@@ -1250,7 +1251,7 @@ class AdminController extends Controller
             'stock_requests' => StockRequest::count(),
             'location_change_requests' => LocationChangeRequest::count(),
             'audit_logs' => AuditLog::count(),
-            'procurement_notes' => \App\Models\ProcurementNote::count(),
+            'procurement_notes' => ProcurementNote::count(),
         ];
 
         return view('admin.reset', compact('stats'));
@@ -1353,14 +1354,14 @@ class AdminController extends Controller
     {
         $this->createSafetyBackup();
 
-        $noteCount = \App\Models\ProcurementNote::count();
+        $noteCount = ProcurementNote::count();
 
         DB::transaction(function () {
             // Set procurement_note_id to null in stock_requests first (foreign key constraint)
             DB::table('stock_requests')->update(['procurement_note_id' => null]);
 
             // Delete procurement notes
-            \App\Models\ProcurementNote::query()->forceDelete();
+            ProcurementNote::query()->forceDelete();
         });
 
         AuditLog::create([
@@ -1461,6 +1462,9 @@ class AdminController extends Controller
         return match ($role) {
             'hr' => '/hr/dashboard',
             'admin' => '/admin/dashboard',
+            'director' => '/director/dashboard',
+            'checker' => '/checker',
+            'admin_coil' => '/admin-coil/coil-tags',
             default => '/gudang/dashboard',
         };
     }

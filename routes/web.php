@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\AdminCoil\CoilTagController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CheckerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DirectorController;
 use App\Http\Controllers\GudangController;
@@ -100,6 +102,23 @@ Route::middleware('auth')->group(function () {
 
         Route::redirect('/hr/daftar-belanja', '/riwayat-pengadaan');
         Route::redirect('/hr/history', '/riwayat-pengadaan');
+    });
+
+    // Coil Tag Checker (scan KP -> scan Taehang -> simpan)
+    Route::middleware('role:checker')->prefix('checker')->name('checker.')->group(function () {
+        Route::get('/', [CheckerController::class, 'index'])->name('index');
+        Route::post('/kp', [CheckerController::class, 'scanKp'])->name('kp');
+        Route::post('/taehang', [CheckerController::class, 'scanTaehang'])->name('taehang');
+        Route::post('/save', [CheckerController::class, 'save'])->name('save');
+    });
+
+    // Admin Coil (read-only output data coil tag)
+    Route::middleware('role:admin_coil')->prefix('admin-coil')->name('admin-coil.')->group(function () {
+        Route::get('/coil-tags', [CoilTagController::class, 'index'])->name('coil-tags.index');
+        Route::get('/coil-tags/export', [CoilTagController::class, 'export'])->name('coil-tags.export');
+        Route::get('/coil-tags/pdf', [CoilTagController::class, 'pdf'])->name('coil-tags.pdf');
+        Route::get('/coil-tags/print', [CoilTagController::class, 'print'])->name('coil-tags.print');
+        Route::get('/coil-tags/{coilTag}', [CoilTagController::class, 'show'])->whereNumber('coilTag')->name('coil-tags.show');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
