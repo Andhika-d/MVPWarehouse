@@ -42,6 +42,7 @@ class AdminCoilTagOutputTest extends TestCase
             ->assertSee('Pilih Periode')
             ->assertSee('id="periodFilterModal"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.print').'"', false)
+            ->assertDontSee('target="_blank"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.export').'"', false)
             ->assertSee('href="'.route('admin-coil.coil-tags.show', $record).'"', false);
     }

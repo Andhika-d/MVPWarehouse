@@ -51,7 +51,7 @@
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Filter') }}</button>
                 <div class="flex flex-wrap gap-2 lg:ml-auto">
                     <a href="{{ route('admin-coil.coil-tags.export', request()->query()) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Export Excel') }}</a>
-                    <a href="{{ route('admin-coil.coil-tags.print', request()->query()) }}" target="_blank" rel="noopener" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
+                    <a href="{{ route('admin-coil.coil-tags.print', request()->query()) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
                     <a href="{{ route('admin-coil.coil-tags.pdf', request()->query()) }}" class="btn btn--primary whitespace-nowrap">{{ __('Unduh PDF') }}</a>
                 </div>
             </form>
