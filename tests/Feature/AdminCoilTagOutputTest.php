@@ -246,9 +246,12 @@ class AdminCoilTagOutputTest extends TestCase
             ->assertSee('FIELD ONE')
             ->assertSee('FIELD SIX')
             ->assertSee('FIELD NINE')
-            ->assertSee('complete raw KP text')
-            ->assertSee('complete raw Taehang text')
             ->assertSee('LINE-4')
+            ->assertSee('Riwayat Lokasi')
+            ->assertSee('Ubah Lokasi')
+            ->assertDontSee('complete raw KP text')
+            ->assertDontSee('complete raw Taehang text')
+            ->assertDontSee('Jejak Scan')
             ->assertSee('Created At')
             ->assertSee('Updated At');
     }
