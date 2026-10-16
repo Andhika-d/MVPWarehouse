@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class CoilTag extends Model
 {
@@ -60,6 +61,7 @@ class CoilTag extends Model
      *
      * Every change writes an audit row so the movement trail stays consistent,
      * no matter whether it comes from a checker, a manual edit or an import.
+     * The value update and the audit row are persisted atomically.
      */
     public function changeLocation(?string $to, string $source, ?int $changedBy = null, ?string $note = null): void
     {
@@ -72,19 +74,21 @@ class CoilTag extends Model
             return;
         }
 
-        if ($to !== null) {
-            CoilLocation::ensure($to);
-        }
+        DB::transaction(function () use ($to, $from, $source, $changedBy, $note): void {
+            if ($to !== null) {
+                CoilLocation::ensure($to);
+            }
 
-        $this->update(['lokasi_coil' => $to]);
+            $this->update(['lokasi_coil' => $to]);
 
-        $this->locationHistories()->create([
-            'from_location' => $from,
-            'to_location' => $to,
-            'source' => $source,
-            'changed_by' => $changedBy,
-            'note' => $note,
-        ]);
+            $this->locationHistories()->create([
+                'from_location' => $from,
+                'to_location' => $to,
+                'source' => $source,
+                'changed_by' => $changedBy,
+                'note' => $note,
+            ]);
+        });
     }
 
     public function beratAsScanned(): string

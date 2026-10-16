@@ -18,7 +18,7 @@ class CoilMovementController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:150'],
-            'location' => ['nullable', Rule::in(CoilLocation::query()->pluck('kode')->all())],
+            'location' => ['nullable', Rule::in(CoilLocation::filterOptions())],
             'type' => ['nullable', Rule::in(['scan', 'lokasi'])],
         ]);
 
@@ -52,12 +52,24 @@ class CoilMovementController extends Controller
                 'location' => $location,
                 'type' => $type,
             ],
-            'locations' => CoilLocation::active()
-                ->orderBy('urutan')
-                ->orderBy('kode')
-                ->pluck('kode'),
+            'locations' => $this->locationOptions(),
             'period' => $period,
         ]);
+    }
+
+    /**
+     * Filterable locations for the form, with the human label for the sentinel.
+     *
+     * @return array<int, array{value: string, label: string}>
+     */
+    private function locationOptions(): array
+    {
+        return collect(CoilLocation::filterOptions())
+            ->map(fn (string $kode): array => [
+                'value' => $kode,
+                'label' => $kode === CoilLocation::FILTER_NONE ? __('Tanpa Lokasi') : $kode,
+            ])
+            ->all();
     }
 
     private function scanQuery(string $search, string $location): Builder
@@ -65,7 +77,7 @@ class CoilMovementController extends Controller
         $query = CoilTag::query()
             ->leftJoin('users as actor', 'actor.id', '=', 'coil_tags.user_id');
 
-        $this->applyCoilFilters($query, $search, $location);
+        $this->applyCoilFilters($query, $search, $location, 'coil_tags.lokasi_coil');
 
         return $query
             ->selectRaw("'scan' as event_type")
@@ -91,7 +103,9 @@ class CoilMovementController extends Controller
             ->join('coil_tags', 'coil_tags.id', '=', 'coil_tag_location_histories.coil_tag_id')
             ->leftJoin('users as actor', 'actor.id', '=', 'coil_tag_location_histories.changed_by');
 
-        $this->applyCoilFilters($query, $search, $location);
+        // A location movement belongs to its destination, so the location filter
+        // matches the coil's location at the time of the event, not today's value.
+        $this->applyCoilFilters($query, $search, $location, 'coil_tag_location_histories.to_location');
 
         return $query
             ->selectRaw("'lokasi' as event_type")
@@ -111,7 +125,7 @@ class CoilMovementController extends Controller
             ->selectRaw('coil_tag_location_histories.id as sort_key');
     }
 
-    private function applyCoilFilters(Builder $query, string $search, string $location): void
+    private function applyCoilFilters(Builder $query, string $search, string $location, string $locationColumn): void
     {
         if ($search !== '') {
             $like = '%'.$search.'%';
@@ -125,8 +139,10 @@ class CoilMovementController extends Controller
             });
         }
 
-        if ($location !== '') {
-            $query->where('coil_tags.lokasi_coil', $location);
+        if ($location === CoilLocation::FILTER_NONE) {
+            $query->whereNull($locationColumn);
+        } elseif ($location !== '') {
+            $query->where($locationColumn, $location);
         }
     }
 }

@@ -273,6 +273,80 @@ class CoilLocationTest extends TestCase
         }
     }
 
+    public function test_index_offers_and_applies_the_no_location_filter(): void
+    {
+        $located = $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => 'AL']);
+        $without = $this->createCoilTag(['nomor_coil' => 'HKF7777777', 'tag_taehang' => '09-021', 'lokasi_coil' => null]);
+
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+
+        $this->get('/admin-coil/coil-tags')
+            ->assertOk()
+            ->assertSee('Tanpa Lokasi')
+            ->assertSee('location='.CoilLocation::FILTER_NONE);
+
+        $this->get('/admin-coil/coil-tags?location='.CoilLocation::FILTER_NONE)
+            ->assertOk()
+            ->assertSee($without->nomor_coil)
+            ->assertDontSee($located->nomor_coil);
+
+        $this->get('/admin-coil/coil-tags?location=AL')
+            ->assertOk()
+            ->assertSee($located->nomor_coil)
+            ->assertDontSee($without->nomor_coil);
+    }
+
+    public function test_movements_location_filter_matches_the_destination_of_each_event(): void
+    {
+        $admin = $this->makeUser(User::ROLE_ADMIN_COIL);
+        $moved = $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => null]);
+        $this->createCoilTag(['nomor_coil' => 'HKF7777777', 'tag_taehang' => '09-021', 'lokasi_coil' => null]);
+
+        $this->actingAs($admin);
+        $this->post('/admin-coil/coil-tags/'.$moved->id.'/lokasi', ['lokasi_coil' => 'AL']);
+        $this->post('/admin-coil/coil-tags/'.$moved->id.'/lokasi', ['lokasi_coil' => 'BL']);
+
+        // The coil now sits in BL, but the earlier move into AL must stay findable.
+        $this->get('/admin-coil/pergerakan-coil?type=lokasi&location=AL')
+            ->assertOk()
+            ->assertSee('HKG0268301')
+            ->assertDontSee('HKF7777777');
+
+        $this->get('/admin-coil/pergerakan-coil?type=lokasi&location=BL')
+            ->assertOk()
+            ->assertSee('HKG0268301');
+
+        $this->get('/admin-coil/pergerakan-coil?type=lokasi&location=CR')
+            ->assertOk()
+            ->assertDontSee('HKG0268301');
+    }
+
+    public function test_movements_can_filter_events_and_scans_without_a_location(): void
+    {
+        $admin = $this->makeUser(User::ROLE_ADMIN_COIL);
+        $cleared = $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => 'AL']);
+        $kept = $this->createCoilTag(['nomor_coil' => 'HKF7777777', 'tag_taehang' => '09-021', 'lokasi_coil' => null]);
+
+        $this->actingAs($admin);
+        $this->post('/admin-coil/coil-tags/'.$cleared->id.'/lokasi', ['lokasi_coil' => '']);
+        $this->post('/admin-coil/coil-tags/'.$kept->id.'/lokasi', ['lokasi_coil' => 'AL']);
+
+        $this->get('/admin-coil/pergerakan-coil?type=lokasi&location='.CoilLocation::FILTER_NONE)
+            ->assertOk()
+            ->assertSee('HKG0268301')
+            ->assertDontSee('HKF7777777');
+
+        $this->get('/admin-coil/pergerakan-coil?type=scan&location='.CoilLocation::FILTER_NONE)
+            ->assertOk()
+            ->assertSee('HKG0268301')
+            ->assertDontSee('HKF7777777');
+
+        $this->get('/admin-coil/pergerakan-coil?type=lokasi&location=AL')
+            ->assertOk()
+            ->assertSee('HKF7777777')
+            ->assertDontSee('HKG0268301');
+    }
+
     private function uploadXlsx(array $rows): UploadedFile
     {
         $temp = tempnam(sys_get_temp_dir(), 'coil-loc');

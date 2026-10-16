@@ -153,7 +153,7 @@ class CoilTagController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:150'],
-            'location' => ['nullable', Rule::in(CoilLocation::query()->pluck('kode')->all())],
+            'location' => ['nullable', Rule::in(CoilLocation::filterOptions())],
             'orientation' => ['nullable', 'in:landscape,portrait'],
         ]);
 
@@ -182,7 +182,9 @@ class CoilTagController extends Controller
             });
         }
 
-        if ($filters['location'] !== '') {
+        if ($filters['location'] === CoilLocation::FILTER_NONE) {
+            $query->whereNull('lokasi_coil');
+        } elseif ($filters['location'] !== '') {
             $query->where('lokasi_coil', $filters['location']);
         }
 
@@ -199,7 +201,7 @@ class CoilTagController extends Controller
         $parts = [];
 
         if ($filters['location'] !== '') {
-            $parts[] = __('Lokasi').': '.$filters['location'];
+            $parts[] = __('Lokasi').': '.$this->locationLabel($filters['location']);
         }
 
         if ($filters['search'] !== '') {
@@ -229,8 +231,13 @@ class CoilTagController extends Controller
         ];
     }
 
+    private function locationLabel(string $location): string
+    {
+        return $location === CoilLocation::FILTER_NONE ? __('Tanpa Lokasi') : $location;
+    }
+
     /**
-     * @return Collection<int, array{location: string, total: int}>
+     * @return Collection<int, array{location: string, label: string, total: int}>
      */
     private function locationData(): Collection
     {
@@ -240,14 +247,38 @@ class CoilTagController extends Controller
             ->groupBy('lokasi_coil')
             ->pluck('total', 'lokasi_coil');
 
-        return CoilLocation::active()
+        $rows = CoilLocation::active()
             ->orderBy('urutan')
             ->orderBy('kode')
             ->get()
             ->map(fn (CoilLocation $location): array => [
                 'location' => $location->kode,
+                'label' => $location->kode,
                 'total' => (int) ($counts[$location->kode] ?? 0),
             ]);
+
+        // Values still on coils but no longer in the active master stay filterable.
+        $known = $rows->pluck('location')->all();
+
+        foreach ($counts as $kode => $total) {
+            if (in_array($kode, $known, true)) {
+                continue;
+            }
+
+            $rows->push([
+                'location' => (string) $kode,
+                'label' => (string) $kode,
+                'total' => (int) $total,
+            ]);
+        }
+
+        $rows->push([
+            'location' => CoilLocation::FILTER_NONE,
+            'label' => __('Tanpa Lokasi'),
+            'total' => CoilTag::whereNull('lokasi_coil')->count(),
+        ]);
+
+        return $rows;
     }
 
     /**
@@ -258,7 +289,7 @@ class CoilTagController extends Controller
     {
         return [
             __('Pencarian') => $filters['search'] !== '' ? $filters['search'] : __('Semua'),
-            __('Lokasi') => $filters['location'] !== '' ? $filters['location'] : __('Semua'),
+            __('Lokasi') => $filters['location'] !== '' ? $this->locationLabel($filters['location']) : __('Semua'),
         ];
     }
 }

@@ -987,5 +987,8 @@
     "Import": "Import",
     "Import lokasi selesai: :updated diperbarui, :unchanged tanpa perubahan, :notFound tidak ditemukan.": "Location import finished: :updated updated, :unchanged unchanged, :notFound not found.",
     "Sesi import kedaluwarsa. Silakan upload ulang.": "The import session has expired. Please upload again.",
-    "Kolom \"Nomor Coil\" dan \"Lokasi\" harus tersedia di file Excel.": "The \"Coil Number\" and \"Location\" columns must exist in the Excel file."
+    "Kolom \"Nomor Coil\" dan \"Lokasi\" harus tersedia di file Excel.": "The \"Coil Number\" and \"Location\" columns must exist in the Excel file.",
+    "Jenis": "Type",
+    "Coil Tag": "Coil Tag",
+    "Konfirmasi import :count baris lokasi?": "Import :count location rows?"
 }

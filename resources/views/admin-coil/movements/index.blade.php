@@ -18,7 +18,7 @@
                 <select name="location" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="">{{ __('Semua lokasi') }}</option>
                     @foreach ($locations as $location)
-                        <option value="{{ $location }}" @selected($filters['location'] === $location)>{{ $location }}</option>
+                        <option value="{{ $location['value'] }}" @selected($filters['location'] === $location['value'])>{{ $location['label'] }}</option>
                     @endforeach
                 </select>
                 <x-period-filter-button :period="$period" />
