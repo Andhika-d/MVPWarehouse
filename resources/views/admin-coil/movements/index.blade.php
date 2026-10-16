@@ -24,11 +24,7 @@
                 <div class="flex-1">
                     <input type="text" name="search" value="{{ $filters['search'] }}" aria-label="{{ __('Pencarian') }}" placeholder="{{ __('Nomor coil, tag, grade, company') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                 </div>
-                <select name="type" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="">{{ __('Semua jenis') }}</option>
-                    <option value="scan" @selected($filters['type'] === 'scan')>{{ __('Scan') }}</option>
-                    <option value="lokasi" @selected($filters['type'] === 'lokasi')>{{ __('Pindah Lokasi') }}</option>
-                </select>
+                <input type="hidden" name="type" value="{{ $filters['type'] }}">
                 <select name="location" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
                     <option value="">{{ __('Semua lokasi') }}</option>
                     @foreach ($locations as $location)
@@ -37,7 +33,7 @@
                 </select>
                 <x-period-filter-button :period="$period" />
                 @if ($filters['search'] !== '' || $filters['location'] !== '' || $filters['type'] !== '' || $period)
-                    <a href="{{ route('admin-coil.movements.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
+                    <a href="{{ route('admin-coil.movements.index') }}" class="btn btn--ghost whitespace-nowrap">{{ __('Reset') }}</a>
                 @endif
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Filter') }}</button>
                 <a href="{{ route('admin-coil.movements.export', request()->query()) }}" class="btn btn--secondary whitespace-nowrap lg:ml-auto">{{ __('Export Excel') }}</a>
@@ -73,18 +69,18 @@
                                 </td>
                                 <td class="px-4 py-3">
                                     @if ($event->event_type === 'scan')
-                                        <span class="inline-flex items-center rounded-full bg-corpblue-50 px-2.5 py-0.5 text-xs font-semibold text-corpblue-700">{{ __('Scan') }}</span>
+                                        <span class="status-badge status-badge--info">{{ __('Scan') }}</span>
                                     @else
-                                        <span class="inline-flex items-center rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-semibold text-amber-700">{{ __('Pindah Lokasi') }}</span>
+                                        <span class="status-badge status-badge--warning">{{ __('Pindah Lokasi') }}</span>
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{{ $event->nomor_coil }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $event->company ?: '—' }}</td>
                                 <td class="px-4 py-3 text-slate-600">
                                     @if ($event->event_type === 'scan')
-                                        <div class="space-y-1">
-                                            <pre class="max-w-xs overflow-x-auto rounded bg-slate-50 px-2 py-1 text-[11px] text-slate-600">{{ $event->raw_kp }}</pre>
-                                            <pre class="max-w-xs overflow-x-auto rounded bg-slate-50 px-2 py-1 text-[11px] text-slate-600">{{ $event->raw_taehang }}</pre>
+                                        <div class="max-w-xs space-y-0.5 font-mono text-[11px] text-slate-500">
+                                            <p class="truncate" title="{{ $event->raw_kp }}">{{ $event->raw_kp }}</p>
+                                            <p class="truncate" title="{{ $event->raw_taehang }}">{{ $event->raw_taehang }}</p>
                                         </div>
                                     @else
                                         <span class="inline-flex items-center gap-1.5 text-xs">

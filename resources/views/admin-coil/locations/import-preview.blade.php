@@ -14,10 +14,10 @@
                     <p class="text-xs text-slate-500 mt-0.5">{{ count($preview) }} {{ __('baris') }} &middot; {{ $skipped }} {{ __('baris dilewati') }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-corpblue-50 text-corpblue-700 text-xs font-semibold">{{ $counts['update'] }} {{ __('akan diperbarui') }}</span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ $counts['unchanged'] }} {{ __('tanpa perubahan') }}</span>
+                    <span class="status-badge status-badge--info">{{ $counts['update'] }} {{ __('akan diperbarui') }}</span>
+                    <span class="status-badge status-badge--neutral">{{ $counts['unchanged'] }} {{ __('tanpa perubahan') }}</span>
                     @if ($counts['not_found'] > 0)
-                        <span class="inline-flex items-center px-3 py-1 rounded-full bg-red-50 text-red-600 text-xs font-semibold">{{ $counts['not_found'] }} {{ __('tidak ditemukan') }}</span>
+                        <span class="status-badge status-badge--danger">{{ $counts['not_found'] }} {{ __('tidak ditemukan') }}</span>
                     @endif
                 </div>
             </div>
@@ -42,14 +42,14 @@
                                 <td class="px-4 py-2.5 text-slate-400">{{ $index + 1 }}</td>
                                 <td class="px-4 py-2.5 font-medium text-slate-900">{{ $row['nomor_coil'] }}</td>
                                 <td class="px-4 py-2.5 text-slate-600">{{ $row['current_location'] ?: '—' }}</td>
-                                <td class="px-4 py-2.5"><span class="inline-flex items-center px-2 py-0.5 rounded-md bg-corpblue-50 text-corpblue-700 text-xs font-mono font-semibold">{{ $row['lokasi'] }}</span></td>
+                                <td class="px-4 py-2.5"><span class="status-badge status-badge--success">{{ $row['lokasi'] }}</span></td>
                                 <td class="px-4 py-2.5">
                                     @if ($row['status'] === 'update')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-corpblue-50 text-corpblue-700 text-xs font-semibold">{{ __('Diperbarui') }}</span>
+                                        <span class="status-badge status-badge--info">{{ __('Diperbarui') }}</span>
                                     @elseif ($row['status'] === 'unchanged')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-semibold">{{ __('Sama') }}</span>
+                                        <span class="status-badge status-badge--neutral">{{ __('Sama') }}</span>
                                     @else
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-red-50 text-red-600 text-xs font-semibold">{{ __('Tidak ditemukan') }}</span>
+                                        <span class="status-badge status-badge--danger">{{ __('Tidak ditemukan') }}</span>
                                     @endif
                                 </td>
                             </tr>
@@ -100,8 +100,8 @@
                 <div class="flex items-center justify-between">
                     <p class="text-sm text-slate-600">{{ __(':count baris akan diproses', ['count' => count($preview)]) }}</p>
                     <div class="flex gap-2">
-                        <a href="{{ route('admin-coil.locations.import') }}" class="px-4 py-2 text-sm text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">{{ __('Batal') }}</a>
-                        <button type="submit" class="px-6 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer" @disabled(count($preview) === 0)>
+                        <a href="{{ route('admin-coil.locations.import') }}" class="btn btn--ghost">{{ __('Batal') }}</a>
+                        <button type="submit" class="btn btn--success" @disabled(count($preview) === 0)>
                             {{ __('Konfirmasi Import') }}
                         </button>
                     </div>

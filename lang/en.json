@@ -1018,5 +1018,6 @@
     "Terlalu banyak baris untuk diimpor sekaligus (maksimal :max).": "Too many rows to import at once (maximum :max).",
     "Lihat Pergerakan": "View Movements",
     "Lokasi terakhir diubah :time oleh :name": "Location last changed :time by :name",
-    "Alasan atau keterangan perpindahan": "Reason or note for the move"
+    "Alasan atau keterangan perpindahan": "Reason or note for the move",
+    "Info teknis": "Technical info"
 }

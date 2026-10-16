@@ -18,7 +18,7 @@
                     </div>
                     <form method="POST" action="{{ route('admin-coil.locations.sync') }}">
                         @csrf
-                        <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Tarik ke Daftar') }}</button>
+                        <button type="submit" class="btn btn--warning whitespace-nowrap">{{ __('Tarik ke Daftar') }}</button>
                     </form>
                 </div>
             </div>

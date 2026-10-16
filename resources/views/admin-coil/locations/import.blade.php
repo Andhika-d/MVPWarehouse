@@ -36,9 +36,7 @@
                     <p class="text-[11px] text-slate-400 mt-0.5">{{ __('File bersifat penambahan (incremental): hanya baris yang ada di file yang diperbarui, lokasi lain tidak diubah.') }}</p>
                 </div>
 
-                <button type="submit" class="w-full px-4 py-2.5 bg-corpblue-500 hover:bg-corpblue-600 text-white rounded-lg text-sm font-semibold transition-colors cursor-pointer">
-                    {{ __('Preview Data') }}
-                </button>
+                <button type="submit" class="btn btn--primary w-full">{{ __('Preview Data') }}</button>
             </form>
         </div>
     </div>
