@@ -30,11 +30,15 @@
         </div>
 
         {{-- Location pills --}}
-        <div class="flex gap-2 overflow-x-auto pb-1">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1">
             <a href="{{ route('admin-coil.coil-tags.index', request()->except('location')) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === '' ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">{{ __('Semua') }}</a>
             @foreach($locationData as $locationRow)
             <a href="{{ route('admin-coil.coil-tags.index', array_merge(request()->except('location'), ['location' => $locationRow['location']])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === $locationRow['location'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold {{ $locationRow['location'] === \App\Models\CoilLocation::FILTER_NONE ? 'normal-case' : 'uppercase' }}">{{ $locationRow['label'] }}</span><span class="text-xs {{ $filters['location'] === $locationRow['location'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $locationRow['total'] }}</span></a>
             @endforeach
+            <a href="{{ route('admin-coil.locations.import') }}" class="ml-auto flex shrink-0 items-center gap-1.5 px-4 py-2.5 rounded-lg border border-corpblue-200 bg-corpblue-50 text-sm font-semibold text-corpblue-700 whitespace-nowrap transition-all hover:bg-corpblue-100">
+                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                {{ __('Import Lokasi') }}
+            </a>
         </div>
 
         {{-- Filters --}}
@@ -96,7 +100,13 @@
                                 <td class="px-4 py-3 text-slate-600">{{ rtrim(rtrim((string) $coilTag->lebar, '0'), '.') }}</td>
                                 <td class="px-4 py-3 font-semibold text-slate-900">{{ $coilTag->beratAsScanned() }}</td>
                                 <td class="px-4 py-3 text-center text-slate-700">1</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $coilTag->lokasi_coil ?: '—' }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($coilTag->lokasi_coil)
+                                        <span class="inline-flex items-center rounded-md bg-emerald-50 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 whitespace-nowrap">{{ $coilTag->lokasi_coil }}</span>
+                                    @else
+                                        <span class="text-slate-300">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-xs text-slate-500">{{ $coilTag->scanned_at?->format('Y-m-d H:i') }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <a href="{{ route('admin-coil.coil-tags.show', $coilTag) }}" class="action-link action-link--primary">{{ __('Detail') }}</a>

@@ -97,7 +97,7 @@ class CoilLocationTest extends TestCase
 
         $this->actingAs($admin)
             ->from('/admin-coil/coil-tags/'.$record->id)
-            ->post('/admin-coil/coil-tags/'.$record->id.'/lokasi', ['lokasi_coil' => 'bl'])
+            ->post('/admin-coil/coil-tags/'.$record->id.'/lokasi', ['lokasi_coil' => 'bl', 'note' => 'Dipindah malam'])
             ->assertRedirect('/admin-coil/coil-tags/'.$record->id);
 
         $this->assertSame('BL', $record->fresh()->lokasi_coil);
@@ -107,7 +107,22 @@ class CoilLocationTest extends TestCase
             'to_location' => 'BL',
             'source' => CoilTagLocationHistory::SOURCE_ADMIN_MANUAL,
             'changed_by' => $admin->id,
+            'note' => 'Dipindah malam',
         ]);
+    }
+
+    public function test_detail_page_shows_latest_change_and_links_to_movements(): void
+    {
+        $admin = $this->makeUser(User::ROLE_ADMIN_COIL);
+        $record = $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => null]);
+
+        $this->actingAs($admin);
+        $this->post('/admin-coil/coil-tags/'.$record->id.'/lokasi', ['lokasi_coil' => 'AL']);
+
+        $this->get('/admin-coil/coil-tags/'.$record->id)
+            ->assertOk()
+            ->assertSee('Lokasi terakhir diubah')
+            ->assertSee('search=HKG0268301');
     }
 
     public function test_admin_clearing_location_records_history(): void

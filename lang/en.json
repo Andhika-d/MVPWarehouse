@@ -1015,5 +1015,8 @@
     "Nomor Coil dan Lokasi kosong": "Coil Number and Location are empty",
     "Baris tanpa Nomor Coil atau Lokasi tidak diproses.": "Rows without a Coil Number or Location are not processed.",
     "Menampilkan :shown dari :total baris.": "Showing :shown of :total rows.",
-    "Terlalu banyak baris untuk diimpor sekaligus (maksimal :max).": "Too many rows to import at once (maximum :max)."
+    "Terlalu banyak baris untuk diimpor sekaligus (maksimal :max).": "Too many rows to import at once (maximum :max).",
+    "Lihat Pergerakan": "View Movements",
+    "Lokasi terakhir diubah :time oleh :name": "Location last changed :time by :name",
+    "Alasan atau keterangan perpindahan": "Reason or note for the move"
 }

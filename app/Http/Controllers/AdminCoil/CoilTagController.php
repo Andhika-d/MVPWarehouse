@@ -44,7 +44,11 @@ class CoilTagController extends Controller
     {
         return view('admin-coil.coil-tags.show', [
             'coilTag' => $coilTag,
-            'histories' => $coilTag->locationHistories()->with('changedBy')->get(),
+            'histories' => $coilTag->locationHistories()
+                ->with('changedBy')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->get(),
             'locations' => CoilLocation::active()
                 ->orderBy('urutan')
                 ->orderBy('kode')
@@ -59,15 +63,19 @@ class CoilTagController extends Controller
     {
         $validated = $request->validate([
             'lokasi_coil' => ['nullable', 'string', 'max:50'],
+            'note' => ['nullable', 'string', 'max:255'],
         ]);
 
         $coilTag->changeLocation(
             $validated['lokasi_coil'] ?? null,
             CoilTagLocationHistory::SOURCE_ADMIN_MANUAL,
             Auth::id(),
+            $validated['note'] ?? null,
         );
 
-        return back()->with('status', __('Lokasi berhasil diperbarui.'));
+        return redirect()
+            ->route('admin-coil.coil-tags.show', $coilTag)
+            ->with('status', __('Lokasi berhasil diperbarui.'));
     }
 
     public function print(Request $request): View

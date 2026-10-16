@@ -16,8 +16,20 @@
                         <span class="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">{{ $coilTag->scanned_at->format('Y-m-d H:i') }}</span>
                     @endif
                 </div>
+                @php $lastChange = $histories->first(); @endphp
+                @if ($lastChange)
+                    <p class="mt-2 text-[11px] text-slate-400">
+                        {{ __('Lokasi terakhir diubah :time oleh :name', [
+                            'time' => $lastChange->created_at?->format('Y-m-d H:i'),
+                            'name' => $lastChange->changedBy?->name ?? __('Sistem'),
+                        ]) }}
+                    </p>
+                @endif
             </div>
-            <a href="{{ route('admin-coil.coil-tags.index') }}" class="btn btn--secondary">← {{ __('Semua Data') }}</a>
+            <div class="flex shrink-0 items-center gap-2">
+                <a href="{{ route('admin-coil.movements.index', ['search' => $coilTag->nomor_coil]) }}" class="btn btn--secondary">{{ __('Lihat Pergerakan') }}</a>
+                <a href="{{ route('admin-coil.coil-tags.index') }}" class="btn btn--secondary">← {{ __('Semua Data') }}</a>
+            </div>
         </div>
 
         {{-- Summary cards --}}
@@ -43,29 +55,52 @@
         {{-- Location editor --}}
         <section class="rounded-xl border border-slate-200 bg-white p-6">
             <h2 class="text-sm font-bold uppercase tracking-wide text-slate-500">{{ __('Ubah Lokasi') }}</h2>
-            <form action="{{ route('admin-coil.coil-tags.location', $coilTag) }}" method="POST" class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end">
+            <form action="{{ route('admin-coil.coil-tags.location', $coilTag) }}" method="POST" class="mt-4 space-y-3">
                 @csrf
-                <div class="flex-1">
-                    <label for="lokasi_coil" class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Lokasi Coil') }}</label>
-                    <input
-                        id="lokasi_coil"
-                        name="lokasi_coil"
-                        type="text"
-                        list="coilLocationOptions"
-                        value="{{ old('lokasi_coil', $coilTag->lokasi_coil) }}"
-                        placeholder="{{ __('Contoh: AL') }}"
-                        autocomplete="off"
-                        spellcheck="false"
-                        maxlength="50"
-                        class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
-                    >
-                    <datalist id="coilLocationOptions">
-                        @foreach ($locations as $location)
-                            <option value="{{ $location }}"></option>
-                        @endforeach
-                    </datalist>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                    <div>
+                        <label for="lokasi_coil" class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Lokasi Coil') }}</label>
+                        <input
+                            id="lokasi_coil"
+                            name="lokasi_coil"
+                            type="text"
+                            list="coilLocationOptions"
+                            value="{{ old('lokasi_coil', $coilTag->lokasi_coil) }}"
+                            placeholder="{{ __('Contoh: AL') }}"
+                            autocomplete="off"
+                            spellcheck="false"
+                            maxlength="50"
+                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                        >
+                        <datalist id="coilLocationOptions">
+                            @foreach ($locations as $location)
+                                <option value="{{ $location }}"></option>
+                            @endforeach
+                        </datalist>
+                        @if ($locations->isNotEmpty())
+                            <div class="mt-2 flex flex-wrap gap-1.5">
+                                @foreach ($locations->take(8) as $location)
+                                    <button type="button" onclick="document.getElementById('lokasi_coil').value = '{{ $location }}'; document.getElementById('lokasi_coil').focus();" class="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-600 transition-colors hover:border-corpblue-300 hover:bg-corpblue-50 hover:text-corpblue-700">{{ $location }}</button>
+                                @endforeach
+                            </div>
+                        @endif
+                    </div>
+                    <div>
+                        <label for="note" class="mb-1 block text-xs font-semibold text-slate-600">{{ __('Catatan') }} <span class="font-normal text-slate-400">{{ __('(opsional)') }}</span></label>
+                        <input
+                            id="note"
+                            name="note"
+                            type="text"
+                            value="{{ old('note') }}"
+                            maxlength="255"
+                            placeholder="{{ __('Alasan atau keterangan perpindahan') }}"
+                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                        >
+                    </div>
                 </div>
-                <button type="submit" class="btn btn--primary shrink-0">{{ __('Simpan Lokasi') }}</button>
+                <div class="flex justify-end">
+                    <button type="submit" class="btn btn--primary shrink-0">{{ __('Simpan Lokasi') }}</button>
+                </div>
             </form>
             @error('lokasi_coil')
                 <p class="mt-2 text-xs font-medium text-red-600">{{ $message }}</p>
