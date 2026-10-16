@@ -6,6 +6,8 @@ use Database\Factories\CoilTagFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\DB;
 
 class CoilTag extends Model
 {
@@ -47,6 +49,46 @@ class CoilTag extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function locationHistories(): HasMany
+    {
+        return $this->hasMany(CoilTagLocationHistory::class)->latest('id');
+    }
+
+    /**
+     * The single entry point that changes a coil location.
+     *
+     * Every change writes an audit row so the movement trail stays consistent,
+     * no matter whether it comes from a checker, a manual edit or an import.
+     * The value update and the audit row are persisted atomically.
+     */
+    public function changeLocation(?string $to, string $source, ?int $changedBy = null, ?string $note = null): void
+    {
+        $to = $to !== null ? CoilLocation::normalize($to) : '';
+        $to = $to === '' ? null : $to;
+
+        $from = $this->lokasi_coil === '' ? null : $this->lokasi_coil;
+
+        if ($from === $to) {
+            return;
+        }
+
+        DB::transaction(function () use ($to, $from, $source, $changedBy, $note): void {
+            if ($to !== null) {
+                CoilLocation::ensure($to);
+            }
+
+            $this->update(['lokasi_coil' => $to]);
+
+            $this->locationHistories()->create([
+                'from_location' => $from,
+                'to_location' => $to,
+                'source' => $source,
+                'changed_by' => $changedBy,
+                'note' => $note,
+            ]);
+        });
     }
 
     public function beratAsScanned(): string

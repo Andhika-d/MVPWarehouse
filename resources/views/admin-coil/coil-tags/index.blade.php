@@ -30,10 +30,10 @@
         </div>
 
         {{-- Location pills --}}
-        <div class="flex gap-2 overflow-x-auto pb-1">
+        <div class="flex items-center gap-2 overflow-x-auto pb-1">
             <a href="{{ route('admin-coil.coil-tags.index', request()->except('location')) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === '' ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">{{ __('Semua') }}</a>
             @foreach($locationData as $locationRow)
-            <a href="{{ route('admin-coil.coil-tags.index', array_merge(request()->except('location'), ['location' => $locationRow['location']])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === $locationRow['location'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold">{{ $locationRow['location'] }}</span><span class="text-xs {{ $filters['location'] === $locationRow['location'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $locationRow['total'] }}</span></a>
+            <a href="{{ route('admin-coil.coil-tags.index', array_merge(request()->except('location'), ['location' => $locationRow['location']])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === $locationRow['location'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold {{ $locationRow['location'] === \App\Models\CoilLocation::FILTER_NONE ? 'normal-case' : 'uppercase' }}">{{ $locationRow['label'] }}</span><span class="text-xs {{ $filters['location'] === $locationRow['location'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $locationRow['total'] }}</span></a>
             @endforeach
         </div>
 
@@ -46,10 +46,14 @@
                 </div>
                 <x-period-filter-button :period="$period" />
                 @if($filters['search'] !== '' || $filters['location'] !== '' || $period)
-                <a href="{{ route('admin-coil.coil-tags.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
+                <a href="{{ route('admin-coil.coil-tags.index') }}" class="btn btn--ghost whitespace-nowrap">{{ __('Reset') }}</a>
                 @endif
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Filter') }}</button>
-                <div class="flex flex-wrap gap-2 lg:ml-auto">
+                <div class="flex flex-wrap items-center gap-2 lg:ml-auto">
+                    <a href="{{ route('admin-coil.locations.import') }}" class="btn btn--ghost whitespace-nowrap">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        {{ __('Import Lokasi') }}
+                    </a>
                     <a href="{{ route('admin-coil.coil-tags.export', request()->query()) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Export Excel') }}</a>
                     <a href="{{ route('admin-coil.coil-tags.print', request()->query()) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
                     <a href="{{ route('admin-coil.coil-tags.pdf', request()->query()) }}" class="btn btn--primary whitespace-nowrap">{{ __('Unduh PDF') }}</a>
@@ -96,7 +100,13 @@
                                 <td class="px-4 py-3 text-slate-600">{{ rtrim(rtrim((string) $coilTag->lebar, '0'), '.') }}</td>
                                 <td class="px-4 py-3 font-semibold text-slate-900">{{ $coilTag->beratAsScanned() }}</td>
                                 <td class="px-4 py-3 text-center text-slate-700">1</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $coilTag->lokasi_coil ?: '—' }}</td>
+                                <td class="px-4 py-3">
+                                    @if ($coilTag->lokasi_coil)
+                                        <span class="status-badge status-badge--success">{{ $coilTag->lokasi_coil }}</span>
+                                    @else
+                                        <span class="text-slate-300">—</span>
+                                    @endif
+                                </td>
                                 <td class="px-4 py-3 text-xs text-slate-500">{{ $coilTag->scanned_at?->format('Y-m-d H:i') }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <a href="{{ route('admin-coil.coil-tags.show', $coilTag) }}" class="action-link action-link--primary">{{ __('Detail') }}</a>

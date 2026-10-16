@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CoilLocation;
 use App\Models\CoilTag;
+use App\Models\CoilTagLocationHistory;
 use App\Services\KpScanParser;
 use App\Services\TaehangTagParser;
 use Illuminate\Database\QueryException;
@@ -25,6 +27,10 @@ class CheckerController extends Controller
         return view('checker.index', [
             'kp' => $request->session()->get('checker.kp'),
             'taehang' => $request->session()->get('checker.taehang'),
+            'locations' => CoilLocation::active()
+                ->orderBy('urutan')
+                ->orderBy('kode')
+                ->pluck('kode'),
         ]);
     }
 
@@ -106,6 +112,11 @@ class CheckerController extends Controller
             return $this->validationRedirect($request, 'raw_kp', 'Scan KP dan Taehang harus lengkap sebelum disimpan.');
         }
 
+        // Lokasi bersifat opsional: diisi maka disimpan, kosong maka dibiarkan null.
+        $lokasi = $request->input('lokasi_coil');
+        $lokasi = is_string($lokasi) ? trim($lokasi) : '';
+        $lokasi = $lokasi === '' ? null : mb_substr($lokasi, 0, 50);
+
         try {
             $kp = $this->kpParser->parse($kpRaw);
             $taehang = $this->taehangParser->parse($taehangRaw);
@@ -116,7 +127,7 @@ class CheckerController extends Controller
         }
 
         try {
-            DB::transaction(function () use ($kp, $taehang): void {
+            DB::transaction(function () use ($kp, $taehang, $lokasi): void {
                 if (CoilTag::query()->where('nomor_coil', $kp['nomor_coil'])->exists()) {
                     throw new DuplicateCoilTagException('raw_kp', 'Nomor coil '.$kp['nomor_coil'].' sudah tersimpan.');
                 }
@@ -125,7 +136,7 @@ class CheckerController extends Controller
                     throw new DuplicateCoilTagException('raw_taehang', 'Tag Taehang '.$taehang['tag_taehang'].' sudah tersimpan.');
                 }
 
-                CoilTag::query()->create([
+                $coilTag = CoilTag::query()->create([
                     ...$kp,
                     'tag_taehang' => $taehang['tag_taehang'],
                     'raw_taehang' => $taehang['raw_taehang'],
@@ -133,6 +144,10 @@ class CheckerController extends Controller
                     'user_id' => Auth::id(),
                     'scanned_at' => now(),
                 ]);
+
+                if ($lokasi !== null) {
+                    $coilTag->changeLocation($lokasi, CoilTagLocationHistory::SOURCE_CHECKER, Auth::id());
+                }
             });
         } catch (DuplicateCoilTagException $exception) {
             if ($exception->field === 'raw_kp') {

@@ -115,16 +115,34 @@
                             <dt class="text-xs font-semibold text-slate-500">{{ __('Tag Taehang') }}</dt>
                             <dd class="text-sm font-bold text-corpblue-600">{{ $taehang['tag_taehang'] }}</dd>
                         </div>
-                        <div class="flex justify-between gap-3 border-b border-slate-100 pb-1.5">
-                            <dt class="text-xs font-semibold text-slate-500">{{ __('Lokasi') }}</dt>
-                            <dd class="text-sm font-semibold text-slate-900">-</dd>
-                        </div>
                     @endif
                 </dl>
 
                 @if ($taehang)
-                    <form action="{{ route('checker.save') }}" method="POST" class="mt-6">
+                    <form action="{{ route('checker.save') }}" method="POST" class="mt-6 space-y-4">
                         @csrf
+                        <div>
+                            <label for="lokasi_coil" class="mb-1 block text-xs font-semibold text-slate-600">
+                                {{ __('Lokasi') }} <span class="font-normal text-slate-400">{{ __('(opsional)') }}</span>
+                            </label>
+                            <input
+                                id="lokasi_coil"
+                                name="lokasi_coil"
+                                type="text"
+                                list="coilLocationOptions"
+                                value="{{ old('lokasi_coil') }}"
+                                placeholder="{{ __('Kosongkan jika belum diketahui') }}"
+                                autocomplete="off"
+                                spellcheck="false"
+                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                            >
+                            <datalist id="coilLocationOptions">
+                                @foreach ($locations as $location)
+                                    <option value="{{ $location }}"></option>
+                                @endforeach
+                            </datalist>
+                            <p class="mt-1 text-[11px] text-slate-400">{{ __('Boleh dikosongkan, lokasi bisa diisi menyusul oleh Admin Coil.') }}</p>
+                        </div>
                         <button class="btn btn--primary w-full" type="submit">{{ __('SIMPAN DATA') }}</button>
                     </form>
                 @endif
