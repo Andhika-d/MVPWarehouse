@@ -4,7 +4,9 @@ namespace App\Http\Controllers\AdminCoil;
 
 use App\Exports\CoilTagExport;
 use App\Http\Controllers\Controller;
+use App\Models\CoilLocation;
 use App\Models\CoilTag;
+use App\Models\CoilTagLocationHistory;
 use App\Support\PdfFonts;
 use App\Support\PdfFooter;
 use App\Support\PeriodRange;
@@ -12,6 +14,7 @@ use App\Support\PrintOrientation;
 use App\Support\RoleLabel;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -21,9 +24,6 @@ use Symfony\Component\HttpFoundation\Response;
 
 class CoilTagController extends Controller
 {
-    /** @var list<string> */
-    private const LOCATIONS = ['AL', 'AR', 'BL', 'BR', 'CL', 'CR'];
-
     public function index(Request $request): View
     {
         $filters = $this->validatedFilters($request);
@@ -42,7 +42,32 @@ class CoilTagController extends Controller
 
     public function show(CoilTag $coilTag): View
     {
-        return view('admin-coil.coil-tags.show', ['coilTag' => $coilTag]);
+        return view('admin-coil.coil-tags.show', [
+            'coilTag' => $coilTag,
+            'histories' => $coilTag->locationHistories()->with('changedBy')->get(),
+            'locations' => CoilLocation::active()
+                ->orderBy('urutan')
+                ->orderBy('kode')
+                ->pluck('kode'),
+        ]);
+    }
+
+    /**
+     * Update the current location of a single coil (admin manual edit).
+     */
+    public function updateLocation(Request $request, CoilTag $coilTag): RedirectResponse
+    {
+        $validated = $request->validate([
+            'lokasi_coil' => ['nullable', 'string', 'max:50'],
+        ]);
+
+        $coilTag->changeLocation(
+            $validated['lokasi_coil'] ?? null,
+            CoilTagLocationHistory::SOURCE_ADMIN_MANUAL,
+            Auth::id(),
+        );
+
+        return back()->with('status', __('Lokasi berhasil diperbarui.'));
     }
 
     public function print(Request $request): View
@@ -128,7 +153,7 @@ class CoilTagController extends Controller
     {
         $validated = $request->validate([
             'search' => ['nullable', 'string', 'max:150'],
-            'location' => ['nullable', Rule::in(self::LOCATIONS)],
+            'location' => ['nullable', Rule::in(CoilLocation::query()->pluck('kode')->all())],
             'orientation' => ['nullable', 'in:landscape,portrait'],
         ]);
 
@@ -210,15 +235,19 @@ class CoilTagController extends Controller
     private function locationData(): Collection
     {
         $counts = CoilTag::query()
-            ->whereIn('lokasi_coil', self::LOCATIONS)
+            ->whereNotNull('lokasi_coil')
             ->selectRaw('lokasi_coil, COUNT(*) as total')
             ->groupBy('lokasi_coil')
             ->pluck('total', 'lokasi_coil');
 
-        return collect(self::LOCATIONS)->map(fn (string $location): array => [
-            'location' => $location,
-            'total' => (int) ($counts[$location] ?? 0),
-        ]);
+        return CoilLocation::active()
+            ->orderBy('urutan')
+            ->orderBy('kode')
+            ->get()
+            ->map(fn (CoilLocation $location): array => [
+                'location' => $location->kode,
+                'total' => (int) ($counts[$location->kode] ?? 0),
+            ]);
     }
 
     /**
