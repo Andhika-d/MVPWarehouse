@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AdminCoil;
 
+use App\Exports\CoilLocationImportTemplate;
 use App\Http\Controllers\Controller;
 use App\Models\CoilLocation;
 use App\Models\CoilTag;
@@ -13,10 +14,13 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use RuntimeException;
+use Symfony\Component\HttpFoundation\Response;
 
 class CoilLocationImportController extends Controller
 {
     private const SESSION_KEY = 'coil_location_import';
+
+    private const MAX_ROWS = 5000;
 
     public function form(): View
     {
@@ -26,6 +30,19 @@ class CoilLocationImportController extends Controller
                 ->orderBy('kode')
                 ->pluck('kode'),
         ]);
+    }
+
+    public function template(): Response
+    {
+        $export = new CoilLocationImportTemplate([
+            ['HKG0268301', 'AL'],
+            ['HKG0268302', 'BL'],
+            ['', ''],
+        ]);
+
+        return response($export->toXlsx(), 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="template-import-lokasi.xlsx"');
     }
 
     public function preview(Request $request): RedirectResponse|View
@@ -40,7 +57,7 @@ class CoilLocationImportController extends Controller
             return back()->with('error', $exception->getMessage());
         }
 
-        [$headers, $dataRows] = $this->normalizeRows($rows);
+        [$headers, $dataRows, $headerIndex] = $this->normalizeRows($rows);
         $columns = $this->mapHeaders($headers);
 
         if ($columns['nomor_coil'] === null || $columns['lokasi'] === null) {
@@ -49,14 +66,21 @@ class CoilLocationImportController extends Controller
 
         $preview = [];
         $skipped = 0;
+        $skippedRows = [];
         $counts = ['update' => 0, 'unchanged' => 0, 'not_found' => 0];
 
-        foreach ($dataRows as $row) {
+        foreach ($dataRows as $offset => $row) {
+            $rowNumber = $headerIndex + 2 + $offset;
             $nomorCoil = trim((string) ($row[$columns['nomor_coil']] ?? ''));
             $lokasi = trim((string) ($row[$columns['lokasi']] ?? ''));
 
             if ($nomorCoil === '' || $lokasi === '') {
                 $skipped++;
+                $skippedRows[] = [
+                    'row' => $rowNumber,
+                    'nomor_coil' => $nomorCoil,
+                    'reason' => $this->skipReason($nomorCoil, $lokasi),
+                ];
 
                 continue;
             }
@@ -81,11 +105,16 @@ class CoilLocationImportController extends Controller
             ];
         }
 
+        if (count($preview) > self::MAX_ROWS) {
+            return back()->with('error', __('Terlalu banyak baris untuk diimpor sekaligus (maksimal :max).', ['max' => self::MAX_ROWS]));
+        }
+
         session([self::SESSION_KEY => ['rows' => $preview]]);
 
         return view('admin-coil.locations.import-preview', [
             'preview' => $preview,
             'skipped' => $skipped,
+            'skippedRows' => array_slice($skippedRows, 0, 50),
             'counts' => $counts,
         ]);
     }
@@ -144,7 +173,7 @@ class CoilLocationImportController extends Controller
 
     /**
      * @param  array<int, array<int, string>>  $rows
-     * @return array{0: array<int, string>, 1: array<int, array<int, string>>}
+     * @return array{0: array<int, string>, 1: array<int, array<int, string>>, 2: int}
      */
     private function normalizeRows(array $rows): array
     {
@@ -152,11 +181,20 @@ class CoilLocationImportController extends Controller
             $hasContent = collect($row)->contains(fn ($value): bool => trim((string) $value) !== '');
 
             if ($hasContent) {
-                return [$row, array_slice($rows, $index + 1)];
+                return [$row, array_slice($rows, $index + 1), $index];
             }
         }
 
-        return [[], []];
+        return [[], [], -1];
+    }
+
+    private function skipReason(string $nomorCoil, string $lokasi): string
+    {
+        return match (true) {
+            $nomorCoil === '' && $lokasi === '' => __('Nomor Coil dan Lokasi kosong'),
+            $nomorCoil === '' => __('Nomor Coil kosong'),
+            default => __('Lokasi kosong'),
+        };
     }
 
     /**

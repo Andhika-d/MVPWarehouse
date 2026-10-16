@@ -126,9 +126,11 @@ Route::middleware('auth')->group(function () {
 
         // Pergerakan Coil (gabungan scan + perpindahan lokasi)
         Route::get('/pergerakan-coil', [CoilMovementController::class, 'index'])->name('movements.index');
+        Route::get('/pergerakan-coil/export', [CoilMovementController::class, 'export'])->name('movements.export');
 
         // Import lokasi coil (batch harian)
         Route::get('/lokasi/import', [CoilLocationImportController::class, 'form'])->name('locations.import');
+        Route::get('/lokasi/import/template', [CoilLocationImportController::class, 'template'])->name('locations.import.template');
         Route::post('/lokasi/import/preview', [CoilLocationImportController::class, 'preview'])->name('locations.import.preview');
         Route::post('/lokasi/import/execute', [CoilLocationImportController::class, 'execute'])->name('locations.import.execute');
 

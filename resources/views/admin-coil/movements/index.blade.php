@@ -4,6 +4,20 @@
         {{-- Intro --}}
         <p class="text-sm text-slate-500">{{ __('Gabungan riwayat scan dan perpindahan lokasi seluruh coil.') }}</p>
 
+        {{-- Type chips --}}
+        <div class="flex gap-2 overflow-x-auto pb-1">
+            @php
+                $typeChips = [
+                    '' => __('Semua jenis'),
+                    'scan' => __('Scan'),
+                    'lokasi' => __('Pindah Lokasi'),
+                ];
+            @endphp
+            @foreach ($typeChips as $value => $label)
+                <a href="{{ route('admin-coil.movements.index', array_merge(request()->except('type', 'page'), $value === '' ? [] : ['type' => $value])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['type'] === $value ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span>{{ $label }}</span><span class="text-xs {{ $filters['type'] === $value ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $counts[$value === '' ? 'all' : $value] }}</span></a>
+            @endforeach
+        </div>
+
         {{-- Filters --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form id="movementFilters" method="GET" action="{{ route('admin-coil.movements.index') }}" class="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -26,6 +40,7 @@
                     <a href="{{ route('admin-coil.movements.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Filter') }}</button>
+                <a href="{{ route('admin-coil.movements.export', request()->query()) }}" class="btn btn--secondary whitespace-nowrap lg:ml-auto">{{ __('Export Excel') }}</a>
             </form>
         </div>
 

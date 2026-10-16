@@ -1009,5 +1009,11 @@
     "Lokasi berhasil dihapus.": "Location deleted successfully.",
     "Lokasi masih dipakai coil. Nonaktifkan saja agar tetap tersimpan di riwayat.": "The location is still used by coils. Deactivate it instead so it stays in the history.",
     "Tidak ada lokasi baru dari data coil.": "No new locations found on coil data.",
-    ":count lokasi baru ditambahkan dari data coil.": ":count new locations added from coil data."
+    ":count lokasi baru ditambahkan dari data coil.": ":count new locations added from coil data.",
+    "Unduh Template": "Download Template",
+    "Nomor Coil kosong": "Coil Number is empty",
+    "Nomor Coil dan Lokasi kosong": "Coil Number and Location are empty",
+    "Baris tanpa Nomor Coil atau Lokasi tidak diproses.": "Rows without a Coil Number or Location are not processed.",
+    "Menampilkan :shown dari :total baris.": "Showing :shown of :total rows.",
+    "Terlalu banyak baris untuk diimpor sekaligus (maksimal :max).": "Too many rows to import at once (maximum :max)."
 }

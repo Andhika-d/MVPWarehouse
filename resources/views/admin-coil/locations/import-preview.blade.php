@@ -63,6 +63,36 @@
             </div>
         </div>
 
+        {{-- Skipped rows detail --}}
+        @if (! empty($skippedRows))
+            <div class="bg-white rounded-xl border border-amber-200 overflow-hidden">
+                <div class="border-b border-amber-100 bg-amber-50 px-4 py-3">
+                    <h3 class="text-sm font-semibold text-amber-800">{{ __('Baris dilewati') }}</h3>
+                    <p class="text-xs text-amber-700 mt-0.5">{{ __('Baris tanpa Nomor Coil atau Lokasi tidak diproses.') }} @if ($skipped > count($skippedRows)) {{ __('Menampilkan :shown dari :total baris.', ['shown' => count($skippedRows), 'total' => $skipped]) }} @endif</p>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="border-b border-slate-100 bg-slate-50">
+                                <th class="px-4 py-2.5 text-left font-semibold text-slate-600">{{ __('Baris') }}</th>
+                                <th class="px-4 py-2.5 text-left font-semibold text-slate-600">{{ __('Nomor Coil') }}</th>
+                                <th class="px-4 py-2.5 text-left font-semibold text-slate-600">{{ __('Alasan') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach ($skippedRows as $skippedRow)
+                                <tr>
+                                    <td class="px-4 py-2.5 text-slate-400">{{ $skippedRow['row'] }}</td>
+                                    <td class="px-4 py-2.5 text-slate-600">{{ $skippedRow['nomor_coil'] ?: '—' }}</td>
+                                    <td class="px-4 py-2.5 text-slate-500">{{ $skippedRow['reason'] }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        @endif
+
         {{-- Confirm import --}}
         <div class="bg-white rounded-xl border border-slate-200 p-5">
             <form method="POST" action="{{ route('admin-coil.locations.import.execute') }}" data-confirm="{{ __('Konfirmasi import :count baris lokasi?', ['count' => count($preview)]) }}" data-confirm-title="{{ __('Import Lokasi') }}" data-confirm-tone="info" data-confirm-button="{{ __('Import Sekarang') }}" class="space-y-4">

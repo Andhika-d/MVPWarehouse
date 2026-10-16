@@ -427,6 +427,53 @@ class CoilLocationTest extends TestCase
         }
     }
 
+    public function test_movements_export_returns_an_excel_file(): void
+    {
+        $admin = $this->makeUser(User::ROLE_ADMIN_COIL);
+        $record = $this->createCoilTag(['nomor_coil' => 'HKG0268301']);
+
+        $this->actingAs($admin);
+        $this->post('/admin-coil/coil-tags/'.$record->id.'/lokasi', ['lokasi_coil' => 'AL']);
+
+        $response = $this->get('/admin-coil/pergerakan-coil/export');
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('pergerakan-coil.xlsx', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringStartsWith('PK', (string) $response->getContent());
+    }
+
+    public function test_location_import_template_can_be_downloaded(): void
+    {
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+
+        $response = $this->get('/admin-coil/lokasi/import/template');
+
+        $response->assertOk();
+        $response->assertHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        $this->assertStringContainsString('template-import-lokasi.xlsx', (string) $response->headers->get('Content-Disposition'));
+        $this->assertStringStartsWith('PK', (string) $response->getContent());
+    }
+
+    public function test_location_import_preview_lists_skipped_rows_with_reasons(): void
+    {
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+        $this->createCoilTag(['nomor_coil' => 'HKG0268301']);
+
+        $file = $this->uploadXlsx([
+            ['Nomor Coil', 'Lokasi'],
+            ['HKG0268301', 'AL'],
+            ['HKG0268302', ''],
+            ['', 'BL'],
+        ]);
+
+        $this->post('/admin-coil/lokasi/import/preview', ['file' => $file])
+            ->assertOk()
+            ->assertSee('Baris dilewati')
+            ->assertSee('Lokasi kosong')
+            ->assertSee('Nomor Coil kosong');
+    }
+
     private function uploadXlsx(array $rows): UploadedFile
     {
         $temp = tempnam(sys_get_temp_dir(), 'coil-loc');

@@ -27,7 +27,10 @@
             <form method="POST" action="{{ route('admin-coil.locations.import.preview') }}" enctype="multipart/form-data" class="space-y-5">
                 @csrf
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('File Excel (.xlsx)') }}</label>
+                    <div class="flex items-center justify-between gap-3 mb-1">
+                        <label class="block text-xs font-semibold text-slate-600">{{ __('File Excel (.xlsx)') }}</label>
+                        <a href="{{ route('admin-coil.locations.import.template') }}" class="action-link action-link--primary">{{ __('Unduh Template') }}</a>
+                    </div>
                     <input type="file" name="file" accept=".xlsx" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-corpblue-50 file:text-corpblue-600 hover:file:bg-corpblue-100 file:cursor-pointer">
                     <p class="text-xs text-slate-400 mt-1">{{ __('Format kolom: Nomor Coil | Lokasi') }}</p>
                     <p class="text-[11px] text-slate-400 mt-0.5">{{ __('File bersifat penambahan (incremental): hanya baris yang ada di file yang diperbarui, lokasi lain tidak diubah.') }}</p>

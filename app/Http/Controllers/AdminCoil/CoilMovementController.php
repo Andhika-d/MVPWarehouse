@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\AdminCoil;
 
+use App\Exports\CoilMovementExport;
 use App\Http\Controllers\Controller;
 use App\Models\CoilLocation;
 use App\Models\CoilTag;
@@ -9,39 +10,18 @@ use App\Models\CoilTagLocationHistory;
 use App\Support\PeriodRange;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class CoilMovementController extends Controller
 {
     public function index(Request $request): View
     {
-        $validated = $request->validate([
-            'search' => ['nullable', 'string', 'max:150'],
-            'location' => ['nullable', Rule::in(CoilLocation::filterOptions())],
-            'type' => ['nullable', Rule::in(['scan', 'lokasi'])],
-        ]);
+        ['search' => $search, 'location' => $location, 'type' => $type, 'period' => $period] = $this->resolveFilters($request);
 
-        $search = trim((string) ($validated['search'] ?? ''));
-        $location = (string) ($validated['location'] ?? '');
-        $type = (string) ($validated['type'] ?? '');
-        $period = PeriodRange::fromRequest($request);
-
-        $scan = $this->scanQuery($search, $location);
-        $period?->apply($scan, 'coil_tags.scanned_at');
-
-        $history = $this->historyQuery($search, $location);
-        $period?->apply($history, 'coil_tag_location_histories.created_at');
-
-        $query = match ($type) {
-            'scan' => $scan,
-            'lokasi' => $history,
-            default => $scan->unionAll($history),
-        };
-
-        $events = $query
-            ->orderByDesc('occurred_at')
-            ->orderByDesc('sort_key')
+        $events = $this->eventsQuery($search, $location, $type, $period)
             ->paginate(25)
             ->withQueryString();
 
@@ -54,7 +34,111 @@ class CoilMovementController extends Controller
             ],
             'locations' => $this->locationOptions(),
             'period' => $period,
+            'counts' => $this->typeCounts($search, $location, $period),
         ]);
+    }
+
+    public function export(Request $request): Response
+    {
+        ['search' => $search, 'location' => $location, 'type' => $type, 'period' => $period] = $this->resolveFilters($request);
+
+        $rows = $this->eventsQuery($search, $location, $type, $period)
+            ->get()
+            ->values()
+            ->map(fn ($event, int $index): array => [
+                $index + 1,
+                $event->occurred_at ? Carbon::parse($event->occurred_at)->format('Y-m-d H:i') : '-',
+                $event->event_type === 'scan' ? __('Scan') : __('Pindah Lokasi'),
+                $event->nomor_coil,
+                $event->company ?: '-',
+                $event->grade ?: '-',
+                $event->from_location ?: '-',
+                $event->to_location ?: '-',
+                $event->current_location ?: '-',
+                $event->actor_name ?: '-',
+                $this->sourceLabel((string) $event->source),
+            ])
+            ->all();
+
+        $export = new CoilMovementExport($rows);
+
+        return response($export->toXlsx(), 200)
+            ->header('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            ->header('Content-Disposition', 'attachment; filename="pergerakan-coil.xlsx"');
+    }
+
+    /**
+     * @return array{search: string, location: string, type: string, period: ?PeriodRange}
+     */
+    private function resolveFilters(Request $request): array
+    {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'max:150'],
+            'location' => ['nullable', Rule::in(CoilLocation::filterOptions())],
+            'type' => ['nullable', Rule::in(['scan', 'lokasi'])],
+        ]);
+
+        return [
+            'search' => trim((string) ($validated['search'] ?? '')),
+            'location' => (string) ($validated['location'] ?? ''),
+            'type' => (string) ($validated['type'] ?? ''),
+            'period' => PeriodRange::fromRequest($request),
+        ];
+    }
+
+    private function eventsQuery(string $search, string $location, string $type, ?PeriodRange $period): Builder
+    {
+        $scan = $this->scanQuery($search, $location);
+        $period?->apply($scan, 'coil_tags.scanned_at');
+
+        $history = $this->historyQuery($search, $location);
+        $period?->apply($history, 'coil_tag_location_histories.created_at');
+
+        $query = match ($type) {
+            'scan' => $scan,
+            'lokasi' => $history,
+            default => $scan->unionAll($history),
+        };
+
+        return $query
+            ->orderByDesc('occurred_at')
+            ->orderByDesc('sort_key');
+    }
+
+    /**
+     * Event totals per type, ignoring the type filter so tabs always show every count.
+     *
+     * @return array{all: int, scan: int, lokasi: int}
+     */
+    private function typeCounts(string $search, string $location, ?PeriodRange $period): array
+    {
+        $scan = CoilTag::query();
+        $this->applyCoilFilters($scan, $search, $location, 'coil_tags.lokasi_coil');
+        $period?->apply($scan, 'coil_tags.scanned_at');
+
+        $history = CoilTagLocationHistory::query()
+            ->join('coil_tags', 'coil_tags.id', '=', 'coil_tag_location_histories.coil_tag_id');
+        $this->applyCoilFilters($history, $search, $location, 'coil_tag_location_histories.to_location');
+        $period?->apply($history, 'coil_tag_location_histories.created_at');
+
+        $scanCount = $scan->count();
+        $historyCount = $history->count();
+
+        return [
+            'all' => $scanCount + $historyCount,
+            'scan' => $scanCount,
+            'lokasi' => $historyCount,
+        ];
+    }
+
+    private function sourceLabel(string $source): string
+    {
+        return match ($source) {
+            CoilTagLocationHistory::SOURCE_ADMIN_MANUAL => __('Admin Coil'),
+            CoilTagLocationHistory::SOURCE_ADMIN_IMPORT => __('Import'),
+            CoilTagLocationHistory::SOURCE_CHECKER => __('Checker'),
+            default => $source,
+        };
     }
 
     /**
