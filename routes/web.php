@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdminCoil\CoilLocationController;
 use App\Http\Controllers\AdminCoil\CoilLocationImportController;
 use App\Http\Controllers\AdminCoil\CoilMovementController;
 use App\Http\Controllers\AdminCoil\CoilTagController;
@@ -130,6 +131,13 @@ Route::middleware('auth')->group(function () {
         Route::get('/lokasi/import', [CoilLocationImportController::class, 'form'])->name('locations.import');
         Route::post('/lokasi/import/preview', [CoilLocationImportController::class, 'preview'])->name('locations.import.preview');
         Route::post('/lokasi/import/execute', [CoilLocationImportController::class, 'execute'])->name('locations.import.execute');
+
+        // Master lokasi coil
+        Route::get('/lokasi', [CoilLocationController::class, 'index'])->name('locations.index');
+        Route::post('/lokasi', [CoilLocationController::class, 'store'])->name('locations.store');
+        Route::post('/lokasi/sync', [CoilLocationController::class, 'sync'])->name('locations.sync');
+        Route::put('/lokasi/{coilLocation}', [CoilLocationController::class, 'update'])->whereNumber('coilLocation')->name('locations.update');
+        Route::delete('/lokasi/{coilLocation}', [CoilLocationController::class, 'destroy'])->whereNumber('coilLocation')->name('locations.destroy');
     });
 
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {

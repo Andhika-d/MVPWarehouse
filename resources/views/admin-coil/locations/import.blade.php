@@ -8,7 +8,10 @@
 
         {{-- Master info --}}
         <div class="bg-white rounded-xl border border-slate-200 p-5">
-            <h3 class="text-sm font-semibold text-slate-900 mb-3">{{ __('Lokasi Terdaftar') }}</h3>
+            <div class="mb-3 flex items-center justify-between gap-3">
+                <h3 class="text-sm font-semibold text-slate-900">{{ __('Lokasi Terdaftar') }}</h3>
+                <a href="{{ route('admin-coil.locations.index') }}" class="action-link action-link--primary">{{ __('Daftar Lokasi') }}</a>
+            </div>
             <div class="flex flex-wrap gap-2">
                 @forelse ($locations as $location)
                     <span class="inline-flex items-center rounded-lg border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-700">{{ $location }}</span>

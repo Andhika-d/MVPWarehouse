@@ -347,6 +347,86 @@ class CoilLocationTest extends TestCase
             ->assertDontSee('HKG0268301');
     }
 
+    public function test_master_location_page_lists_locations_and_usage(): void
+    {
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+        $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => 'AL']);
+
+        $this->get('/admin-coil/lokasi')
+            ->assertOk()
+            ->assertSee('AL')
+            ->assertSee('CR');
+    }
+
+    public function test_admin_can_add_update_and_delete_master_locations(): void
+    {
+        $admin = $this->makeUser(User::ROLE_ADMIN_COIL);
+
+        $this->actingAs($admin)
+            ->post('/admin-coil/lokasi', ['kode' => 'zz9', 'nama' => 'Zona Uji', 'urutan' => 90])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('coil_locations', ['kode' => 'ZZ9', 'nama' => 'Zona Uji', 'urutan' => 90, 'is_active' => true]);
+
+        $location = CoilLocation::where('kode', 'ZZ9')->firstOrFail();
+
+        $this->actingAs($admin)
+            ->put('/admin-coil/lokasi/'.$location->id, ['nama' => 'Zona Baru', 'urutan' => 5, 'is_active' => '1'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('coil_locations', ['id' => $location->id, 'nama' => 'Zona Baru', 'urutan' => 5, 'is_active' => true]);
+
+        $this->actingAs($admin)
+            ->put('/admin-coil/lokasi/'.$location->id, ['nama' => 'Zona Baru', 'urutan' => 5, 'is_active' => '0'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('coil_locations', ['id' => $location->id, 'is_active' => false]);
+
+        $this->actingAs($admin)
+            ->delete('/admin-coil/lokasi/'.$location->id)
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('coil_locations', ['id' => $location->id]);
+    }
+
+    public function test_master_location_cannot_be_deleted_while_used_by_a_coil(): void
+    {
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+        $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => 'AL']);
+
+        $location = CoilLocation::where('kode', 'AL')->firstOrFail();
+
+        $this->from('/admin-coil/lokasi')
+            ->delete('/admin-coil/lokasi/'.$location->id)
+            ->assertRedirect('/admin-coil/lokasi')
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('coil_locations', ['id' => $location->id]);
+    }
+
+    public function test_sync_pulls_unknown_coil_locations_into_the_master(): void
+    {
+        $this->actingAs($this->makeUser(User::ROLE_ADMIN_COIL));
+        $this->createCoilTag(['nomor_coil' => 'HKG0268301', 'lokasi_coil' => 'ZZ9']);
+
+        $this->get('/admin-coil/lokasi')
+            ->assertOk()
+            ->assertSee('ZZ9');
+
+        $this->post('/admin-coil/lokasi/sync')->assertRedirect();
+
+        $this->assertDatabaseHas('coil_locations', ['kode' => 'ZZ9']);
+    }
+
+    public function test_master_location_page_requires_admin_coil_role(): void
+    {
+        foreach (['gudang', 'checker', 'admin'] as $role) {
+            $this->actingAs($this->makeUser($role))
+                ->get('/admin-coil/lokasi')
+                ->assertForbidden();
+        }
+    }
+
     private function uploadXlsx(array $rows): UploadedFile
     {
         $temp = tempnam(sys_get_temp_dir(), 'coil-loc');

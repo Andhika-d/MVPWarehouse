@@ -464,9 +464,15 @@
 
                         <div class="px-4 pt-3 pb-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ __('Kelola Lokasi') }}</div>
 
-                        <a href="{{ route('admin-coil.locations.import') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin-coil.locations.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
-                            @if(request()->routeIs('admin-coil.locations.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
-                            <svg class="shrink-0 {{ request()->routeIs('admin-coil.locations.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <a href="{{ route('admin-coil.locations.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin-coil.locations.index') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('admin-coil.locations.index'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('admin-coil.locations.index') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            <span>{{ __('Daftar Lokasi') }}</span>
+                        </a>
+
+                        <a href="{{ route('admin-coil.locations.import') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin-coil.locations.import*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('admin-coil.locations.import*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('admin-coil.locations.import*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                             <span>{{ __('Import Lokasi') }}</span>
                         </a>
                     @endif
