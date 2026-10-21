@@ -36,7 +36,7 @@
                             spellcheck="false"
                             autofocus
                             required
-                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                            class="field w-full"
                         >
                         <button type="submit" class="btn btn--primary shrink-0">{{ __('Scan') }}</button>
                     </div>
@@ -61,7 +61,7 @@
                                 spellcheck="false"
                                 autofocus
                                 required
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                                class="field w-full"
                             >
                             <button type="submit" class="btn btn--primary shrink-0">{{ __('Scan') }}</button>
                         </div>
@@ -134,7 +134,7 @@
                                 placeholder="{{ __('Kosongkan jika belum diketahui') }}"
                                 autocomplete="off"
                                 spellcheck="false"
-                                class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                                class="field w-full"
                             >
                             <datalist id="coilLocationOptions">
                                 @foreach ($locations as $location)

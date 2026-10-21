@@ -14,7 +14,12 @@
                 ];
             @endphp
             @foreach ($typeChips as $value => $label)
-                <a href="{{ route('admin-coil.movements.index', array_merge(request()->except('type', 'page'), $value === '' ? [] : ['type' => $value])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['type'] === $value ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span>{{ $label }}</span><span class="text-xs {{ $filters['type'] === $value ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $counts[$value === '' ? 'all' : $value] }}</span></a>
+                <x-filter-chip
+                    :href="route('admin-coil.movements.index', array_merge(request()->except('type', 'page'), $value === '' ? [] : ['type' => $value]))"
+                    :active="$filters['type'] === $value"
+                    :label="$label"
+                    :count="$counts[$value === '' ? 'all' : $value]"
+                />
             @endforeach
         </div>
 
@@ -22,10 +27,10 @@
         <div class="bg-white rounded-xl border border-slate-200 p-4">
             <form id="movementFilters" method="GET" action="{{ route('admin-coil.movements.index') }}" class="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ $filters['search'] }}" aria-label="{{ __('Pencarian') }}" placeholder="{{ __('Nomor coil, tag, grade, company') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ $filters['search'] }}" aria-label="{{ __('Pencarian') }}" placeholder="{{ __('Nomor coil, tag, grade, company') }}" class="field w-full">
                 </div>
                 <input type="hidden" name="type" value="{{ $filters['type'] }}">
-                <select name="location" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                <select name="location" class="field">
                     <option value="">{{ __('Semua lokasi') }}</option>
                     @foreach ($locations as $location)
                         <option value="{{ $location['value'] }}" @selected($filters['location'] === $location['value'])>{{ $location['label'] }}</option>
@@ -85,7 +90,7 @@
                                     @else
                                         <span class="inline-flex items-center gap-1.5 text-xs">
                                             <span class="font-semibold text-slate-700">{{ $event->from_location ?: __('Tanpa Lokasi') }}</span>
-                                            <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                            <x-icon name="arrow-right" :size="12" class="text-slate-400" />
                                             <span class="font-semibold text-corpblue-700">{{ $event->to_location ?: __('Tanpa Lokasi') }}</span>
                                         </span>
                                     @endif

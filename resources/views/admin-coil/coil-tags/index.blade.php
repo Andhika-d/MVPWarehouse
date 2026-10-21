@@ -3,37 +3,28 @@
 
         {{-- Summary cards --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-corpblue-50 flex items-center justify-center shrink-0">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                </div>
-                <div><p class="text-xl font-bold text-slate-900">{{ number_format($summary['total_qty']) }}</p><p class="text-xs text-slate-500">{{ __('Total Qty') }}</p></div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-corpblue-50 flex items-center justify-center shrink-0">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-                </div>
-                <div><p class="text-xl font-bold text-corpblue-700">{{ number_format($summary['total_weight'], 3, '.', '') }}</p><p class="text-xs text-slate-500">{{ __('Total Net WT/Berat Bersih') }}</p></div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center shrink-0">
-                    <svg class="text-amber-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                </div>
-                <div><p class="text-xl font-bold text-amber-600">{{ number_format($summary['today']) }}</p><p class="text-xs text-slate-500">{{ __('Scan Hari Ini') }}</p></div>
-            </div>
-            <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
-                <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center shrink-0">
-                    <svg class="text-emerald-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                </div>
-                <div><p class="text-xl font-bold text-emerald-600">{{ number_format($summary['locations']) }}</p><p class="text-xs text-slate-500">{{ __('Lokasi') }}</p></div>
-            </div>
+            <x-stat-card icon="cube" :label="__('Total Qty')" :value="number_format($summary['total_qty'])" />
+            <x-stat-card icon="scale" accent :label="__('Total Net WT/Berat Bersih')" :value="number_format($summary['total_weight'], 3, '.', '')" />
+            <x-stat-card icon="calendar" tone="amber" :label="__('Scan Hari Ini')" :value="number_format($summary['today'])" />
+            <x-stat-card icon="pin" tone="emerald" :label="__('Lokasi')" :value="number_format($summary['locations'])" />
         </div>
 
         {{-- Location pills --}}
         <div class="flex items-center gap-2 overflow-x-auto pb-1">
-            <a href="{{ route('admin-coil.coil-tags.index', request()->except('location')) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === '' ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">{{ __('Semua') }}</a>
+            <x-filter-chip
+                :href="route('admin-coil.coil-tags.index', request()->except('location'))"
+                :active="$filters['location'] === ''"
+                :label="__('Semua')"
+            />
             @foreach($locationData as $locationRow)
-            <a href="{{ route('admin-coil.coil-tags.index', array_merge(request()->except('location'), ['location' => $locationRow['location']])) }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $filters['location'] === $locationRow['location'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold {{ $locationRow['location'] === \App\Models\CoilLocation::FILTER_NONE ? 'normal-case' : 'uppercase' }}">{{ $locationRow['label'] }}</span><span class="text-xs {{ $filters['location'] === $locationRow['location'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $locationRow['total'] }}</span></a>
+                <x-filter-chip
+                    :href="route('admin-coil.coil-tags.index', array_merge(request()->except('location'), ['location' => $locationRow['location']]))"
+                    :active="$filters['location'] === $locationRow['location']"
+                    :label="$locationRow['label']"
+                    :count="$locationRow['total']"
+                    :bold="true"
+                    :uppercase="$locationRow['location'] !== \App\Models\CoilLocation::FILTER_NONE"
+                />
             @endforeach
         </div>
 
@@ -42,7 +33,7 @@
             <form id="coilTagFilters" method="GET" action="{{ route('admin-coil.coil-tags.index') }}" data-auto-filter class="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <input type="hidden" name="location" value="{{ $filters['location'] }}">
                 <div class="flex-1">
-                    <input type="text" name="search" value="{{ $filters['search'] }}" aria-label="{{ __('Pencarian') }}" placeholder="{{ __('Nomor coil, tag, grade, lokasi') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <input type="text" name="search" value="{{ $filters['search'] }}" aria-label="{{ __('Pencarian') }}" placeholder="{{ __('Nomor coil, tag, grade, lokasi') }}" class="field w-full">
                 </div>
                 <x-period-filter-button :period="$period" />
                 @if($filters['search'] !== '' || $filters['location'] !== '' || $period)
@@ -51,7 +42,7 @@
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Filter') }}</button>
                 <div class="flex flex-wrap items-center gap-2 lg:ml-auto">
                     <a href="{{ route('admin-coil.locations.import') }}" class="btn btn--ghost whitespace-nowrap">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        <x-icon name="tray-down" :size="16" />
                         {{ __('Import Lokasi') }}
                     </a>
                     <a href="{{ route('admin-coil.coil-tags.export', request()->query()) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Export Excel') }}</a>

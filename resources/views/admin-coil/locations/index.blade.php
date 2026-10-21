@@ -30,17 +30,17 @@
             <form method="POST" action="{{ route('admin-coil.locations.store') }}" class="grid grid-cols-1 gap-3 sm:grid-cols-[160px_1fr_120px_auto] sm:items-end">
                 @csrf
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Kode Lokasi') }}</label>
-                    <input type="text" name="kode" value="{{ old('kode') }}" maxlength="50" required placeholder="{{ __('Contoh: AL') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm uppercase focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <label class="field-label">{{ __('Kode Lokasi') }}</label>
+                    <input type="text" name="kode" value="{{ old('kode') }}" maxlength="50" required placeholder="{{ __('Contoh: AL') }}" class="field w-full uppercase">
                     @error('kode')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Nama Lokasi') }} <span class="font-normal text-slate-400">{{ __('(opsional)') }}</span></label>
-                    <input type="text" name="nama" value="{{ old('nama') }}" maxlength="100" placeholder="{{ __('Keterangan lokasi') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <label class="field-label">{{ __('Nama Lokasi') }} <span class="font-normal text-slate-400">{{ __('(opsional)') }}</span></label>
+                    <input type="text" name="nama" value="{{ old('nama') }}" maxlength="100" placeholder="{{ __('Keterangan lokasi') }}" class="field w-full">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Urutan') }}</label>
-                    <input type="number" name="urutan" value="{{ old('urutan', $nextUrutan) }}" min="0" max="9999" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    <label class="field-label">{{ __('Urutan') }}</label>
+                    <input type="number" name="urutan" value="{{ old('urutan', $nextUrutan) }}" min="0" max="9999" class="field w-full">
                 </div>
                 <button type="submit" class="btn btn--primary whitespace-nowrap">{{ __('Tambah') }}</button>
             </form>
@@ -67,10 +67,10 @@
                                     <span class="inline-flex items-center rounded-md bg-corpblue-50 px-2.5 py-0.5 text-xs font-mono font-semibold text-corpblue-700">{{ $location->kode }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input form="loc-{{ $location->id }}" type="text" name="nama" value="{{ $location->nama }}" maxlength="100" placeholder="—" class="w-full min-w-[10rem] px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                                    <input form="loc-{{ $location->id }}" type="text" name="nama" value="{{ $location->nama }}" maxlength="100" placeholder="—" class="field field--sm w-full min-w-[10rem]">
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input form="loc-{{ $location->id }}" type="number" name="urutan" value="{{ $location->urutan }}" min="0" max="9999" class="w-24 px-2.5 py-1.5 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                                    <input form="loc-{{ $location->id }}" type="number" name="urutan" value="{{ $location->urutan }}" min="0" max="9999" class="field field--sm w-24">
                                 </td>
                                 <td class="px-4 py-3 text-center text-slate-700">{{ number_format($usage[$location->kode] ?? 0) }}</td>
                                 <td class="px-4 py-3 text-center">

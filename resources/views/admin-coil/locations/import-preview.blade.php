@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-4xl space-y-6">
 
         <a href="{{ route('admin-coil.locations.import') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 font-medium">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <x-icon name="chevron-left" :size="16" />
             {{ __('Kembali') }}
         </a>
 
