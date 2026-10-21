@@ -5,7 +5,7 @@
         <p class="text-sm text-slate-500">{{ __('Gabungan riwayat scan dan perpindahan lokasi seluruh coil.') }}</p>
 
         {{-- Type chips --}}
-        <div class="flex gap-2 overflow-x-auto pb-1">
+        <div class="flex flex-wrap gap-2">
             @php
                 $typeChips = [
                     '' => __('Semua jenis'),

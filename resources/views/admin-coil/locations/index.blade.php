@@ -67,19 +67,32 @@
                                     <span class="inline-flex items-center rounded-md bg-corpblue-50 px-2.5 py-0.5 text-xs font-mono font-semibold text-corpblue-700">{{ $location->kode }}</span>
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input form="loc-{{ $location->id }}" type="text" name="nama" value="{{ $location->nama }}" maxlength="100" placeholder="—" class="field field--sm w-full min-w-[10rem]">
+                                    <span data-edit-view="{{ $location->id }}" class="text-slate-700">{{ $location->nama ?: '—' }}</span>
+                                    <input form="loc-{{ $location->id }}" data-edit-input="{{ $location->id }}" type="text" name="nama" value="{{ $location->nama }}" maxlength="100" placeholder="—" class="field field--sm hidden w-full min-w-[10rem]">
                                 </td>
                                 <td class="px-4 py-3">
-                                    <input form="loc-{{ $location->id }}" type="number" name="urutan" value="{{ $location->urutan }}" min="0" max="9999" class="field field--sm w-24">
+                                    <span data-edit-view="{{ $location->id }}" class="text-slate-700">{{ $location->urutan }}</span>
+                                    <input form="loc-{{ $location->id }}" data-edit-input="{{ $location->id }}" type="number" name="urutan" value="{{ $location->urutan }}" min="0" max="9999" class="field field--sm hidden w-24">
                                 </td>
                                 <td class="px-4 py-3 text-center text-slate-700">{{ number_format($usage[$location->kode] ?? 0) }}</td>
                                 <td class="px-4 py-3 text-center">
+                                    <span data-edit-view="{{ $location->id }}">
+                                        @if ($location->is_active)
+                                            <span class="status-badge status-badge--success">{{ __('Aktif') }}</span>
+                                        @else
+                                            <span class="status-badge status-badge--neutral">{{ __('Nonaktif') }}</span>
+                                        @endif
+                                    </span>
                                     <input type="hidden" form="loc-{{ $location->id }}" name="is_active" value="0">
-                                    <input form="loc-{{ $location->id }}" type="checkbox" name="is_active" value="1" @checked($location->is_active) class="h-4 w-4 rounded border-slate-300 text-corpblue-600 focus:ring-corpblue-500 cursor-pointer">
+                                    <input form="loc-{{ $location->id }}" data-edit-input="{{ $location->id }}" type="checkbox" name="is_active" value="1" @checked($location->is_active) class="hidden h-4 w-4 rounded border-slate-300 text-corpblue-600 focus:ring-corpblue-500 cursor-pointer">
                                 </td>
                                 <td class="px-4 py-3">
                                     <div class="flex items-center justify-end gap-2 whitespace-nowrap">
-                                        <button type="submit" form="loc-{{ $location->id }}" class="action-link action-link--primary">{{ __('Simpan') }}</button>
+                                        <button type="button" data-edit-start="{{ $location->id }}" onclick="coilLocationRowEdit('{{ $location->id }}', true)" class="action-link action-link--primary">{{ __('Ubah') }}</button>
+                                        <span data-edit-end="{{ $location->id }}" class="hidden">
+                                            <button type="submit" form="loc-{{ $location->id }}" class="action-link action-link--primary">{{ __('Simpan') }}</button>
+                                            <button type="button" onclick="coilLocationRowCancel('{{ $location->id }}')" class="action-link action-link--neutral ml-1.5">{{ __('Batal') }}</button>
+                                        </span>
                                         <form method="POST" action="{{ route('admin-coil.locations.destroy', $location) }}" data-confirm="{{ __('Hapus lokasi :kode?', ['kode' => $location->kode]) }}" data-confirm-title="{{ __('Hapus Lokasi') }}" data-confirm-tone="danger" data-confirm-button="{{ __('Hapus') }}">
                                             @csrf
                                             @method('DELETE')
@@ -105,6 +118,32 @@
                 @method('PUT')
             </form>
         @endforeach
+
+        {{-- Progressive disclosure: input baris baru muncul setelah tombol "Ubah" ditekan. --}}
+        <script>
+            function coilLocationRowEdit(id, editing) {
+                document.querySelectorAll('[data-edit-input="' + id + '"]').forEach(function (input) {
+                    input.classList.toggle('hidden', !editing);
+                });
+                document.querySelectorAll('[data-edit-view="' + id + '"]').forEach(function (view) {
+                    view.classList.toggle('hidden', editing);
+                });
+                document.querySelectorAll('[data-edit-start="' + id + '"]').forEach(function (button) {
+                    button.classList.toggle('hidden', editing);
+                });
+                document.querySelectorAll('[data-edit-end="' + id + '"]').forEach(function (actions) {
+                    actions.classList.toggle('hidden', !editing);
+                });
+            }
+
+            function coilLocationRowCancel(id) {
+                var form = document.getElementById('loc-' + id);
+                if (form) {
+                    form.reset();
+                }
+                coilLocationRowEdit(id, false);
+            }
+        </script>
 
         <p class="text-xs text-slate-400">{{ __('Lokasi nonaktif tidak muncul sebagai saran di checker, tetapi coil yang memakainya tetap tersimpan.') }}</p>
     </div>

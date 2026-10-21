@@ -10,7 +10,7 @@
         </div>
 
         {{-- Location pills --}}
-        <div class="flex items-center gap-2 overflow-x-auto pb-1">
+        <div class="flex flex-wrap gap-2">
             <x-filter-chip
                 :href="route('admin-coil.coil-tags.index', request()->except('location'))"
                 :active="$filters['location'] === ''"
