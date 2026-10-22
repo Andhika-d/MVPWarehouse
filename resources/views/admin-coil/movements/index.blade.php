@@ -59,10 +59,10 @@
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Waktu') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Jenis') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Nomor Coil') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Company') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">{{ __('Company') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Detail') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Lokasi') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Oleh') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">{{ __('Oleh') }}</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600"><span class="sr-only">{{ __('Aksi') }}</span></th>
                         </tr>
                     </thead>
@@ -80,7 +80,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 font-medium text-slate-900 whitespace-nowrap">{{ $event->nomor_coil }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $event->company ?: '—' }}</td>
+                                <td class="hidden px-4 py-3 text-slate-700 md:table-cell">{{ $event->company ?: '—' }}</td>
                                 <td class="px-4 py-3 text-slate-600">
                                     @if ($event->event_type === 'scan')
                                         <div class="max-w-xs space-y-0.5 font-mono text-[11px] text-slate-500">
@@ -96,7 +96,7 @@
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 text-slate-700">{{ $event->current_location ?: '—' }}</td>
-                                <td class="px-4 py-3 text-xs text-slate-500">{{ $event->actor_name ?? '—' }}</td>
+                                <td class="hidden px-4 py-3 text-xs text-slate-500 md:table-cell">{{ $event->actor_name ?? '—' }}</td>
                                 <td class="px-4 py-3 text-center whitespace-nowrap">
                                     <a href="{{ route('admin-coil.coil-tags.show', $event->coil_tag_id) }}" class="action-link action-link--primary">{{ __('Detail') }}</a>
                                 </td>

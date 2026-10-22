@@ -55,7 +55,7 @@
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Kode') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Nama Lokasi') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Urutan') }}</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Dipakai') }}</th>
+                            <th class="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">{{ __('Dipakai') }}</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Aktif') }}</th>
                             <th class="px-4 py-3 text-right font-semibold text-slate-600"><span class="sr-only">{{ __('Aksi') }}</span></th>
                         </tr>
@@ -74,7 +74,7 @@
                                     <span data-edit-view="{{ $location->id }}" class="text-slate-700">{{ $location->urutan }}</span>
                                     <input form="loc-{{ $location->id }}" data-edit-input="{{ $location->id }}" type="number" name="urutan" value="{{ $location->urutan }}" min="0" max="9999" class="field field--sm hidden w-24">
                                 </td>
-                                <td class="px-4 py-3 text-center text-slate-700">{{ number_format($usage[$location->kode] ?? 0) }}</td>
+                                <td class="hidden px-4 py-3 text-center text-slate-700 md:table-cell">{{ number_format($usage[$location->kode] ?? 0) }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <span data-edit-view="{{ $location->id }}">
                                         @if ($location->is_active)

@@ -65,15 +65,15 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-slate-50 border-b border-slate-200">
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">No.</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">No.</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Company') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Tag Taehang') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Nomor Coil') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Spec') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Tebal') }}</th>
-                            <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Lebar') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">{{ __('Spec') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">{{ __('Tebal') }}</th>
+                            <th class="hidden px-4 py-3 text-left font-semibold text-slate-600 md:table-cell">{{ __('Lebar') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Net WT/Berat Bersih') }}</th>
-                            <th class="px-4 py-3 text-center font-semibold text-slate-600">{{ __('Qty.') }}</th>
+                            <th class="hidden px-4 py-3 text-center font-semibold text-slate-600 md:table-cell">{{ __('Qty.') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Lokasi') }}</th>
                             <th class="px-4 py-3 text-left font-semibold text-slate-600">{{ __('Scanned At') }}</th>
                             <th class="px-4 py-3 text-center font-semibold text-slate-600"><span class="sr-only">{{ __('Aksi') }}</span></th>
@@ -82,15 +82,15 @@
                     <tbody class="divide-y divide-slate-100">
                         @forelse ($coilTags as $coilTag)
                             <tr class="hover:bg-slate-50 transition-colors">
-                                <td class="px-4 py-3 text-slate-500">{{ $coilTags->firstItem() + $loop->index }}</td>
+                                <td class="hidden px-4 py-3 text-slate-500 md:table-cell">{{ $coilTags->firstItem() + $loop->index }}</td>
                                 <td class="px-4 py-3 text-slate-700">{{ $coilTag->company ?: '—' }}</td>
                                 <td class="px-4 py-3"><span class="inline-flex items-center px-2.5 py-0.5 rounded-md bg-corpblue-50 text-corpblue-700 text-xs font-mono font-semibold whitespace-nowrap">{{ $coilTag->tag_taehang }}</span></td>
                                 <td class="px-4 py-3 font-medium text-slate-900">{{ $coilTag->nomor_coil }}</td>
-                                <td class="px-4 py-3 text-slate-700">{{ $coilTag->grade }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ rtrim(rtrim((string) $coilTag->tebal, '0'), '.') }}</td>
-                                <td class="px-4 py-3 text-slate-600">{{ rtrim(rtrim((string) $coilTag->lebar, '0'), '.') }}</td>
+                                <td class="hidden px-4 py-3 text-slate-700 md:table-cell">{{ $coilTag->grade }}</td>
+                                <td class="hidden px-4 py-3 text-slate-600 md:table-cell">{{ rtrim(rtrim((string) $coilTag->tebal, '0'), '.') }}</td>
+                                <td class="hidden px-4 py-3 text-slate-600 md:table-cell">{{ rtrim(rtrim((string) $coilTag->lebar, '0'), '.') }}</td>
                                 <td class="px-4 py-3 font-semibold text-slate-900">{{ $coilTag->beratAsScanned() }}</td>
-                                <td class="px-4 py-3 text-center text-slate-700">1</td>
+                                <td class="hidden px-4 py-3 text-center text-slate-700 md:table-cell">1</td>
                                 <td class="px-4 py-3">
                                     @if ($coilTag->lokasi_coil)
                                         <span class="status-badge status-badge--success">{{ $coilTag->lokasi_coil }}</span>
