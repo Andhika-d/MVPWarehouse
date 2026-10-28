@@ -1,56 +1,99 @@
-# 🛠️ How to Edit HOSTS File (Windows)
+# 🛠️ Cara Setup Hosts File untuk warehouse.local
 
-## Step-by-Step:
+## ⚠️ Perlu Administrator Privilege
 
-1. **Open Notepad as Administrator**
-   - Press `Win + S`, type "notepad"
-   - Right-click Notepad → **Run as administrator**
-
-2. **Open HOSTS file**
-   - In Notepad, press `Ctrl + O`
-   - Navigate to: `C:\Windows\System32\drivers\etc`
-   - Change file type to **All Files (*.*)**
-   - Select file `hosts`
-
-3. **Add warehouse.local**
-   - Go to end of file
-   - Add new line:
-     ```
-     127.0.0.1      warehouse.local
-     ```
-
-4. **Save & Close**
-   - Press `Ctrl + S`
-   - Close Notepad
-
-5. **Flush DNS Cache**
-   - Open Command Prompt as Admin
-   - Run:
-     ```cmd
-     ipconfig /flushdns
-     ```
-
-6. **Test**
-   - Open browser: `http://warehouse.local`
-   - Should show your Laravel app!
+Edit file hosts membutuhkan Administrator privilege.
 
 ---
 
-## 🎯 Verify Virtual Host is Working
+## Langkah-by-Langkah
 
-After editing hosts, restart Apache in Laragon:
-- Click **Stop All** in Laragon
-- Click **Start All**
+### 1. Buka Notepad sebagai Administrator
 
-Then try:
+1. Tekan `Windows + S`, ketik **Notepad**
+2. Klik kanan Notepad → **Run as administrator**
+3. Jika diminta UAC, klik **Yes**
+
+### 2. Buka File Hosts
+
+Di Notepad (Admin), klik:
+- **File** → **Open**
+- Pilih **All Files (\*.\*)**
+- Masukkan path:  
+  ```
+  C:\Windows\System32\drivers\etc\hosts
+  ```
+- Klik **Open**
+
+### 3. Tambah Entry warehouse.local
+
+Cari bagian `# Localhost` atau di akhir file, tambahkan:
+
+```
+# warehouse.local - Laravel App
+127.0.0.1  warehouse.local
+::1  warehouse.local
+```
+
+✅ Contoh akhir file hosts:
+```
+127.0.0.1  localhost
+::1  localhost
+
+# warehouse.local - Laravel App
+127.0.0.1  warehouse.local
+::1  warehouse.local
+```
+
+### 4. Save File
+
+- Tekan `Ctrl + S` untuk save
+- Tutup Notepad
+
+### 5. Flush DNS Cache
+
+Buka **Command Prompt** sebagai Administrator, jalankan:
+
+```cmd
+ipconfig /flushdns
+```
+
+### 6. Test
+
+Buka browser, akses:
 - `http://warehouse.local`
-- `https://warehouse.local` (if SSL enabled)
+- `https://warehouse.local` (jika SSL sudah aktif)
 
 ---
 
-## ✅ Expected Result
+## 🔍 Troubleshooting
 
-When successful, you should see:
-- Laravel login page
-- No "This site can't be reached" error
-- App serving from `D:/111/Andhika/Code/projectRBV1.0/public`
+### Still "This site can't be reached"?
+
+1. Pastikan Nginx sudah reload:
+   ```cmd
+   C:\laragon\laragon.exe --reload
+   ```
+
+2. Cek apakah entry sudah ada di hosts:
+   ```cmd
+   findstr warehouse C:\Windows\System32\drivers\etc\hosts
+   ```
+
+3. Cek apakah Laragon Web Server running:
+   - Buka Laragon UI
+   - Klik **Stop All**
+   - Klik **Start All**
+
+4. Cek log Nginx:
+   ```
+   D:\111\Andhika\Code\projectRBV1.0\storage\logs\nginx_error.log
+   ```
+
+---
+
+## 📝catatan
+
+- Setiap kali tambah domain baru, edit file hosts lagi
+- Jangan hapus entry `127.0.0.1 localhost` atau `::1 localhost`
+- Entry harus dalam format: `IP  domain.com`
