@@ -7,7 +7,7 @@
                 <p class="text-[11px] font-bold uppercase tracking-widest text-slate-400">{{ __('Admin Coil') }} / {{ __('Coil Tag') }}</p>
                 <div class="mt-2 flex flex-wrap items-center gap-2">
                     <span class="inline-flex items-center gap-1.5 rounded-full bg-corpblue-50 px-3 py-1 text-xs font-semibold text-corpblue-700">
-                        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <x-icon name="pin" :size="12" />
                         {{ $coilTag->lokasi_coil ?: __('Belum ada lokasi') }}
                     </span>
                     <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">{{ $coilTag->company ?: '—' }}</span>
@@ -27,7 +27,7 @@
             </div>
             <div class="flex shrink-0 items-center gap-3">
                 <a href="{{ route('admin-coil.coil-tags.index') }}" class="inline-flex items-center gap-1.5 text-sm font-medium text-slate-500 transition-colors hover:text-slate-700">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+                    <x-icon name="chevron-left" :size="16" />
                     {{ __('Kembali') }}
                 </a>
                 <a href="{{ route('admin-coil.movements.index', ['search' => $coilTag->nomor_coil]) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Lihat Pergerakan') }}</a>
@@ -36,42 +36,10 @@
 
         {{-- Summary cards --}}
         <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
-            <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-50">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="truncate text-xl font-bold text-corpblue-700">{{ $coilTag->beratAsScanned() }}</p>
-                    <p class="text-xs text-slate-500">{{ __('Berat Bersih') }}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-50">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm14 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="truncate text-xl font-bold text-slate-900">{{ $coilTag->tag_taehang ?: '—' }}</p>
-                    <p class="text-xs text-slate-500">{{ __('Tag Taehang') }}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-50">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/></svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="truncate text-xl font-bold text-slate-900">{{ $coilTag->ukuran ?: '—' }}</p>
-                    <p class="text-xs text-slate-500">{{ __('Ukuran') }}</p>
-                </div>
-            </div>
-            <div class="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4">
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-corpblue-50">
-                    <svg class="text-corpblue-500" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-                </div>
-                <div class="min-w-0">
-                    <p class="truncate text-xl font-bold text-slate-900">{{ $coilTag->user?->name ?? '—' }}</p>
-                    <p class="text-xs text-slate-500">{{ __('Dipindai Oleh') }}</p>
-                </div>
-            </div>
+            <x-stat-card icon="scale" accent :label="__('Berat Bersih')" :value="$coilTag->beratAsScanned()" />
+            <x-stat-card icon="scan-frame" :label="__('Tag Taehang')" :value="$coilTag->tag_taehang ?: '—'" />
+            <x-stat-card icon="arrows-vertical" :label="__('Ukuran')" :value="$coilTag->ukuran ?: '—'" />
+            <x-stat-card icon="users" :label="__('Dipindai Oleh')" :value="$coilTag->user?->name ?? '—'" />
         </div>
 
         {{-- Location editor --}}
@@ -91,7 +59,7 @@
                             autocomplete="off"
                             spellcheck="false"
                             maxlength="50"
-                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                            class="field w-full"
                         >
                         @if ($locations->isNotEmpty())
                             <div class="mt-2 flex flex-wrap gap-1.5">
@@ -110,7 +78,7 @@
                             value="{{ old('note') }}"
                             maxlength="255"
                             placeholder="{{ __('Alasan atau keterangan perpindahan') }}"
-                            class="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-corpblue-500 focus:ring-2 focus:ring-corpblue-500 outline-none"
+                            class="field w-full"
                         >
                     </div>
                 </div>
@@ -150,7 +118,7 @@
 
             <details class="group mt-4">
                 <summary class="inline-flex cursor-pointer list-none items-center gap-1.5 text-xs font-semibold text-slate-500 transition-colors hover:text-slate-700 [&::-webkit-details-marker]:hidden">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="shrink-0 transition-transform group-open:rotate-90" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+                    <x-icon name="chevron-right" :size="14" class="shrink-0 transition-transform group-open:rotate-90" />
                     {{ __('Info teknis') }}
                 </summary>
                 <dl class="mt-3 grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
@@ -185,7 +153,7 @@
                                 <span class="text-sm font-semibold text-slate-900">
                                     {{ $history->from_location ?: __('Tanpa Lokasi') }}
                                 </span>
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" class="text-slate-400"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+                                <x-icon name="arrow-right" :size="14" class="text-slate-400" />
                                 <span class="text-sm font-semibold text-corpblue-700">
                                     {{ $history->to_location ?: __('Tanpa Lokasi') }}
                                 </span>

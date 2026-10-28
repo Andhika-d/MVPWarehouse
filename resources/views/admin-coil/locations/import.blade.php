@@ -2,7 +2,7 @@
     <div class="mx-auto max-w-2xl space-y-6">
 
         <a href="{{ route('admin-coil.coil-tags.index') }}" class="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700 font-medium">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <x-icon name="chevron-left" :size="16" />
             {{ __('Kembali') }}
         </a>
 
@@ -31,7 +31,7 @@
                         <label class="block text-xs font-semibold text-slate-600">{{ __('File Excel (.xlsx)') }}</label>
                         <a href="{{ route('admin-coil.locations.import.template') }}" class="action-link action-link--primary">{{ __('Unduh Template') }}</a>
                     </div>
-                    <input type="file" name="file" accept=".xlsx" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-corpblue-50 file:text-corpblue-600 hover:file:bg-corpblue-100 file:cursor-pointer">
+                    <input type="file" name="file" accept=".xlsx" required class="field w-full file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-corpblue-50 file:text-corpblue-600 hover:file:bg-corpblue-100 file:cursor-pointer">
                     <p class="text-xs text-slate-400 mt-1">{{ __('Format kolom: Nomor Coil | Lokasi') }}</p>
                     <p class="text-[11px] text-slate-400 mt-0.5">{{ __('File bersifat penambahan (incremental): hanya baris yang ada di file yang diperbarui, lokasi lain tidak diubah.') }}</p>
                 </div>
