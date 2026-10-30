@@ -341,7 +341,8 @@ class StockMovementExportTest extends TestCase
         $user = $this->makeUser();
 
         $response = $this->actingAs($user)->get('/gudang/movements/export/excel');
-        $response->assertStatus(302);
+        $response->assertRedirect();
+        $response->assertSessionHas('error');
     }
 
     public function test_export_invalid_type_rejected(): void

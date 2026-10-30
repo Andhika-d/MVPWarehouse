@@ -396,9 +396,14 @@ class GudangController extends Controller
     protected function movementExportData(Request $request): array
     {
         $validated = $request->validate([
-            'export_type' => ['required', 'in:in,out,in_out,adjustment,all'],
+            'export_type' => ['nullable', 'in:in,out,in_out,adjustment,all'],
             'item_id' => ['nullable', 'exists:items,id'],
         ]);
+
+        // Default export_type to 'all' if not provided
+        if (!isset($validated['export_type']) || $validated['export_type'] === '') {
+            $validated['export_type'] = 'all';
+        }
 
         $query = StockMovement::with('item', 'user')
             ->orderByDesc('occurred_at');
