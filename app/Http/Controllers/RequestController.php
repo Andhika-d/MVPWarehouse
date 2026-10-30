@@ -253,6 +253,10 @@ class RequestController extends Controller
         $requests = $this->buildExportQuery($request, 'gudang')->latest()->get();
         $rows = array_map('array_values', $this->buildExportRows($requests));
 
+        if (empty($rows)) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
+
         return $this->downloadXlsx('riwayat-permintaan.xlsx', $rows);
     }
 
@@ -285,6 +289,11 @@ class RequestController extends Controller
     {
         $requests = $this->buildExportQuery($request, 'approval')->latest()->get();
         $rows = array_map('array_values', $this->buildExportRows($requests));
+
+        if (empty($rows)) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
+
         $date = $this->safeDate($request->input('date'));
         $filename = $date ? 'approval-nota-'.$date->format('Ymd').'.xlsx' : 'approval-permintaan.xlsx';
 

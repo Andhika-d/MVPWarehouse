@@ -9,6 +9,7 @@ use App\Models\CoilTag;
 use App\Models\CoilTagLocationHistory;
 use App\Support\PeriodRange;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
@@ -38,7 +39,7 @@ class CoilMovementController extends Controller
         ]);
     }
 
-    public function export(Request $request): Response
+    public function export(Request $request): Response|RedirectResponse
     {
         ['search' => $search, 'location' => $location, 'type' => $type, 'period' => $period] = $this->resolveFilters($request);
 
@@ -59,6 +60,10 @@ class CoilMovementController extends Controller
                 $this->sourceLabel((string) $event->source),
             ])
             ->all();
+
+        if (empty($rows)) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
 
         $export = new CoilMovementExport($rows);
 

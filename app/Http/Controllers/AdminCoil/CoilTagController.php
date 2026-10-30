@@ -99,12 +99,16 @@ class CoilTagController extends Controller
         ]);
     }
 
-    public function pdf(Request $request): Response
+    public function pdf(Request $request): Response|RedirectResponse
     {
         $filters = $this->validatedFilters($request);
         $period = PeriodRange::fromRequest($request);
         $orientation = PrintOrientation::resolve($request, $filters['orientation']);
         $coilTags = $this->filteredQuery($filters, $period)->get();
+
+        if ($coilTags->isEmpty()) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
 
         PdfFonts::register();
 
@@ -126,7 +130,7 @@ class CoilTagController extends Controller
         return $pdf->download('laporan-coil-tag.pdf');
     }
 
-    public function export(Request $request): Response
+    public function export(Request $request): Response|RedirectResponse
     {
         $filters = $this->validatedFilters($request);
         $period = PeriodRange::fromRequest($request);
@@ -146,6 +150,10 @@ class CoilTagController extends Controller
                 $coilTag->scanned_at?->format('Y-m-d H:i'),
             ])
             ->all();
+
+        if (empty($rows)) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
 
         $export = new CoilTagExport($rows);
 

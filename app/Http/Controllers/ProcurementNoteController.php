@@ -149,7 +149,9 @@ class ProcurementNoteController extends Controller
             ->latest('request_date')
             ->get();
 
-        abort_if($notes->isEmpty(), 404);
+        if ($notes->isEmpty()) {
+            return back()->with('error', __('Tidak ada data untuk dicetak dengan filter yang dipilih.'));
+        }
 
         if ($hasRequestFilters) {
             $notes = $notes->map(function (ProcurementNote $procurementNote) use ($request, $search) {
@@ -192,7 +194,9 @@ class ProcurementNoteController extends Controller
             ->latest('request_date')
             ->get();
 
-        abort_if($notes->isEmpty(), 404);
+        if ($notes->isEmpty()) {
+            return back()->with('error', __('Tidak ada data untuk diekspor dengan filter yang dipilih.'));
+        }
 
         return $this->downloadExcel($notes, 'riwayat-pengadaan.xlsx');
     }
