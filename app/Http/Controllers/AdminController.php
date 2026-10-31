@@ -13,6 +13,7 @@ use App\Models\StockMovement;
 use App\Models\StockRequest;
 use App\Models\StorageLocation;
 use App\Models\User;
+use App\Services\DatabaseBackup;
 use App\Support\LocationChangeExporter;
 use App\Support\LocationChangePdf;
 use App\Support\PeriodRange;
@@ -1090,31 +1091,29 @@ class AdminController extends Controller
 
     public function createBackup()
     {
-        $dbPath = config('database.connections.sqlite.database');
-
-        try {
-            DB::select('PRAGMA wal_checkpoint(TRUNCATE)');
-        } catch (\Throwable) {
-        }
-
-        if (! is_file($dbPath)) {
-            return back()->with('error', __('Backup gagal: file database tidak ditemukan.'));
-        }
-
         $dir = storage_path('app/backups');
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
         $filename = 'backup_thi2-warehouse_'.now()->format('Y_m_d_His').'.zip';
-        $zip = new \ZipArchive;
+        $tmpFile = tempnam(sys_get_temp_dir(), 'rbv_dump_');
 
-        if ($zip->open($dir.'/'.$filename, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
-            return back()->with('error', __('Backup gagal: tidak dapat membuat arsip.'));
+        try {
+            $entry = DatabaseBackup::dump($tmpFile);
+
+            $zip = new \ZipArchive;
+            if ($zip->open($dir.'/'.$filename, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                throw new \RuntimeException(__('Backup gagal: tidak dapat membuat arsip.'));
+            }
+
+            $zip->addFile($tmpFile, $entry);
+            $zip->close();
+        } catch (\RuntimeException $exception) {
+            return back()->with('error', $exception->getMessage());
+        } finally {
+            @unlink($tmpFile);
         }
-
-        $zip->addFile($dbPath, 'database.sqlite');
-        $zip->close();
 
         $this->pruneBackups($dir);
 
@@ -1167,22 +1166,9 @@ class AdminController extends Controller
             return redirect()->route('admin.backups.index')->with('error', __('File backup tidak ditemukan.'));
         }
 
-        $dbPath = config('database.connections.sqlite.database');
-
-        try {
-            DB::select('PRAGMA wal_checkpoint(TRUNCATE)');
-        } catch (\Throwable) {
-        }
-
         $dir = storage_path('app/backups');
         $safetyName = 'pre_restore_'.now()->format('Y_m_d_His').'.zip';
-        if (is_file($dbPath)) {
-            $safetyZip = new \ZipArchive;
-            if ($safetyZip->open($dir.'/'.$safetyName, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-                $safetyZip->addFile($dbPath, 'database.sqlite');
-                $safetyZip->close();
-            }
-        }
+        $this->writeBackupArchive($dir.'/'.$safetyName);
 
         $tmpDir = $dir.'/_restore_'.bin2hex(random_bytes(4));
         mkdir($tmpDir, 0755, true);
@@ -1197,26 +1183,17 @@ class AdminController extends Controller
         $zip->extractTo($tmpDir);
         $zip->close();
 
-        $extracted = $tmpDir.'/database.sqlite';
-        if (! is_file($extracted)) {
+        try {
+            DatabaseBackup::restoreFromDirectory($tmpDir);
+        } catch (\RuntimeException $exception) {
             $this->deleteDir($tmpDir);
 
-            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: isi arsip tidak valid.'));
+            return redirect()->route('admin.backups.index')->with('error', $exception->getMessage());
         }
 
-        if (! $this->isValidSqlite($extracted)) {
-            $this->deleteDir($tmpDir);
-
-            return redirect()->route('admin.backups.index')->with('error', __('Restore gagal: database backup rusak.'));
-        }
+        $this->deleteDir($tmpDir);
 
         $admin = Auth::user();
-
-        DB::disconnect();
-        @unlink($dbPath.'-wal');
-        @unlink($dbPath.'-shm');
-        copy($extracted, $dbPath);
-        $this->deleteDir($tmpDir);
 
         try {
             DB::connection()->getPdo()->query('SELECT 1');
@@ -1225,7 +1202,7 @@ class AdminController extends Controller
         }
 
         AuditLog::create([
-            'user_id' => $admin?->id,
+            'user_id' => $admin && User::whereKey($admin->id)->exists() ? $admin->id : null,
             'action' => 'backup_restored',
             'target_type' => null,
             'target_id' => null,
@@ -1379,28 +1356,37 @@ class AdminController extends Controller
 
     protected function createSafetyBackup(): void
     {
-        $dbPath = config('database.connections.sqlite.database');
-
-        try {
-            DB::select('PRAGMA wal_checkpoint(TRUNCATE)');
-        } catch (\Throwable) {
-        }
-
-        if (! is_file($dbPath)) {
-            return;
-        }
-
         $dir = storage_path('app/backups');
         if (! is_dir($dir)) {
             mkdir($dir, 0755, true);
         }
 
-        $filename = 'pre_reset_'.now()->format('Y_m_d_His').'.zip';
-        $zip = new \ZipArchive;
+        $this->writeBackupArchive($dir.'/pre_reset_'.now()->format('Y_m_d_His').'.zip');
+    }
 
-        if ($zip->open($dir.'/'.$filename, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) === true) {
-            $zip->addFile($dbPath, 'database.sqlite');
-            $zip->close();
+    /**
+     * Buat arsip backup di $path. Diam saja bila gagal, karena dipakai
+     * sebagai pengaman sebelum operasi reset/restore.
+     */
+    protected function writeBackupArchive(string $path): bool
+    {
+        $tmpFile = tempnam(sys_get_temp_dir(), 'rbv_dump_');
+
+        try {
+            $entry = DatabaseBackup::dump($tmpFile);
+
+            $zip = new \ZipArchive;
+            if ($zip->open($path, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                return false;
+            }
+
+            $zip->addFile($tmpFile, $entry);
+
+            return $zip->close();
+        } catch (\RuntimeException) {
+            return false;
+        } finally {
+            @unlink($tmpFile);
         }
     }
 
@@ -1467,19 +1453,6 @@ class AdminController extends Controller
             'admin_coil' => '/admin-coil/coil-tags',
             default => '/gudang/dashboard',
         };
-    }
-
-    protected function isValidSqlite(string $path): bool
-    {
-        try {
-            $pdo = new \PDO('sqlite:'.$path);
-            $pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-            $integrity = $pdo->query('PRAGMA integrity_check')->fetchColumn();
-
-            return $integrity === 'ok';
-        } catch (\Throwable) {
-            return false;
-        }
     }
 
     protected function pruneBackups(string $dir, int $keep = 10): void

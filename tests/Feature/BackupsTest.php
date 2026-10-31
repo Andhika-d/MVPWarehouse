@@ -148,6 +148,41 @@ class BackupsTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'akan-dihapus@example.com']);
     }
 
+    public function test_backup_archive_contains_database_entry(): void
+    {
+        $admin = $this->makeAdmin();
+
+        $this->actingAs($admin)->post('/admin/backups')
+            ->assertRedirect(route('admin.backups.index'));
+
+        $backup = $this->latestBackupName();
+        $this->assertNotNull($backup);
+
+        $zip = new \ZipArchive;
+        $this->assertTrue($zip->open(storage_path('app/backups/'.$backup)));
+        $this->assertNotFalse($zip->locateName('database.sqlite'));
+        $zip->close();
+    }
+
+    public function test_restore_rejects_backup_from_different_database_driver(): void
+    {
+        $admin = $this->makeAdmin();
+        $dir = storage_path('app/backups');
+        $this->assertTrue(is_dir($dir) || mkdir($dir, 0755, true));
+
+        $file = $dir.'/backup_mysql_format.zip';
+        $zip = new \ZipArchive;
+        $zip->open($file, \ZipArchive::CREATE | \ZipArchive::OVERWRITE);
+        $zip->addFromString('database.sql', "CREATE TABLE `x` (`id` int);\n");
+        $zip->close();
+
+        $this->actingAs($admin)->post('/admin/backups/backup_mysql_format.zip/restore')
+            ->assertRedirect(route('admin.backups.index'))
+            ->assertSessionHas('error');
+
+        $this->assertDatabaseHas('users', ['email' => $admin->email]);
+    }
+
     public function test_backup_retention_keeps_only_latest_ten(): void
     {
         $admin = $this->makeAdmin();
