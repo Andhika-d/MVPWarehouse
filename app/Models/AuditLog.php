@@ -55,6 +55,8 @@ class AuditLog extends Model
             'created_item' => 'Menambah barang',
             'updated_item' => 'Memperbarui barang',
             'adjusted_stock' => 'Menyesuaikan stok',
+            'stock_in' => 'Barang masuk',
+            'stock_out' => 'Barang keluar',
             'deleted_item' => 'Menghapus barang',
             'imported_items' => 'Mengimpor barang',
             'approved_location_change' => 'Menyetujui perubahan lokasi',
@@ -92,6 +94,7 @@ class AuditLog extends Model
         return [
             StockRequest::class => 'Request',
             Item::class => 'Barang',
+            StockMovement::class => 'Transaksi Stok',
             User::class => 'Pengguna',
             LocationChangeRequest::class => 'Perubahan Lokasi',
             ProcurementNote::class => 'Nota Pengadaan',

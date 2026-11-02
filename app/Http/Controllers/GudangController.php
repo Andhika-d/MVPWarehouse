@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Exports\LocationChangeExport;
 use App\Exports\StockMovementExport;
+use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\LocationChangeRequest;
 use App\Models\StockMovement;
@@ -79,7 +80,7 @@ class GudangController extends Controller
 
             $item->refresh();
 
-            StockMovement::create([
+            $movement = StockMovement::create([
                 'item_id' => $item->id,
                 'type' => StockMovement::TYPE_IN,
                 'quantity' => $receiveQty,
@@ -91,6 +92,14 @@ class GudangController extends Controller
                 'balance_after' => $item->stock,
                 'note' => $data['note'] ?? null,
                 'occurred_at' => now(),
+            ]);
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'stock_in',
+                'target_type' => StockMovement::class,
+                'target_id' => $movement->id,
+                'details' => 'Barang masuk: '.$receiveQty.' '.$stockRequest->unit.' '.$item->name.' (Penerimaan dari pembelian) - Stok: '.$balanceBefore.' → '.$item->stock,
             ]);
 
             $stockRequest->requestHistories()->create([
@@ -166,7 +175,7 @@ class GudangController extends Controller
             $item->decrement('stock', $data['quantity']);
             $item->refresh();
 
-            StockMovement::create([
+            $movement = StockMovement::create([
                 'item_id' => $item->id,
                 'type' => StockMovement::TYPE_OUT,
                 'quantity' => $data['quantity'],
@@ -178,6 +187,14 @@ class GudangController extends Controller
                 'balance_after' => $item->stock,
                 'note' => $data['note'] ?? null,
                 'occurred_at' => now(),
+            ]);
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'stock_out',
+                'target_type' => StockMovement::class,
+                'target_id' => $movement->id,
+                'details' => 'Barang keluar: '.$data['quantity'].' '.$item->unit.' '.$item->name.' ('.$data['reason'].') - Stok: '.$balanceBefore.' → '.$item->stock,
             ]);
 
             return back()->with('success', __(':quantity :unit :name berhasil dicatat keluar. Stok tersisa: :stock', ['quantity' => $data['quantity'], 'unit' => $item->unit, 'name' => $item->name, 'stock' => $item->stock]));
