@@ -103,9 +103,12 @@
                                 @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $item->size ?? '—' }}</td>
-                            <td class="px-4 py-3 text-slate-600">{{ $item->unit }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ $item->primary_unit }}</td>
                             <td class="px-4 py-3 text-right">
                                 <span class="font-semibold {{ $item->stock <= 5 ? 'text-amber-600' : 'text-slate-900' }}">{{ $item->stock }}</span>
+                                @if($item->itemUnits->where('is_primary', false)->isNotEmpty())
+                                <p class="text-[11px] text-slate-400 mt-0.5">{{ $item->stock_display }}</p>
+                                @endif
                             </td>
                             <td class="px-4 py-3 text-slate-600">{{ $loc->rack }}</td>
                             <td class="px-4 py-3 text-center">
@@ -114,7 +117,8 @@
                             <td class="px-4 py-3 text-center">
                                 <div class="flex items-center justify-center gap-1">
                                     <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">{{ __('Edit') }}</button>
-                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->unit }}')" class="action-link action-link--warning">{{ __('Sesuaikan') }}</button>
+                                    <button onclick="openManageUnitsModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ $item->primary_unit }}')" class="action-link" title="{{ __('Kelola Unit Konversi') }}">{{ __('Unit') }}</button>
+                                    <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->primary_unit }}')" class="action-link action-link--warning">{{ __('Sesuaikan') }}</button>
                                     <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="{{ __('Hapus barang :name? Tindakan ini tidak dapat dibatalkan.', ['name' => $item->name]) }}" data-confirm-title="{{ __('Hapus Barang') }}" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="action-link action-link--danger">{{ __('Hapus') }}</button>
@@ -239,6 +243,9 @@
                 </form>
             </div>
         </div>
+        
+        <!-- Manage Units Modal -->
+        <x-manage-units-modal />
     </x-slot:modals>
 
     <x-slot:scripts>

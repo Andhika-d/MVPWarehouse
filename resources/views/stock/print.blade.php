@@ -47,7 +47,7 @@
                     @forelse($location->items as $item)
                     <tr>
                         <td class="number">{{ ++$row }}</td><td>{{ $location->code }}</td><td>{{ $location->rack }}</td><td>{{ $location->sub_location ?: '-' }}</td>
-                        <td>{{ $item->name }}</td><td>{{ $item->size ?: '-' }}</td><td class="number">{{ number_format($item->stock) }}</td><td>{{ $item->unit }}</td>
+                        <td>{{ $item->name }}</td><td>{{ $item->size ?: '-' }}</td><td class="number">{{ number_format($item->stock, 2) }}</td><td>{{ $item->primary_unit }}</td>
                         <td>{{ $item->stock === 0 ? 'Terisi (Barang Kosong)' : 'Terisi' }}</td>
                     </tr>
                     @empty
@@ -86,8 +86,12 @@
                             <span class="cell-meta">Ukuran: {{ $item->size ?: '-' }}</span>
                         </td>
                         <td>
-                            <span class="cell-primary">{{ number_format($item->stock) }}</span>
-                            <span class="cell-meta">{{ $item->unit }}</span>
+                            @if($item->itemUnits->where('is_primary', false)->isNotEmpty())
+                            <span class="cell-primary">{{ $item->stock_display }}</span>
+                            @else
+                            <span class="cell-primary">{{ number_format($item->stock, 2) }}</span>
+                            <span class="cell-meta">{{ $item->primary_unit }}</span>
+                            @endif
                         </td>
                         <td>{{ $item->stock === 0 ? 'Terisi (Barang Kosong)' : 'Terisi' }}</td>
                     </tr>

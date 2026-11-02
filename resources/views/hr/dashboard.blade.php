@@ -156,7 +156,7 @@
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-4 px-6">
                                 <span class="font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</span>
-                                <span class="mt-0.5 block text-xs text-slate-500">{{ __('Stok:') }} {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</span>
+                                <span class="mt-0.5 block text-xs text-slate-500">{{ __('Stok:') }} {{ $request->item?->stock_display ?? '-' }}</span>
                             </td>
                             <td class="py-4 px-6 text-sm font-medium text-slate-600">{{ $request->user?->name ?? '-' }}</td>
                             <td class="py-4 px-6">
@@ -195,7 +195,7 @@
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <p class="text-sm font-bold text-slate-900 truncate">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</p>
-                            <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; {{ __('Stok') }} {{ $request->item?->stock ?? '-' }} {{ $request->item?->unit ?? $request->unit }}</p>
+                            <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; {{ __('Stok') }} {{ $request->item?->stock_display ?? '-' }}</p>
                         </div>
                         @if($request->priority === 'Mendesak')
                         <x-status-badge domain="priority" status="Mendesak" :label="__('Mendesak')" class="shrink-0" />

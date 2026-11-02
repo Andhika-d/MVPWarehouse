@@ -4,6 +4,7 @@ use App\Http\Controllers\AdminCoil\CoilLocationController;
 use App\Http\Controllers\AdminCoil\CoilLocationImportController;
 use App\Http\Controllers\AdminCoil\CoilMovementController;
 use App\Http\Controllers\AdminCoil\CoilTagController;
+use App\Http\Controllers\Admin\ItemUnitController as AdminItemUnitController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminHelpGuideController;
 use App\Http\Controllers\Api\ItemUnitController;
@@ -164,6 +165,10 @@ Route::middleware('auth')->group(function () {
         Route::put('/items/{item}', [AdminController::class, 'updateItem'])->name('items.update');
         Route::post('/items/{item}/adjust-stock', [AdminController::class, 'adjustStock'])->name('items.adjust-stock');
         Route::delete('/items/{item}', [AdminController::class, 'destroyItem'])->name('items.destroy');
+        
+        // Item Units
+        Route::post('/items/{item}/units', [AdminItemUnitController::class, 'store'])->name('items.units.store');
+        Route::delete('/items/{item}/units/{unitName}', [AdminItemUnitController::class, 'destroy'])->name('items.units.destroy');
 
         // Import
         Route::get('/import', [AdminController::class, 'importIndex'])->name('import.index');

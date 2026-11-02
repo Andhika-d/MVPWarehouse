@@ -38,7 +38,7 @@
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
                     <p class="ui-heading">{{ __('Stok Saat Ini') }}</p>
-                    <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->item?->stock ?? '-' }} <span class="text-slate-500">{{ $request->unit }}</span></p>
+                    <p class="mt-1 text-sm font-semibold text-slate-900">{{ $request->item?->stock_display ?? '-' }}</p>
                 </div>
                 <div class="rounded-lg border border-slate-200 p-4">
                     <p class="ui-heading">{{ __('Kode Tag') }}</p>

@@ -10,11 +10,15 @@ class InitializeItemUnitsSeeder extends Seeder
 {
     public function run(): void
     {
-        // For each existing item, create a primary unit entry
+        // For each existing item that doesn't yet have a primary unit, create one
         Item::chunk(100, function ($items) {
             foreach ($items as $item) {
-                // Create primary unit (default 1:1 conversion)
-                ItemUnit::create([
+                $hasPrimary = $item->itemUnits()->where('is_primary', true)->exists();
+                if ($hasPrimary) {
+                    continue;
+                }
+
+                $item->itemUnits()->create([
                     'item_id' => $item->id,
                     'unit_name' => $item->primary_unit ?? $item->unit,
                     'conversion_to_primary' => 1,

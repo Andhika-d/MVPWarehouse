@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\NumericValue;
 use Illuminate\Database\Eloquent\Model;
 
 class ItemUnit extends Model
@@ -15,7 +16,7 @@ class ItemUnit extends Model
     ];
 
     protected $casts = [
-        'conversion_to_primary' => 'decimal:4',
+        'conversion_to_primary' => NumericValue::class,
         'is_primary' => 'boolean',
     ];
 

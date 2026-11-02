@@ -64,7 +64,7 @@ class AdminController extends Controller
 
     public function itemsIndex(Request $request)
     {
-        $query = StorageLocation::with('items');
+        $query = StorageLocation::with(['items.itemUnits']);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
@@ -116,7 +116,7 @@ class AdminController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'size' => ['nullable', 'string', 'max:255'],
             'storage_location_id' => ['required', 'exists:storage_locations,id'],
-            'stock' => ['required', 'integer', 'min:0'],
+            'stock' => ['required', 'numeric', 'min:0'],
             'unit' => ['required', 'in:'.implode(',', Item::UNITS)],
         ]);
 
@@ -127,8 +127,23 @@ class AdminController extends Controller
                 return back()->with('error', __('Lokasi :code sudah terisi.', ['code' => $location->code]));
             }
 
-            $item = Item::create($data);
+            $item = Item::create([
+                'name' => $data['name'],
+                'size' => $data['size'] ?? null,
+                'storage_location_id' => $data['storage_location_id'],
+                'stock' => $data['stock'],
+                'unit' => $data['unit'],
+                'primary_unit' => $data['unit'],
+            ]);
             $location->update(['status' => StorageLocation::STATUS_OCCUPIED]);
+
+            // Create primary unit for the new item
+            $item->itemUnits()->create([
+                'unit_name' => $item->unit,
+                'conversion_to_primary' => 1,
+                'is_primary' => true,
+                'context' => 'both',
+            ]);
 
             AuditLog::create([
                 'user_id' => Auth::id(),
@@ -150,7 +165,23 @@ class AdminController extends Controller
             'unit' => ['required', 'in:'.implode(',', Item::UNITS)],
         ]);
 
-        $item->update($data);
+        DB::transaction(function () use ($item, $data) {
+            $oldUnit = $item->unit;
+
+            $item->update([
+                'name' => $data['name'],
+                'size' => $data['size'] ?? null,
+                'unit' => $data['unit'],
+                'primary_unit' => $data['unit'],
+            ]);
+
+            // Keep primary unit row in sync
+            if ($oldUnit !== $data['unit']) {
+                $item->itemUnits()->where('is_primary', true)->update([
+                    'unit_name' => $data['unit'],
+                ]);
+            }
+        });
 
         AuditLog::create([
             'user_id' => Auth::id(),
@@ -166,7 +197,7 @@ class AdminController extends Controller
     public function adjustStock(Request $request, Item $item)
     {
         $data = $request->validate([
-            'new_stock' => ['required', 'integer', 'min:0'],
+            'new_stock' => ['required', 'numeric', 'min:0'],
             'reason' => ['required', 'string', 'max:255'],
         ]);
 
@@ -181,7 +212,8 @@ class AdminController extends Controller
                 'item_id' => $item->id,
                 'type' => StockMovement::TYPE_ADJUSTMENT,
                 'quantity' => abs($delta),
-                'unit' => $item->unit,
+                'quantity_in_primary' => abs($delta),
+                'unit' => $item->primary_unit,
                 'reason' => $data['reason'],
                 'stock_request_id' => null,
                 'user_id' => Auth::id(),
@@ -400,15 +432,25 @@ class AdminController extends Controller
                     'storage_location_id' => $location->id,
                     'stock' => $itemData['stock'],
                     'unit' => $itemData['unit'],
+                    'primary_unit' => $itemData['unit'],
                 ]);
 
                 $location->update(['status' => StorageLocation::STATUS_OCCUPIED]);
+
+                // Create primary unit row
+                $item->itemUnits()->create([
+                    'unit_name' => $itemData['unit'],
+                    'conversion_to_primary' => 1,
+                    'is_primary' => true,
+                    'context' => 'both',
+                ]);
 
                 if ($itemData['stock'] > 0) {
                     StockMovement::create([
                         'item_id' => $item->id,
                         'type' => StockMovement::TYPE_ADJUSTMENT,
                         'quantity' => $itemData['stock'],
+                        'quantity_in_primary' => $itemData['stock'],
                         'unit' => $itemData['unit'],
                         'reason' => 'Saldo awal dari import',
                         'stock_request_id' => null,
@@ -444,7 +486,7 @@ class AdminController extends Controller
 
     public function locationsIndex(Request $request)
     {
-        $query = StorageLocation::with('items');
+        $query = StorageLocation::with(['items.itemUnits']);
 
         $activeRack = $request->input('rack', 'A');
         $query->where('rack', $activeRack);

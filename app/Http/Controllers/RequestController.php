@@ -59,7 +59,7 @@ class RequestController extends Controller
     public function create()
     {
         $items = ItemLocationSorter::sort(
-            Item::with('storageLocation')->get()
+            Item::with(['storageLocation', 'itemUnits'])->get()
         );
 
         $itemOptions = $items->map(fn ($item) => [
@@ -67,9 +67,21 @@ class RequestController extends Controller
             'label' => $item->display_name,
             'stock' => $item->stock,
             'unit' => $item->unit,
+            'primary_unit' => $item->primary_unit ?? $item->unit,
+            'stock_display' => $item->stock_display,
             'rack' => $item->storageLocation?->rack,
             'location_code' => $item->storageLocation?->code,
             'sub_location' => $item->storageLocation?->sub_location,
+            'units' => $item->itemUnits
+                ->filter(fn ($u) => in_array($u->context, ['purchase', 'both']))
+                ->map(fn ($u) => [
+                    'name' => $u->unit_name,
+                    'conversion' => (float) $u->conversion_to_primary,
+                    'is_primary' => $u->is_primary,
+                    'conversion_text' => $u->is_primary
+                        ? null
+                        : "1 {$u->unit_name} = {$u->conversion_to_primary} {$item->primary_unit}",
+                ])->values(),
         ])->values();
 
         return view('gudang.requestbarang', compact('items', 'itemOptions'));
@@ -80,15 +92,15 @@ class RequestController extends Controller
         $data = $request->validate([
             'item_id' => ['nullable', Rule::exists('items', 'id')->whereNull('deleted_at')],
             'item_name' => ['required_without:item_id', 'nullable', 'string', 'max:255'],
-            'quantity' => ['required', 'integer', 'min:1'],
+            'quantity' => ['required', 'numeric', 'min:0.01'],
             'unit' => ['nullable', 'string', 'max:50'],
             'priority' => ['required', 'in:Biasa,Mendesak'],
             'reason' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls', 'max:2048'],
         ]);
 
-        $item = $data['item_id'] ? Item::with('itemUnits')->find($data['item_id']) : null;
-        $unit = $data['unit'] ?? $item?->unit ?? 'Pcs';
+        $item = ! empty($data['item_id']) ? Item::with('itemUnits')->find($data['item_id']) : null;
+        $unit = $data['unit'] ?? $item?->primary_unit ?? $item?->unit ?? 'Pcs';
         
         // Calculate quantity in primary unit
         $quantityInPrimary = $item ? $item->convertToPrimary($data['quantity'], $unit) : $data['quantity'];
@@ -108,7 +120,7 @@ class RequestController extends Controller
                 'quantity_in_primary' => $quantityInPrimary,
                 'unit' => $unit,
                 'priority' => $data['priority'],
-                'reason' => $data['reason'],
+                'reason' => $data['reason'] ?? null,
                 'attachment_path' => $attachmentPath,
                 'status' => 'Menunggu Review',
                 'procurement_note_id' => $note->id,
@@ -153,7 +165,7 @@ class RequestController extends Controller
     {
         abort_unless($request->user_id === Auth::id(), 403);
 
-        $request->load(['item.storageLocation', 'user', 'requestHistories.user']);
+        $request->load(['item.storageLocation', 'item.itemUnits', 'user', 'requestHistories.user']);
 
         return view('gudang.detail', compact('request'));
     }
@@ -176,7 +188,7 @@ class RequestController extends Controller
     {
         abort_unless($request->isActionable(), 403);
 
-        $request->load(['item.storageLocation', 'user', 'requestHistories.user']);
+        $request->load(['item.storageLocation', 'item.itemUnits', 'user', 'requestHistories.user']);
 
         return view('hr.approval-detail', compact('request'));
     }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\NumericValue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +38,9 @@ class StockRequest extends Model
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',
         'closed_at' => 'datetime',
-        'quantity_in_primary' => 'decimal:4',
+        'quantity' => NumericValue::class,
+        'received_quantity' => NumericValue::class,
+        'quantity_in_primary' => NumericValue::class,
     ];
 
     public function user()
@@ -97,7 +100,7 @@ class StockRequest extends Model
             && $this->received_quantity < $this->quantity;
     }
 
-    public function remainingQuantity(): int
+    public function remainingQuantity(): float
     {
         return $this->quantity - $this->received_quantity;
     }

@@ -63,11 +63,18 @@
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Jumlah Keluar') }}</label>
-                            <input type="number" name="quantity" id="qtyInput" min="1" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                            <input type="number" name="quantity" id="qtyInput" min="0.01" step="any" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             <p id="qtyHelper" class="text-[11px] text-slate-400 mt-1 hidden">{{ __('Maksimal') }}: <span id="qtyMax"></span></p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Satuan') }}</label>
+                            <select name="unit" id="unitField" required class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                                <option value="">{{ __('Pilih satuan') }}</option>
+                            </select>
+                            <p id="conversionHint" class="hidden text-[11px] text-corpblue-600 mt-1"></p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Keperluan') }}</label>
@@ -132,6 +139,8 @@
         const qtyInput = document.getElementById('qtyInput');
         const qtyHelper = document.getElementById('qtyHelper');
         const qtyMax = document.getElementById('qtyMax');
+        const unitField = document.getElementById('unitField');
+        const conversionHint = document.getElementById('conversionHint');
         const infoBox = document.getElementById('itemInfoBox');
         let activeIndex = -1;
         let activeButtons = [];
@@ -199,7 +208,7 @@
                 btn.dataset.id = item.id;
                 btn.className = 'w-full text-left px-3 py-2.5 text-sm text-slate-700 hover:bg-corpblue-50 hover:text-corpblue-700 font-medium transition-all flex items-center justify-between';
                 const location = item.sub_location ? ' · ' + @json(__('Lok')) + ' ' + item.sub_location : '';
-                btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + item.stock + ' ' + item.unit + location + '</span>';
+                btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + (item.stock_display || (item.stock + ' ' + (item.primary_unit || item.unit))) + location + '</span>';
                 btn.addEventListener('click', () => selectItem(item));
                 activeButtons.push(btn);
                 listBox.appendChild(btn);
@@ -238,11 +247,33 @@
             if (listBox) listBox.classList.add('hidden');
             syncClearButton();
 
+            // Populate unit dropdown (usage units)
+            unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+            const units = item.units || [];
+            if (units.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = item.primary_unit || item.unit || '';
+                opt.textContent = item.primary_unit || item.unit || '';
+                opt.selected = true;
+                unitField.appendChild(opt);
+            } else {
+                units.forEach(u => {
+                    const opt = document.createElement('option');
+                    opt.value = u.name;
+                    opt.textContent = u.conversion_text ? `${u.name} (${u.conversion_text})` : u.name;
+                    opt.dataset.conversion = u.conversion;
+                    opt.dataset.conversionText = u.conversion_text || '';
+                    if (u.is_primary) opt.selected = true;
+                    unitField.appendChild(opt);
+                });
+            }
+            updateConversionHint();
+
             document.getElementById('infoItemName').textContent = item.label;
-            document.getElementById('infoItemDetail').textContent = '{{ __('Tersedia') }}';
+            document.getElementById('infoItemDetail').textContent = '{{ __('Tersedia') }}' + (item.stock_display ? ' · ' + item.stock_display : '');
             document.getElementById('infoItemStock').textContent = item.stock;
             document.getElementById('infoItemStock').className = 'text-base font-bold ' + (item.stock > 0 ? 'text-slate-900' : 'text-red-500');
-            document.getElementById('infoItemUnit').textContent = item.unit;
+            document.getElementById('infoItemUnit').textContent = item.primary_unit || item.unit;
             document.getElementById('infoItemRack').textContent = item.rack || '—';
             var subWrap = document.getElementById('infoSubLocWrap');
             if (item.sub_location) {
@@ -260,11 +291,41 @@
             }
             infoBox.classList.remove('hidden');
 
-            qtyInput.max = item.stock;
+            updateQtyMax();
             qtyInput.value = '';
             qtyHelper.classList.remove('hidden');
-            qtyMax.textContent = item.stock + ' ' + item.unit;
             qtyInput.focus();
+        }
+
+        function updateConversionHint() {
+            const opt = unitField.options[unitField.selectedIndex];
+            if (!opt || !opt.value) {
+                conversionHint.classList.add('hidden');
+                return;
+            }
+            const text = opt.dataset ? opt.dataset.conversionText : '';
+            if (text) {
+                conversionHint.textContent = 'ℹ️ ' + text;
+                conversionHint.classList.remove('hidden');
+            } else {
+                conversionHint.classList.add('hidden');
+            }
+        }
+
+        function updateQtyMax() {
+            if (!selectedItem) return;
+            const opt = unitField.options[unitField.selectedIndex];
+            const conversion = opt && opt.dataset && opt.dataset.conversion ? parseFloat(opt.dataset.conversion) : 1;
+            const maxInUnit = conversion > 0 ? (selectedItem.stock / conversion) : selectedItem.stock;
+            qtyInput.max = maxInUnit;
+            qtyMax.textContent = maxInUnit + ' ' + (opt ? opt.value : (selectedItem.primary_unit || selectedItem.unit));
+        }
+
+        if (unitField) {
+            unitField.addEventListener('change', () => {
+                updateConversionHint();
+                updateQtyMax();
+            });
         }
 
         function clearItemSelection() {
@@ -273,6 +334,8 @@
             selectedItem = null;
             infoBox.classList.add('hidden');
             qtyHelper.classList.add('hidden');
+            unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+            conversionHint.classList.add('hidden');
             syncClearButton();
             if (listBox) {
                 buildItemList('');
@@ -324,6 +387,12 @@
                 searchInput.focus();
                 openItemList();
                 alert('{{ __('Silakan pilih barang dari inventaris.') }}');
+                return;
+            }
+            if (!unitField.value) {
+                e.preventDefault();
+                unitField.focus();
+                alert('{{ __('Silakan pilih satuan.') }}');
             }
         });
     </script>

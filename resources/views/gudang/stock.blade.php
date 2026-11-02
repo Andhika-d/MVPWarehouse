@@ -74,8 +74,13 @@
                                 <td class="px-4 py-3 text-xs font-mono text-slate-600">{{ $location->sub_location ?? '—' }}</td>
                                 <td class="px-4 py-3 font-medium text-slate-900">{{ $item->name }}@if($location->items->count() > 1)<span class="text-[11px] text-slate-500 ml-1">(+{{ $location->items->count() - 1 }} {{ __('ditumpuk') }})</span>@endif</td>
                                 <td class="px-4 py-3 text-slate-600">{{ $item->size ?? '—' }}</td>
-                                <td class="px-4 py-3 text-center"><span class="font-semibold {{ $item->stock === 0 ? 'text-red-600' : ($item->stock <= 5 ? 'text-amber-600' : 'text-slate-900') }}">{{ $item->stock }}</span></td>
-                                <td class="px-4 py-3 text-slate-600">{{ $item->unit }}</td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="font-semibold {{ $item->stock === 0 ? 'text-red-600' : ($item->stock <= 5 ? 'text-amber-600' : 'text-slate-900') }}">{{ $item->stock }}</span>
+                                    @if($item->itemUnits->where('is_primary', false)->isNotEmpty())
+                                    <p class="text-[11px] text-slate-400 mt-0.5">{{ $item->stock_display }}</p>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-3 text-slate-600">{{ $item->primary_unit }}</td>
                                 <td class="px-4 py-3 text-center">
                                     <x-status-badge domain="location" status="Terisi" :label="$item->stock === 0 ? __('Terisi (Barang Kosong)') : __('Terisi')" dot />
                                 </td>

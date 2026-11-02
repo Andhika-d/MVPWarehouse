@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\NumericValue;
 use Illuminate\Database\Eloquent\Model;
 
 class StockMovement extends Model
@@ -28,11 +29,10 @@ class StockMovement extends Model
     protected $casts = [
         'occurred_at' => 'datetime',
         'created_at' => 'datetime',
-        'balance_before' => 'integer',
-        'balance_after' => 'integer',
-        'quantity_in_primary' => 'decimal:4',
-    ];
-        'balance_after' => 'integer',
+        'quantity' => NumericValue::class,
+        'quantity_in_primary' => NumericValue::class,
+        'balance_before' => NumericValue::class,
+        'balance_after' => NumericValue::class,
     ];
 
     public function item()

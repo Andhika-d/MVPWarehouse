@@ -106,7 +106,7 @@
                             <td class="px-4 py-3 text-slate-500 text-xs">
                                 @forelse($loc->items as $item)
                                 <div>
-                                    {{ $item->size ?: '' }} &middot; {{ $item->stock }} {{ $item->unit }}
+                                    {{ $item->size ?: '' }} &middot; {{ $item->stock_display }}
                                     @if($loc->items->count() > 1)<span class="text-indigo-600 font-semibold ml-1">({{ __('ditumpuk') }})</span>@endif
                                 </div>
                                 @empty

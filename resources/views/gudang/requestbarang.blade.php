@@ -73,11 +73,16 @@
                     </div>
                 </div>
 
-                {{-- 2. Jumlah --}}
+                {{-- 2. Jumlah & Satuan --}}
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Jumlah') }}</label>
-                    <input type="number" name="quantity" min="1" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
-                    <input type="hidden" name="unit" id="unit-field" value="">
+                    <div class="grid grid-cols-2 gap-3">
+                        <input type="number" name="quantity" min="0.01" step="any" required placeholder="0" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                        <select name="unit" id="unit-field" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                            <option value="">{{ __('Pilih satuan') }}</option>
+                        </select>
+                    </div>
+                    <p id="conversionHint" class="hidden mt-1.5 text-xs text-corpblue-600 bg-corpblue-50 border border-corpblue-100 rounded-lg px-2.5 py-1.5"></p>
                 </div>
 
                 {{-- 3. Prioritas --}}
@@ -224,7 +229,7 @@
             btn.dataset.id = item.id;
             btn.className = 'w-full text-left px-3 py-2.5 text-sm text-slate-700 hover:bg-corpblue-50 hover:text-corpblue-700 font-medium transition-all flex items-center justify-between';
             const location = item.sub_location ? ' · ' + @json(__('Lok')) + ' ' + item.sub_location : '';
-            btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + item.stock + ' ' + item.unit + location + '</span>';
+            btn.innerHTML = '<span>' + item.label + '</span><span class="text-[11px] text-slate-400 font-normal">' + (item.stock_display || (item.stock + ' ' + (item.primary_unit || item.unit))) + location + '</span>';
             btn.addEventListener('click', () => selectItem(item));
             activeButtons.push(btn);
             listBox.appendChild(btn);
@@ -263,13 +268,35 @@
         searchInput.value = item.label;
         if (listBox) listBox.classList.add('hidden');
         syncClearButton();
-        unitField.value = item.unit || '';
+
+        // Populate unit dropdown from item's available units
+        unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+        const units = item.units || [];
+        if (units.length === 0) {
+            // Fallback for items without item_units rows
+            const opt = document.createElement('option');
+            opt.value = item.primary_unit || item.unit || '';
+            opt.textContent = item.primary_unit || item.unit || '';
+            opt.selected = true;
+            unitField.appendChild(opt);
+        } else {
+            units.forEach((u) => {
+                const opt = document.createElement('option');
+                opt.value = u.name;
+                opt.textContent = u.conversion_text ? `${u.name} (${u.conversion_text})` : u.name;
+                opt.dataset.conversion = u.conversion;
+                opt.dataset.conversionText = u.conversion_text || '';
+                if (u.is_primary) opt.selected = true;
+                unitField.appendChild(opt);
+            });
+        }
+        updateConversionHint();
 
         document.getElementById('infoItemName').textContent = item.label;
-        document.getElementById('infoItemDetail').textContent = item.stock > 0 ? '{{ __('Tersedia') }}' : '{{ __('Stok habis') }}';
+        document.getElementById('infoItemDetail').textContent = (item.stock > 0 ? '{{ __('Tersedia') }}' : '{{ __('Stok habis') }}') + (item.stock_display ? ' · ' + item.stock_display : '');
         document.getElementById('infoItemStock').textContent = item.stock;
         document.getElementById('infoItemStock').className = 'text-base font-bold ' + (item.stock > 0 ? 'text-slate-900' : 'text-red-500');
-        document.getElementById('infoItemUnit').textContent = item.unit || '—';
+        document.getElementById('infoItemUnit').textContent = item.primary_unit || item.unit || '—';
         document.getElementById('infoItemRack').textContent = item.rack || '—';
         var subWrap = document.getElementById('infoSubLocWrap');
         if (item.sub_location) {
@@ -288,11 +315,32 @@
         infoBox.classList.remove('hidden');
     }
 
+    function updateConversionHint() {
+        const hint = document.getElementById('conversionHint');
+        const opt = unitField.options[unitField.selectedIndex];
+        if (!opt || !opt.value) {
+            hint.classList.add('hidden');
+            return;
+        }
+        const conversionText = opt.dataset ? opt.dataset.conversionText : '';
+        if (conversionText) {
+            hint.textContent = 'ℹ️ ' + conversionText;
+            hint.classList.remove('hidden');
+        } else {
+            hint.classList.add('hidden');
+        }
+    }
+
+    if (unitField) {
+        unitField.addEventListener('change', updateConversionHint);
+    }
+
     function clearItemSelection() {
         itemIdInput.value = '';
         itemNameHidden.value = '';
         searchInput.value = '';
-        unitField.value = '';
+        unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+        document.getElementById('conversionHint').classList.add('hidden');
         infoBox.classList.add('hidden');
         syncClearButton();
         if (listBox) {
@@ -345,6 +393,12 @@
             searchInput.focus();
             openItemList();
             alert('{{ __('Silakan pilih barang dari inventaris.') }}');
+            return;
+        }
+        if (!unitField.value) {
+            e.preventDefault();
+            unitField.focus();
+            alert('{{ __('Silakan pilih satuan.') }}');
         }
     });
     </script></x-slot:scripts>

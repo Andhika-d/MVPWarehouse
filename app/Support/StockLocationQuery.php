@@ -10,7 +10,7 @@ class StockLocationQuery
 {
     public static function fromRequest(Request $request): Builder
     {
-        $query = StorageLocation::with('items');
+        $query = StorageLocation::with(['items.itemUnits']);
         $rack = $request->query('rack');
         $search = trim((string) $request->query('search', ''));
         $status = $request->query('status');

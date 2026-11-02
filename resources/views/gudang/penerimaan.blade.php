@@ -103,7 +103,7 @@
                     <div>
                         <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Jumlah Diterima Sekarang') }}</label>
                         <div class="flex items-center gap-2">
-                            <input type="number" name="received_quantity" id="receive_input" min="1" required class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                            <input type="number" name="received_quantity" id="receive_input" min="0.01" step="any" required class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             <span id="receive_unit" class="text-xs font-semibold text-slate-500"></span>
                         </div>
                     </div>
@@ -157,9 +157,9 @@
         function openReceiveModal(button) {
             var id     = button.getAttribute('data-id');
             var name   = button.getAttribute('data-name');
-            var qty    = parseInt(button.getAttribute('data-qty'), 10);
-            var recv   = parseInt(button.getAttribute('data-received'), 10);
-            var remain = parseInt(button.getAttribute('data-remain'), 10);
+            var qty    = parseFloat(button.getAttribute('data-qty'));
+            var recv   = parseFloat(button.getAttribute('data-received'));
+            var remain = parseFloat(button.getAttribute('data-remain'));
             var unit   = button.getAttribute('data-unit');
 
             document.getElementById('receive_request_id').value   = id;
@@ -179,7 +179,7 @@
         function openCloseModal(button) {
             document.getElementById('close_request_id').value = button.getAttribute('data-id');
             document.getElementById('close_item_name').textContent = button.getAttribute('data-name');
-            var remain = parseInt(button.getAttribute('data-remain'), 10);
+            var remain = parseFloat(button.getAttribute('data-remain'));
             var unit = button.getAttribute('data-unit');
             document.getElementById('close_remain').textContent = remain + ' ' + unit;
             document.getElementById('close_note').value = '';

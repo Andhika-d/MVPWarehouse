@@ -23,7 +23,7 @@ class StockPrintController extends Controller
         $summary = [
             'locations' => $locations->count(),
             'items' => $items->count(),
-            'stock' => (int) $items->sum('stock'),
+            'stock' => round((float) $items->sum('stock'), 2),
             'low_stock' => $items->where('stock', '>', 0)->where('stock', '<=', 5)->count(),
             'out_of_stock' => $items->where('stock', 0)->count(),
         ];

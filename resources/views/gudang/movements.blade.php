@@ -66,14 +66,14 @@
                                 <span class="text-xs text-slate-400">{{ $m->unit }}</span>
                             </td>
                             <td class="py-3 px-5 font-semibold text-slate-900">
-                                <span>{{ $m->balance_after }} {{ $m->unit }}</span>
+                                <span>{{ $m->balance_after }} {{ $m->item?->primary_unit ?? $m->unit }}</span>
                                 @if($m->balance_before !== null)
                         <span class="relative inline-flex ml-1 align-middle">
                             <button type="button" data-balance-tooltip aria-label="{{ __('Lihat detail saldo') }}" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
                             <span class="balance-tooltip-content hidden">
-                                        {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
+                                        {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->item?->primary_unit ?? $m->unit }}</strong><br>
                                         {{ __('Perubahan:') }} <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
-                                        {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
+                                        {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->item?->primary_unit ?? $m->unit }}</strong>
                                     </span>
                                 </span>
                                 @endif
@@ -117,14 +117,14 @@
                             {{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}
                         </span>
                     </div>
-                    <span class="text-slate-500">{{ __('Saldo:') }} <strong class="text-slate-900">{{ $m->balance_after }} {{ $m->unit }}</strong>
+                    <span class="text-slate-500">{{ __('Saldo:') }} <strong class="text-slate-900">{{ $m->balance_after }} {{ $m->item?->primary_unit ?? $m->unit }}</strong>
                         @if($m->balance_before !== null)
                         <span class="relative inline-flex ml-1 align-middle">
                             <button type="button" data-balance-tooltip aria-label="{{ __('Lihat detail saldo') }}" aria-expanded="false" class="inline-flex items-center justify-center w-4 h-4 rounded-full border border-slate-300 text-[10px] text-slate-500 hover:border-corpblue-400 hover:text-corpblue-600 cursor-help">i</button>
                             <span class="balance-tooltip-content hidden">
-                                {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->unit }}</strong><br>
+                                {{ __('Stok sebelum:') }} <strong>{{ $m->balance_before }} {{ $m->item?->primary_unit ?? $m->unit }}</strong><br>
                                 {{ __('Perubahan:') }} <strong>{{ $m->type === 'OUT' ? '-' : '+' }}{{ $m->quantity }} {{ $m->unit }}</strong><br>
-                                {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->unit }}</strong>
+                                {{ __('Stok setelah:') }} <strong>{{ $m->balance_after }} {{ $m->item?->primary_unit ?? $m->unit }}</strong>
                             </span>
                         </span>
                         @endif

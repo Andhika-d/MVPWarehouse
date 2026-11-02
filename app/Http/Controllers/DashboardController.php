@@ -66,7 +66,7 @@ class DashboardController extends Controller
         $search = request('search');
         $status = request('status');
 
-        $query = StorageLocation::with('items');
+        $query = StorageLocation::with(['items.itemUnits']);
 
         if ($activeRack) {
             $query->where('rack', $activeRack);
@@ -131,7 +131,7 @@ class DashboardController extends Controller
         $search = request('search');
         $status = request('status');
 
-        $query = StorageLocation::with('items');
+        $query = StorageLocation::with(['items.itemUnits']);
 
         if ($activeRack) {
             $query->where('rack', $activeRack);
@@ -182,7 +182,7 @@ class DashboardController extends Controller
 
     public function hrDashboard()
     {
-        $actionableRequests = StockRequest::with(['item', 'user'])
+        $actionableRequests = StockRequest::with(['item.itemUnits', 'user'])
             ->whereIn('status', ['Menunggu Review', 'Pending'])
             ->orderByRaw("CASE WHEN priority = 'Mendesak' THEN 0 ELSE 1 END")
             ->latest()

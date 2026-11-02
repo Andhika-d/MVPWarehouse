@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Casts\NumericValue;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -22,6 +23,7 @@ class Item extends Model
 
     protected $casts = [
         'storage_location_id' => 'integer',
+        'stock' => NumericValue::class,
     ];
 
     public function stockRequests()
@@ -53,8 +55,8 @@ class Item extends Model
             return 1.0;
         }
 
-        $itemUnit = $this->itemUnits()->where('unit_name', $unit)->first();
-        
+        $itemUnit = $this->itemUnits->firstWhere('unit_name', $unit);
+
         return $itemUnit ? $itemUnit->conversion_to_primary : 1.0;
     }
 
@@ -75,10 +77,10 @@ class Item extends Model
         $primaryUnit = $this->primary_unit ?? $this->unit;
         
         // Get alternative units sorted by conversion (largest first)
-        $units = $this->itemUnits()
+        $units = $this->itemUnits
             ->where('is_primary', false)
-            ->orderByDesc('conversion_to_primary')
-            ->get();
+            ->sortByDesc('conversion_to_primary')
+            ->values();
         
         if ($units->isEmpty()) {
             return "{$stock} {$primaryUnit}";
