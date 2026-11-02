@@ -230,4 +230,27 @@ class MultiUnitFlowTest extends TestCase
         $this->assertSame(150, $item->fresh()->stock);
         $this->assertSame(0, StockMovement::where('type', StockMovement::TYPE_OUT)->count());
     }
+
+    public function test_unit_controls_are_rendered_on_admin_and_gudang_pages(): void
+    {
+        $admin = $this->user('admin');
+        $gudang = $this->user('gudang');
+        $this->item();
+
+        $this->actingAs($admin)
+            ->get('/admin/items')
+            ->assertOk()
+            ->assertSee('openManageUnitsModal', false)
+            ->assertSee('name="csrf-token"', false);
+
+        $this->actingAs($gudang)
+            ->get('/gudang/request-barang')
+            ->assertOk()
+            ->assertSee('id="unit-field"', false);
+
+        $this->actingAs($gudang)
+            ->get('/gudang/barang-keluar')
+            ->assertOk()
+            ->assertSee('id="unitField"', false);
+    }
 }
