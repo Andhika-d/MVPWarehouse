@@ -14,6 +14,7 @@ class StockMovement extends Model
         'item_id',
         'type',
         'quantity',
+        'quantity_in_primary',
         'unit',
         'reason',
         'stock_request_id',
@@ -28,6 +29,9 @@ class StockMovement extends Model
         'occurred_at' => 'datetime',
         'created_at' => 'datetime',
         'balance_before' => 'integer',
+        'balance_after' => 'integer',
+        'quantity_in_primary' => 'decimal:4',
+    ];
         'balance_after' => 'integer',
     ];
 

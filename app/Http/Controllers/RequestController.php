@@ -87,21 +87,25 @@ class RequestController extends Controller
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls', 'max:2048'],
         ]);
 
-        $item = $data['item_id'] ? Item::find($data['item_id']) : null;
-        $unit = $item?->unit ?? $data['unit'] ?? 'Pcs';
+        $item = $data['item_id'] ? Item::with('itemUnits')->find($data['item_id']) : null;
+        $unit = $data['unit'] ?? $item?->unit ?? 'Pcs';
+        
+        // Calculate quantity in primary unit
+        $quantityInPrimary = $item ? $item->convertToPrimary($data['quantity'], $unit) : $data['quantity'];
 
         $attachmentPath = null;
         if ($request->hasFile('attachment')) {
             $attachmentPath = $request->file('attachment')->store('attachments', 'public');
         }
 
-        $stockRequest = DB::transaction(function () use ($data, $item, $unit, $attachmentPath) {
+        $stockRequest = DB::transaction(function () use ($data, $item, $unit, $quantityInPrimary, $attachmentPath) {
             $note = ProcurementNote::findOrCreateForDate(now());
             $stockRequest = StockRequest::create([
                 'user_id' => Auth::id(),
                 'item_id' => $item?->id,
                 'item_name' => $item?->name ?? $data['item_name'],
                 'quantity' => $data['quantity'],
+                'quantity_in_primary' => $quantityInPrimary,
                 'unit' => $unit,
                 'priority' => $data['priority'],
                 'reason' => $data['reason'],

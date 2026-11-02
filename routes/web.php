@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminCoil\CoilMovementController;
 use App\Http\Controllers\AdminCoil\CoilTagController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AdminHelpGuideController;
+use App\Http\Controllers\Api\ItemUnitController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CheckerController;
 use App\Http\Controllers\DashboardController;
@@ -39,6 +40,9 @@ Route::middleware('auth')->group(function () {
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead']);
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead']);
     Route::post('/admin/impersonation/stop', [AdminController::class, 'stopImpersonation']);
+    
+    // API: Item Units
+    Route::get('/api/items/{item}/units', [ItemUnitController::class, 'getUnits'])->name('api.items.units');
 
     Route::middleware('role:hr,gudang,director,admin')->group(function () {
         Route::get('/riwayat-pengadaan', [ProcurementNoteController::class, 'index'])->name('procurement-notes.index');

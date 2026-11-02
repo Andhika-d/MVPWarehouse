@@ -11,7 +11,10 @@
       },
       "models": {
         "Coding-OP": {
-          "name": "Coding-OP"
+          "name": "Solaris"
+        },
+        "kr/claude-sonnet-4.5-thinking-agentic": {
+          "name": "Sky"
         }
       }
     }

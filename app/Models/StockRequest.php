@@ -16,6 +16,7 @@ class StockRequest extends Model
         'item_id',
         'item_name',
         'quantity',
+        'quantity_in_primary',
         'received_quantity',
         'unit',
         'priority',
@@ -36,6 +37,7 @@ class StockRequest extends Model
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',
         'closed_at' => 'datetime',
+        'quantity_in_primary' => 'decimal:4',
     ];
 
     public function user()

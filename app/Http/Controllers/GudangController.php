@@ -59,11 +59,10 @@ class GudangController extends Controller
                 return back()->with('error', __('Jumlah diterima (:receive) melebihi sisa yang belum diterima (:remaining :unit).', ['receive' => $receiveQty, 'remaining' => $remaining, 'unit' => $stockRequest->unit]));
             }
 
-            $item = Item::lockForUpdate()->find($stockRequest->item_id);
+            $item = Item::with('itemUnits')->lockForUpdate()->find($stockRequest->item_id);
 
-            if ($item->unit !== $stockRequest->unit) {
-                return back()->with('error', __('Satuan tidak cocok: item menggunakan satuan ":itemUnit" sedangkan permintaan menggunakan ":requestUnit". Hubungi admin untuk memperbaiki data.', ['itemUnit' => $item->unit, 'requestUnit' => $stockRequest->unit]));
-            }
+            // Calculate quantity in primary unit for stock increment
+            $receiveQtyInPrimary = $item->convertToPrimary($receiveQty, $stockRequest->unit);
 
             $stockRequest->increment('received_quantity', $receiveQty);
 
@@ -76,7 +75,7 @@ class GudangController extends Controller
             }
 
             $balanceBefore = $item->stock;
-            $item->increment('stock', $receiveQty);
+            $item->increment('stock', $receiveQtyInPrimary);
 
             $item->refresh();
 
@@ -84,6 +83,7 @@ class GudangController extends Controller
                 'item_id' => $item->id,
                 'type' => StockMovement::TYPE_IN,
                 'quantity' => $receiveQty,
+                'quantity_in_primary' => $receiveQtyInPrimary,
                 'unit' => $stockRequest->unit,
                 'reason' => 'Penerimaan barang dari pembelian',
                 'stock_request_id' => $stockRequest->id,
@@ -99,7 +99,7 @@ class GudangController extends Controller
                 'action' => 'stock_in',
                 'target_type' => StockMovement::class,
                 'target_id' => $movement->id,
-                'details' => 'Barang masuk: '.$receiveQty.' '.$stockRequest->unit.' '.$item->name.' (Penerimaan dari pembelian) - Stok: '.$balanceBefore.' → '.$item->stock,
+                'details' => 'Barang masuk: '.$receiveQty.' '.$stockRequest->unit.' '.$item->name.' ('.$receiveQtyInPrimary.' '.$item->primary_unit.') (Penerimaan dari pembelian) - Stok: '.$balanceBefore.' → '.$item->stock,
             ]);
 
             $stockRequest->requestHistories()->create([
@@ -159,27 +159,32 @@ class GudangController extends Controller
     {
         $data = $request->validate([
             'item_id' => 'required|exists:items,id',
-            'quantity' => 'required|integer|min:1',
+            'quantity' => 'required|numeric|min:0.01',
+            'unit' => 'required|string|max:50',
             'reason' => 'required|string|max:255',
             'note' => 'nullable|string|max:255',
         ]);
 
         return DB::transaction(function () use ($data) {
-            $item = Item::lockForUpdate()->find($data['item_id']);
+            $item = Item::with('itemUnits')->lockForUpdate()->find($data['item_id']);
 
-            if ($item->stock < $data['quantity']) {
-                return back()->with('error', __('Stok tidak mencukupi. Stok saat ini: :stock :unit', ['stock' => $item->stock, 'unit' => $item->unit]));
+            // Convert to primary unit for stock check and deduction
+            $quantityInPrimary = $item->convertToPrimary($data['quantity'], $data['unit']);
+
+            if ($item->stock < $quantityInPrimary) {
+                return back()->with('error', __('Stok tidak mencukupi. Stok saat ini: :stock :unit', ['stock' => $item->stock, 'unit' => $item->primary_unit]));
             }
 
             $balanceBefore = $item->stock;
-            $item->decrement('stock', $data['quantity']);
+            $item->decrement('stock', $quantityInPrimary);
             $item->refresh();
 
             $movement = StockMovement::create([
                 'item_id' => $item->id,
                 'type' => StockMovement::TYPE_OUT,
                 'quantity' => $data['quantity'],
-                'unit' => $item->unit,
+                'quantity_in_primary' => $quantityInPrimary,
+                'unit' => $data['unit'],
                 'reason' => $data['reason'],
                 'stock_request_id' => null,
                 'user_id' => Auth::id(),
@@ -194,7 +199,7 @@ class GudangController extends Controller
                 'action' => 'stock_out',
                 'target_type' => StockMovement::class,
                 'target_id' => $movement->id,
-                'details' => 'Barang keluar: '.$data['quantity'].' '.$item->unit.' '.$item->name.' ('.$data['reason'].') - Stok: '.$balanceBefore.' → '.$item->stock,
+                'details' => 'Barang keluar: '.$data['quantity'].' '.$data['unit'].' '.$item->name.' ('.$quantityInPrimary.' '.$item->primary_unit.') ('.$data['reason'].') - Stok: '.$balanceBefore.' → '.$item->stock,
             ]);
 
             return back()->with('success', __(':quantity :unit :name berhasil dicatat keluar. Stok tersisa: :stock', ['quantity' => $data['quantity'], 'unit' => $item->unit, 'name' => $item->name, 'stock' => $item->stock]));
