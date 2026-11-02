@@ -231,6 +231,24 @@ class MultiUnitFlowTest extends TestCase
         $this->assertSame(0, StockMovement::where('type', StockMovement::TYPE_OUT)->count());
     }
 
+    public function test_primary_unit_cannot_change_while_alternative_units_exist(): void
+    {
+        $admin = $this->user('admin');
+        $item = $this->item();
+
+        $this->actingAs($admin)
+            ->put("/admin/items/{$item->id}", [
+                'name' => 'Renamed Item',
+                'unit' => 'Box',
+            ])
+            ->assertSessionHas('error');
+
+        $item->refresh();
+        $this->assertSame('Multi Unit Item', $item->name);
+        $this->assertSame('Pcs', $item->unit);
+        $this->assertSame('Pcs', $item->primary_unit);
+    }
+
     public function test_unit_controls_are_rendered_on_admin_and_gudang_pages(): void
     {
         $admin = $this->user('admin');

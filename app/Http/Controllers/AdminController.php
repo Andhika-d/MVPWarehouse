@@ -165,9 +165,13 @@ class AdminController extends Controller
             'unit' => ['required', 'in:'.implode(',', Item::UNITS)],
         ]);
 
-        DB::transaction(function () use ($item, $data) {
-            $oldUnit = $item->unit;
+        $oldUnit = $item->unit;
 
+        if ($oldUnit !== $data['unit'] && $item->itemUnits()->where('is_primary', false)->exists()) {
+            return back()->with('error', __('Unit dasar tidak dapat diubah selama masih ada unit konversi. Hapus unit alternatif terlebih dahulu.'));
+        }
+
+        DB::transaction(function () use ($item, $data, $oldUnit) {
             $item->update([
                 'name' => $data['name'],
                 'size' => $data['size'] ?? null,
