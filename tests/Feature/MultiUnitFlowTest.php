@@ -249,6 +249,67 @@ class MultiUnitFlowTest extends TestCase
         $this->assertSame('Pcs', $item->primary_unit);
     }
 
+    public function test_receiving_uses_the_conversion_recorded_on_the_request(): void
+    {
+        $gudang = $this->user('gudang');
+        $hr = $this->user('hr');
+        $item = $this->item(0);
+
+        $this->actingAs($gudang)->post('/gudang/request-barang', [
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Pack',
+            'priority' => 'Biasa',
+            'reason' => 'Persediaan produksi',
+        ])->assertRedirect('/gudang/history');
+
+        $request = StockRequest::firstOrFail();
+        $this->assertSame(400, $request->quantity_in_primary);
+
+        $this->actingAs($hr)
+            ->post("/hr/requests/{$request->id}/approve", ['note' => 'Disetujui'])
+            ->assertRedirect();
+
+        // Conversion changes after the request was created.
+        $item->itemUnits()->where('unit_name', 'Pack')->update(['conversion_to_primary' => 100]);
+
+        $this->actingAs($gudang)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 2,
+        ])->assertRedirect();
+
+        $this->assertSame(400, $item->fresh()->stock, 'Penerimaan harus memakai konversi saat request dibuat.');
+
+        $movement = StockMovement::where('type', StockMovement::TYPE_IN)->latest('id')->firstOrFail();
+        $this->assertSame(400, $movement->quantity_in_primary);
+    }
+
+    public function test_request_and_stock_out_reject_unknown_units(): void
+    {
+        $gudang = $this->user('gudang');
+        $item = $this->item(100);
+
+        $this->actingAs($gudang)->post('/gudang/request-barang', [
+            'item_id' => $item->id,
+            'quantity' => 1,
+            'unit' => 'Galon',
+            'priority' => 'Biasa',
+            'reason' => 'Tes unit tidak valid',
+        ])->assertSessionHasErrors('unit');
+
+        $this->assertSame(0, StockRequest::count());
+
+        $this->actingAs($gudang)->post('/gudang/barang-keluar', [
+            'item_id' => $item->id,
+            'quantity' => 1,
+            'unit' => 'Galon',
+            'reason' => 'Tes unit tidak valid',
+        ])->assertSessionHas('error');
+
+        $this->assertSame(100, $item->fresh()->stock);
+        $this->assertSame(0, StockMovement::where('type', StockMovement::TYPE_OUT)->count());
+    }
+
     public function test_unit_controls_are_rendered_on_admin_and_gudang_pages(): void
     {
         $admin = $this->user('admin');

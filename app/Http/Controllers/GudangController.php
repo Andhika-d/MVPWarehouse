@@ -61,8 +61,14 @@ class GudangController extends Controller
 
             $item = Item::with('itemUnits')->lockForUpdate()->find($stockRequest->item_id);
 
-            // Calculate quantity in primary unit for stock increment
-            $receiveQtyInPrimary = $item->convertToPrimary($receiveQty, $stockRequest->unit);
+            // Use the conversion recorded when the request was made so that
+            // changing the conversion later does not corrupt stock history.
+            $requestedInPrimary = (float) ($stockRequest->quantity_in_primary ?? $stockRequest->quantity);
+            $conversionFactor = $stockRequest->quantity > 0
+                ? $requestedInPrimary / (float) $stockRequest->quantity
+                : (float) $item->getConversionFactor($stockRequest->unit);
+
+            $receiveQtyInPrimary = $receiveQty * $conversionFactor;
 
             $stockRequest->increment('received_quantity', $receiveQty);
 
@@ -180,6 +186,13 @@ class GudangController extends Controller
         return DB::transaction(function () use ($data) {
             $item = Item::with('itemUnits')->lockForUpdate()->find($data['item_id']);
             $unit = $data['unit'] ?? $item->primary_unit ?? $item->unit;
+
+            $primaryUnit = $item->primary_unit ?? $item->unit;
+            $unitExists = $unit === $primaryUnit || $item->itemUnits->firstWhere('unit_name', $unit);
+
+            if (! $unitExists) {
+                return back()->with('error', __('Satuan tidak valid untuk barang ini.'));
+            }
 
             // Convert to primary unit for stock check and deduction
             $quantityInPrimary = $item->convertToPrimary($data['quantity'], $unit);

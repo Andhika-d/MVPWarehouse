@@ -101,6 +101,17 @@ class RequestController extends Controller
 
         $item = ! empty($data['item_id']) ? Item::with('itemUnits')->find($data['item_id']) : null;
         $unit = $data['unit'] ?? $item?->primary_unit ?? $item?->unit ?? 'Pcs';
+
+        if ($item) {
+            $primaryUnit = $item->primary_unit ?? $item->unit;
+            $unitExists = $unit === $primaryUnit || $item->itemUnits->firstWhere('unit_name', $unit);
+
+            if (! $unitExists) {
+                return back()->withErrors([
+                    'unit' => __('Satuan tidak valid untuk barang ini.'),
+                ])->withInput();
+            }
+        }
         
         // Calculate quantity in primary unit
         $quantityInPrimary = $item ? $item->convertToPrimary($data['quantity'], $unit) : $data['quantity'];
