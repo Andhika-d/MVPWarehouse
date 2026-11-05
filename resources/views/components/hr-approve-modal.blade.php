@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <label for="approveQuantityInput" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Jumlah Disetujui') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional, bisa dikurangi') }})</span></label>
-                    <input type="number" id="approveQuantityInput" name="approved_quantity" step="1" min="0.01" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
+                    <input type="number" id="approveQuantityInput" name="approved_quantity" step="any" min="0.01" inputmode="decimal" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
                     <p class="mt-1 text-[11px] text-slate-500">{{ __('Kosongkan jika menyetujui sesuai jumlah permintaan. Isi jika hanya menyetujui sebagian.') }}</p>
                 </div>
                 <div>
@@ -55,6 +55,23 @@
             if (qtyInput) {
                 qtyInput.value = '';
                 qtyInput.max = qty;
+                if (!qtyInput._stepHandlerAttached) {
+                    qtyInput.addEventListener('keydown', function(e) {
+                        if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                            e.preventDefault();
+                            var current = parseFloat(this.value);
+                            var max = parseFloat(this.max);
+                            var min = parseFloat(this.min || '0.01');
+                            if (isNaN(current)) current = e.key === 'ArrowUp' ? 0 : (isNaN(max) ? 1 : max);
+                            var next = e.key === 'ArrowUp' ? current + 1 : current - 1;
+                            if (!isNaN(max)) next = Math.min(next, max);
+                            if (!isNaN(min)) next = Math.max(next, min);
+                            if (Math.abs(next - Math.round(next)) < 1e-9) next = Math.round(next);
+                            this.value = next;
+                        }
+                    });
+                    qtyInput._stepHandlerAttached = true;
+                }
             }
             var noteInput = document.getElementById('approveNoteText');
             if (noteInput) noteInput.value = '';
