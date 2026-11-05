@@ -156,7 +156,7 @@
                     </div>
                     <div>
                         <label for="approveQuantityInput" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Jumlah Disetujui') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional, bisa dikurangi') }})</span></label>
-                        <input type="number" id="approveQuantityInput" name="approved_quantity" step="any" min="0.01" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
+                        <input type="number" id="approveQuantityInput" name="approved_quantity" step="1" min="0.01" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
                         <p class="mt-1 text-[11px] text-slate-500">{{ __('Kosongkan jika menyetujui sesuai jumlah permintaan. Isi jika hanya menyetujui sebagian.') }}</p>
                     </div>
                     <div>
