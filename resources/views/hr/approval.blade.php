@@ -94,10 +94,7 @@
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                     <a href="/hr/requests/{{ $request->id }}" title="{{ __('Lihat detail & lampiran') }}" class="action-link action-link--neutral">{{ __('Detail') }}</a>
-                                    <form action="/hr/requests/{{ $request->id }}/approve" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" title="{{ __('Setujui request ini') }}" class="action-link action-link--success">{{ __('Setujui') }}</button>
-                                    </form>
+                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/approve" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this)" title="{{ __('Setujui request ini') }}" class="action-link action-link--success">{{ __('Setujui') }}</button>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" onclick="openRejectModal(this)" title="{{ __('Tolak item ini') }}" class="action-link action-link--danger">{{ __('Tolak') }}</button>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" onclick="openDelayModal(this)" title="{{ __('Tunda item ini') }}" class="action-link action-link--warning">{{ __('Tunda') }}</button>
                                 </div>
@@ -123,6 +120,44 @@
     </div>
 
     <x-slot:modals>
+    {{-- MODAL SETUJUI --}}
+    <div id="approveModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeApproveModal()"></div>
+        <div class="relative bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md flex flex-col overflow-hidden max-h-[90vh] z-[101]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <div>
+                    <h3 id="approveModalTitle" class="text-sm font-bold text-slate-900">{{ __('Konfirmasi Persetujuan') }}</h3>
+                    <p id="approveModalTarget" class="text-xs text-emerald-600 mt-0.5 font-semibold"></p>
+                </div>
+                <button onclick="closeApproveModal()" type="button" class="text-slate-400 hover:text-slate-600 p-2 text-2xl font-light leading-none cursor-pointer transition-colors" aria-label="{{ __('Tutup') }}">&times;</button>
+            </div>
+            <form id="approveForm" method="POST">
+                @csrf
+                <div class="p-5 space-y-4 bg-white flex-1 overflow-y-auto">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Jumlah Diminta') }}</label>
+                        <div class="px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-700">
+                            <span id="approveRequestedQty">-</span> <span id="approveRequestedUnit"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="approveQuantityInput" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Jumlah Disetujui') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional, bisa dikurangi') }})</span></label>
+                        <input type="number" id="approveQuantityInput" name="approved_quantity" step="any" min="0.01" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
+                        <p class="mt-1 text-[11px] text-slate-500">{{ __('Kosongkan jika menyetujui sesuai jumlah permintaan. Isi jika hanya menyetujui sebagian.') }}</p>
+                    </div>
+                    <div>
+                        <label for="approveNoteText" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Catatan Persetujuan') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional') }})</span></label>
+                        <textarea id="approveNoteText" name="note" rows="3" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900 resize-none" placeholder="{{ __('Tambahkan catatan jika perlu (contoh: hanya dibeli sebagian)...') }}"></textarea>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
+                    <button onclick="closeApproveModal()" type="button" class="btn btn--secondary">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn--success">{{ __('Setujui') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- MODAL TOLAK --}}
     <div id="rejectModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRejectModal()"></div>
@@ -199,16 +234,51 @@
             });
         }
 
+        function openApproveModal(button) {
+            var form = document.getElementById('approveForm');
+            form.action = button.getAttribute('data-action');
+            form.querySelectorAll('[data-bulk-request-id]').forEach(function (input) { input.remove(); });
+            document.getElementById('approveModalTarget').innerText = '{{ __('Menyetujui') }}: ' + modalLabel(button);
+            const qty = button.getAttribute('data-quantity') || '-';
+            const unit = button.getAttribute('data-unit') || '';
+            document.getElementById('approveRequestedQty').innerText = qty;
+            document.getElementById('approveRequestedUnit').innerText = unit;
+            document.getElementById('approveQuantityInput').value = '';
+            document.getElementById('approveQuantityInput').max = qty;
+            document.getElementById('approveNoteText').value = '';
+            if (typeof openModal === 'function') {
+                openModal('approveModal');
+            } else {
+                const modal = document.getElementById('approveModal');
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+            document.getElementById('approveNoteText').focus();
+        }
+        function closeApproveModal() {
+            if (typeof closeModal === 'function') {
+                closeModal('approveModal');
+            } else {
+                const modal = document.getElementById('approveModal');
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
         function openRejectModal(button) {
             var form = document.getElementById('rejectForm');
             form.action = button.getAttribute('data-action');
             setBulkRequestIds(form, button);
             document.getElementById('rejectModalTarget').innerText = '{{ __('Menolak') }}: ' + modalLabel(button);
             document.getElementById('rejectReasonText').value = '';
-            openModal('rejectModal');
+            if (typeof openModal === 'function') {
+                openModal('rejectModal');
+            }
         }
         function closeRejectModal() {
-            closeModal('rejectModal');
+            if (typeof closeModal === 'function') {
+                closeModal('rejectModal');
+            }
             document.getElementById('rejectReasonText').value = '';
         }
 
@@ -218,12 +288,24 @@
             setBulkRequestIds(form, button);
             document.getElementById('delayModalTarget').innerText = '{{ __('Menunda') }}: ' + modalLabel(button);
             document.getElementById('delayReasonText').value = '';
-            openModal('delayModal');
+            if (typeof openModal === 'function') {
+                openModal('delayModal');
+            }
         }
         function closeDelayModal() {
-            closeModal('delayModal');
+            if (typeof closeModal === 'function') {
+                closeModal('delayModal');
+            }
             document.getElementById('delayReasonText').value = '';
         }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                closeApproveModal();
+                closeRejectModal();
+                closeDelayModal();
+            }
+        });
     </script>
     </x-slot:scripts>
 

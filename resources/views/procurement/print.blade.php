@@ -25,14 +25,11 @@
         <table class="data procurement-table--portrait">
             <thead>
                 <tr>
-                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Jumlah</th><th>Status</th><th>Catatan</th>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Diminta</th><th>Ukuran</th><th>Sisa Stock</th><th>Status</th><th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($note->requests as $index => $stockRequest)
-                @php
-                    $remaining = max(0, $stockRequest->quantity - $stockRequest->received_quantity);
-                @endphp
                 <tr>
                     <td><span class="cell-primary">{{ $index + 1 }}</span></td>
                     <td><span class="cell-meta">{{ $stockRequest->created_at->format('H:i') }}</span></td>
@@ -40,11 +37,9 @@
                         <span class="cell-primary">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</span>
                         <span class="cell-meta">{{ $stockRequest->user?->name ?? '—' }}</span>
                     </td>
-                    <td>
-                        <span class="cell-primary">Diminta {{ $stockRequest->quantity }} {{ $stockRequest->unit }}</span>
-                        <span class="cell-meta">Diterima {{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</span>
-                        <span class="cell-meta">Sisa {{ $remaining }} {{ $stockRequest->unit }}</span>
-                    </td>
+                    <td><span class="cell-primary">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</span></td>
+                    <td><span class="cell-meta">{{ $stockRequest->item?->size ?? '—' }}</span></td>
+                    <td><span class="cell-meta">{{ $stockRequest->item?->stock ?? '—' }}{{ $stockRequest->item?->stock !== null && $stockRequest->item?->stock !== '' ? ' '.$stockRequest->item->unit : '' }}</span></td>
                     <td><span class="status">{{ $stockRequest->status }}</span></td>
                     <td>{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
                 </tr>
@@ -55,22 +50,19 @@
         <table class="data">
             <thead>
                 <tr>
-                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th class="number">Diminta</th><th class="number">Diterima</th><th class="number">Sisa</th><th>Status</th><th>Catatan</th>
+                    <th>No.</th><th>Waktu</th><th>Barang</th><th>Pemohon</th><th class="number">Diminta</th><th>Ukuran</th><th class="number">Sisa Stock</th><th>Status</th><th>Catatan</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach($note->requests as $index => $stockRequest)
-                @php
-                    $remaining = max(0, $stockRequest->quantity - $stockRequest->received_quantity);
-                @endphp
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $stockRequest->created_at->format('H:i') }}</td>
                     <td>{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? 'Barang' }}</td>
                     <td>{{ $stockRequest->user?->name ?? '—' }}</td>
                     <td class="number">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
-                    <td class="number">{{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</td>
-                    <td class="number">{{ $remaining }} {{ $stockRequest->unit }}</td>
+                    <td>{{ $stockRequest->item?->size ?? '—' }}</td>
+                    <td class="number">{{ $stockRequest->item?->stock ?? '—' }}{{ $stockRequest->item?->stock !== null && $stockRequest->item?->stock !== '' ? ' '.$stockRequest->item->unit : '' }}</td>
                     <td class="status">{{ $stockRequest->status }}</td>
                     <td>{{ $stockRequest->close_note ?? $stockRequest->review_note ?? '—' }}</td>
                 </tr>

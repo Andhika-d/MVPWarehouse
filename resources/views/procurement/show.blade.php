@@ -51,7 +51,9 @@
                             <th class="px-4 py-3">{{ __('Waktu') }}</th>
                             <th class="px-4 py-3">{{ __('Barang') }}</th>
                             <th class="px-4 py-3">{{ __('Pemohon') }}</th>
-                            <th class="px-4 py-3">{{ __('Jumlah') }}<span class="block text-[9px] font-normal normal-case">{{ __('Diminta') }} / {{ __('Diterima') }} / {{ __('Sisa') }}</span></th>
+                            <th class="px-4 py-3">{{ __('Diminta') }}</th>
+                            <th class="px-4 py-3">{{ __('Ukuran') }}</th>
+                            <th class="px-4 py-3">{{ __('Sisa Stock') }}</th>
                             <th class="px-4 py-3">{{ __('Status') }}</th>
                             <th class="px-4 py-3">{{ __('Catatan') }}</th>
                             <th class="px-4 py-3 text-right">{{ __('Aksi') }}</th>
@@ -59,19 +61,13 @@
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         @foreach($procurementNote->requests as $stockRequest)
-                        @php
-                            $closedQuantity = in_array($stockRequest->status, \App\Models\StockRequest::CLOSED_STATUSES, true) ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
-                            $activeRemaining = $stockRequest->canReceive() ? max(0, $stockRequest->quantity - $stockRequest->received_quantity) : null;
-                        @endphp
                         <tr id="request-{{ $stockRequest->id }}" class="align-top hover:bg-slate-50/60">
                             <td class="whitespace-nowrap px-4 py-4 text-xs text-slate-500"><b class="block font-semibold text-slate-700">#{{ $stockRequest->id }}</b>{{ $stockRequest->created_at->translatedFormat('H:i') }}</td>
                             <td class="px-4 py-4"><b class="font-semibold text-slate-900">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? __('Barang') }}</b><span class="mt-1 block text-xs text-slate-500">{{ __($stockRequest->priority) }}</span></td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-600">{{ $stockRequest->user?->name ?? '—' }}</td>
-                            <td class="whitespace-nowrap px-4 py-4 text-xs">
-                                <span class="block"><span class="text-slate-400">{{ __('Diminta') }}</span> <b class="text-slate-900">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</b></span>
-                                <span class="block"><span class="text-slate-400">{{ __('Diterima') }}</span> <b class="text-emerald-700">{{ $stockRequest->received_quantity }} {{ $stockRequest->unit }}</b></span>
-                                <span class="block"><span class="text-slate-400">{{ __('Sisa') }}</span> <b class="text-slate-900">{{ $activeRemaining ?? $closedQuantity ?? '—' }}</b></span>
-                            </td>
+                            <td class="whitespace-nowrap px-4 py-4 text-slate-900">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
+                            <td class="px-4 py-4 text-slate-600">{{ $stockRequest->item?->size ?? '—' }}</td>
+                            <td class="whitespace-nowrap px-4 py-4 text-slate-900">{{ $stockRequest->item?->stock ?? '—' }}{{ $stockRequest->item?->stock !== null && $stockRequest->item?->stock !== '' ? ' '.$stockRequest->item->unit : '' }}</td>
                             <td class="px-4 py-4"><x-status-badge domain="request" :status="$stockRequest->status" :label="__($stockRequest->status)" /></td>
                             <td class="max-w-xs px-4 py-4 text-xs text-slate-500">{{ \App\Support\StoredText::translate($stockRequest->close_note ?? $stockRequest->review_note) ?? '—' }}</td>
                             <td class="px-4 py-4 text-right"><a href="{{ route('procurement-notes.requests.show', [$procurementNote, $stockRequest]) }}" class="action-link">{{ __('Detail Riwayat') }}</a>@if(auth()->user()->role === 'hr' && $stockRequest->canClose())<x-hr-request-close-button :request="$stockRequest" class="whitespace-nowrap" />@endif</td>

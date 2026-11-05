@@ -326,10 +326,6 @@ class ProcurementNoteController extends Controller
             ->whereIn('status', ['Disetujui', 'Ditolak', 'Pending'])
             ->sortByDesc('created_at')
             ->first();
-        $closedQuantity = in_array($request->status, StockRequest::CLOSED_STATUSES, true)
-            ? max(0, $request->quantity - $request->received_quantity)
-            : 0;
-        $activeRemaining = $request->canReceive() ? max(0, $request->quantity - $request->received_quantity) : 0;
 
         return [
             $note->number,
@@ -342,9 +338,8 @@ class ProcurementNoteController extends Controller
             $request->priority,
             $request->status,
             ($request->approved_at ?? $decisionHistory?->created_at)?->translatedFormat('d M Y, H:i'),
-            $request->received_quantity,
-            $closedQuantity,
-            $activeRemaining,
+            $request->item?->size ?? '—',
+            $request->item?->stock ?? '—',
             ($request->completed_at ?? $request->closed_at)?->translatedFormat('d M Y, H:i'),
             $request->review_note,
             $request->close_note,

@@ -478,9 +478,10 @@ class RequestController extends Controller
     {
         $data = $httpRequest->validate([
             'note' => ['nullable', 'string', 'max:1000'],
+            'approved_quantity' => ['nullable', 'numeric', 'min:0.01'],
         ]);
 
-        $applied = $this->applyApproval($request, Auth::id(), $data['note'] ?? null);
+        $applied = $this->applyApproval($request, Auth::id(), $data['note'] ?? null, isset($data['approved_quantity']) && $data['approved_quantity'] !== null && $data['approved_quantity'] !== '' ? (float) $data['approved_quantity'] : null);
 
         if (! $applied) {
             return redirect()->back()->with('error', __('Permintaan sudah diproses, tidak bisa diulang.'));
@@ -600,41 +601,91 @@ class RequestController extends Controller
         return redirect('/hr/approval')->with('success', __(':count request yang ditampilkan ditunda (Pending).', ['count' => $count]));
     }
 
-    protected function applyApproval(StockRequest $request, int $userId, ?string $note): bool
+    protected function applyApproval(StockRequest $request, int $userId, ?string $note, ?float $approvedQuantity = null): bool
     {
-        return DB::transaction(function () use ($request, $userId, $note) {
-            $updated = StockRequest::whereKey($request->id)
+        return DB::transaction(function () use ($request, $userId, $note, $approvedQuantity) {
+            $locked = StockRequest::with('item')->lockForUpdate()->find($request->id);
+
+            if (! $locked || ! in_array($locked->status, StockRequest::ACTIONABLE_STATUSES, true)) {
+                return false;
+            }
+
+            $originalQuantity = (float) $locked->quantity;
+            $finalQuantity = $originalQuantity;
+            $quantityChanged = false;
+
+            if ($approvedQuantity !== null && $approvedQuantity > 0) {
+                if ($approvedQuantity <= $originalQuantity + 1e-9) {
+                    $finalQuantity = $approvedQuantity;
+                    $quantityChanged = abs($finalQuantity - $originalQuantity) > 1e-9;
+                } else {
+                    $finalQuantity = $originalQuantity;
+                    $quantityChanged = false;
+                }
+            }
+
+            $updateData = [
+                'status' => 'Disetujui',
+                'reviewed_by' => $userId,
+                'review_note' => $note,
+                'approved_at' => now(),
+            ];
+
+            if ($quantityChanged) {
+                $updateData['quantity'] = $finalQuantity;
+            }
+
+            $updated = StockRequest::whereKey($locked->id)
                 ->whereIn('status', StockRequest::ACTIONABLE_STATUSES)
-                ->update([
-                    'status' => 'Disetujui',
-                    'reviewed_by' => $userId,
-                    'review_note' => $note,
-                    'approved_at' => now(),
-                ]);
+                ->update($updateData);
 
             if ($updated === 0) {
                 return false;
             }
 
-            $request->refresh();
-            $request->load('item');
+            $locked->refresh();
+            $locked->load('item', 'user');
 
-            $request->requestHistories()->create([
+            $approver = auth()->user();
+
+            if ($quantityChanged) {
+                $historyNote = 'Disetujui sebanyak '.$finalQuantity.' '.$locked->unit.' (dikurangi dari '.$originalQuantity.' '.$locked->unit.' oleh '.($approver?->name ?? 'HR').').';
+                if ($note && trim($note) !== '') {
+                    $historyNote .= ' Catatan: '.$note;
+                } elseif (empty($locked->review_note)) {
+                    // keep as is
+                }
+                $historyNote = trim($historyNote);
+            } else {
+                $historyNote = $note && trim($note) !== '' ? $note : 'Disetujui oleh HR, menunggu proses pembelian';
+            }
+
+            $locked->requestHistories()->create([
                 'user_id' => $userId,
                 'status' => 'Disetujui',
-                'note' => $note ?? 'Disetujui oleh HR, menunggu proses pembelian',
+                'note' => $historyNote,
             ]);
+
+            $auditDetails = 'HR menyetujui permintaan '.($locked->item?->name ?? $locked->item_name ?? 'Barang').' ('.$finalQuantity.' '.$locked->unit.')';
+            if ($quantityChanged) {
+                $auditDetails .= ' [dikurangi dari '.$originalQuantity.' '.$locked->unit.' oleh '.($approver?->name ?? 'HR').']';
+                if ($note && trim($note) !== '') {
+                    $auditDetails .= ' Catatan: '.$note;
+                }
+            } elseif ($note && trim($note) !== '') {
+                $auditDetails .= ' Catatan: '.$note;
+            }
 
             AuditLog::create([
                 'user_id' => $userId,
                 'action' => 'approved_request',
                 'target_type' => StockRequest::class,
-                'target_id' => $request->id,
-                'details' => 'HR menyetujui permintaan '.($request->item?->name ?? 'Barang').' ('.$request->quantity.' '.$request->unit.')',
+                'target_id' => $locked->id,
+                'details' => $auditDetails,
             ]);
 
-            if ($request->user) {
-                $request->user->notify(new RequestApprovedNotification($request));
+            if ($locked->user) {
+                $locked->user->notify(new RequestApprovedNotification($locked));
             }
 
             return true;
