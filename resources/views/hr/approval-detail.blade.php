@@ -116,7 +116,7 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
             <h3 class="text-base font-semibold text-slate-900 mb-4">{{ __('Keputusan Review') }}</h3>
             <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-                <button type="button" data-action="/hr/requests/{{ $request->id }}/approve" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this)" class="btn btn--success flex-1">
+                <button type="button" data-action="/hr/requests/{{ $request->id }}/approve" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this); return false;" class="btn btn--success flex-1">
                     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                     {{ __('Terima') }}
                 </button>
@@ -230,23 +230,38 @@
     <x-slot:scripts>
     <script>
         function openApproveModal(button) {
-            document.getElementById('approveForm').action = button.getAttribute('data-action');
-            document.getElementById('approveModalTarget').innerText = '{{ __('Menyetujui') }}: ' + (button.getAttribute('data-name') || '{{ __('Barang') }}');
+            var form = document.getElementById('approveForm');
+            if (form) {
+                form.action = button.getAttribute('data-action') || form.action;
+            }
+            var target = document.getElementById('approveModalTarget');
+            if (target) target.innerText = '{{ __('Menyetujui') }}: ' + (button.getAttribute('data-name') || '{{ __('Barang') }}');
             const qty = button.getAttribute('data-quantity') || '-';
             const unit = button.getAttribute('data-unit') || '';
-            document.getElementById('approveRequestedQty').innerText = qty;
-            document.getElementById('approveRequestedUnit').innerText = unit;
-            document.getElementById('approveQuantityInput').value = '';
-            document.getElementById('approveQuantityInput').max = qty;
-            document.getElementById('approveNoteText').value = '';
-            if (typeof openModal === 'function') {
-                openModal('approveModal');
-            } else {
-                const modal = document.getElementById('approveModal');
+            var reqQty = document.getElementById('approveRequestedQty');
+            var reqUnit = document.getElementById('approveRequestedUnit');
+            if (reqQty) reqQty.innerText = qty;
+            if (reqUnit) reqUnit.innerText = unit;
+            var qtyInput = document.getElementById('approveQuantityInput');
+            if (qtyInput) {
+                qtyInput.value = '';
+                qtyInput.max = qty;
+            }
+            var noteInput = document.getElementById('approveNoteText');
+            if (noteInput) noteInput.value = '';
+            var modal = document.getElementById('approveModal');
+            if (modal) {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
+                modal.setAttribute('aria-hidden', 'false');
             }
-            document.getElementById('approveNoteText').focus();
+            if (typeof openModal === 'function') {
+                try { openModal('approveModal'); } catch(e) {}
+            }
+            if (noteInput) {
+                try { noteInput.focus(); } catch(e) {}
+            }
+            return false;
         }
 
         function closeApproveModal() {

@@ -94,7 +94,7 @@
                             <td class="py-4 px-6">
                                 <div class="flex items-center justify-center gap-1.5 flex-wrap">
                                     <a href="/hr/requests/{{ $request->id }}" title="{{ __('Lihat detail & lampiran') }}" class="action-link action-link--neutral">{{ __('Detail') }}</a>
-                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/approve" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this)" title="{{ __('Setujui request ini') }}" class="action-link action-link--success">{{ __('Setujui') }}</button>
+                                    <button type="button" data-action="/hr/requests/{{ $request->id }}/approve" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this); return false;" title="{{ __('Setujui request ini') }}" class="action-link action-link--success">{{ __('Setujui') }}</button>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/reject" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" onclick="openRejectModal(this)" title="{{ __('Tolak item ini') }}" class="action-link action-link--danger">{{ __('Tolak') }}</button>
                                     <button type="button" data-action="/hr/requests/{{ $request->id }}/delay" data-name="{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}" onclick="openDelayModal(this)" title="{{ __('Tunda item ini') }}" class="action-link action-link--warning">{{ __('Tunda') }}</button>
                                 </div>
@@ -236,24 +236,38 @@
 
         function openApproveModal(button) {
             var form = document.getElementById('approveForm');
-            form.action = button.getAttribute('data-action');
-            form.querySelectorAll('[data-bulk-request-id]').forEach(function (input) { input.remove(); });
-            document.getElementById('approveModalTarget').innerText = '{{ __('Menyetujui') }}: ' + modalLabel(button);
+            if (form) {
+                form.action = button.getAttribute('data-action') || form.action;
+                form.querySelectorAll('[data-bulk-request-id]').forEach(function (input) { input.remove(); });
+            }
+            var target = document.getElementById('approveModalTarget');
+            if (target) target.innerText = '{{ __('Menyetujui') }}: ' + modalLabel(button);
             const qty = button.getAttribute('data-quantity') || '-';
             const unit = button.getAttribute('data-unit') || '';
-            document.getElementById('approveRequestedQty').innerText = qty;
-            document.getElementById('approveRequestedUnit').innerText = unit;
-            document.getElementById('approveQuantityInput').value = '';
-            document.getElementById('approveQuantityInput').max = qty;
-            document.getElementById('approveNoteText').value = '';
-            if (typeof openModal === 'function') {
-                openModal('approveModal');
-            } else {
-                const modal = document.getElementById('approveModal');
+            var reqQty = document.getElementById('approveRequestedQty');
+            var reqUnit = document.getElementById('approveRequestedUnit');
+            if (reqQty) reqQty.innerText = qty;
+            if (reqUnit) reqUnit.innerText = unit;
+            var qtyInput = document.getElementById('approveQuantityInput');
+            if (qtyInput) {
+                qtyInput.value = '';
+                qtyInput.max = qty;
+            }
+            var noteInput = document.getElementById('approveNoteText');
+            if (noteInput) noteInput.value = '';
+            var modal = document.getElementById('approveModal');
+            if (modal) {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
+                modal.setAttribute('aria-hidden', 'false');
             }
-            document.getElementById('approveNoteText').focus();
+            if (typeof openModal === 'function') {
+                try { openModal('approveModal'); } catch(e) {}
+            }
+            if (noteInput) {
+                try { noteInput.focus(); } catch(e) {}
+            }
+            return false;
         }
         function closeApproveModal() {
             if (typeof closeModal === 'function') {
