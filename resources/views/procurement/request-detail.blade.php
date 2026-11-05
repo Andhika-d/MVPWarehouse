@@ -25,10 +25,7 @@
                 @if(auth()->user()->role === 'hr')
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
                     @if($request->isActionable())
-                    <form method="POST" action="{{ url('/hr/requests/' . $request->id . '/approve') }}">
-                        @csrf
-                        <button type="submit" class="btn btn--success">{{ __('Terima') }}</button>
-                    </form>
+                    <button type="button" data-action="{{ url('/hr/requests/' . $request->id . '/approve') }}" data-name="{{ $itemName }}" data-quantity="{{ $request->quantity }}" data-unit="{{ $request->unit }}" onclick="openApproveModal(this); return false;" class="btn btn--success">{{ __('Terima') }}</button>
                     <button type="button" data-action="{{ url('/hr/requests/' . $request->id . '/reject') }}" data-name="{{ $itemName }}" onclick="openRejectModal(this)" class="btn btn--danger">{{ __('Tolak') }}</button>
                     <button type="button" data-action="{{ url('/hr/requests/' . $request->id . '/delay') }}" data-name="{{ $itemName }}" onclick="openDelayModal(this)" class="btn btn--warning">{{ __('Tunda') }}</button>
                     @elseif($request->canClose())
@@ -180,6 +177,7 @@
     </div>
 
     <x-slot:modals>
+        <x-hr-approve-modal />
         <x-hr-request-close-modal />
         <x-hr-reject-modal />
         <x-hr-delay-modal />

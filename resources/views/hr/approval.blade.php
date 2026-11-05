@@ -52,13 +52,9 @@
 
                 <!-- AKSI BULK SELURUH NOTA -->
                 <div class="flex flex-wrap items-center gap-2 text-xs font-bold">
-                    <form action="{{ route('hr.requests.bulk-approve') }}" method="POST" class="inline" data-confirm="{{ __('Setujui :count request yang ditampilkan?', ['count' => $notaItems->count()]) }}" data-confirm-title="{{ __('Setujui Request') }}" data-confirm-tone="success" data-confirm-button="{{ __('Setujui') }}">
-                        @csrf
-                        @foreach($requestIds as $requestId)<input type="hidden" name="request_ids[]" value="{{ $requestId }}">@endforeach
-                        <button type="submit" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
-                            {{ __('Setujui Semua yang Ditampilkan') }}
-                        </button>
-                    </form>
+                    <button type="button" data-action="{{ route('hr.requests.bulk-approve') }}" data-request-ids='@json($requestIds)' data-label="{{ __(':count request yang ditampilkan', ['count' => $notaItems->count()]) }}" onclick="openBulkApproveModal(this)" class="px-3 py-2 bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
+                        {{ __('Setujui Semua yang Ditampilkan') }}
+                    </button>
                     <button type="button" data-action="{{ route('hr.requests.bulk-reject') }}" data-request-ids='@json($requestIds)' data-label="{{ __(':count request yang ditampilkan', ['count' => $notaItems->count()]) }}" onclick="openRejectModal(this)" class="px-3 py-2 bg-red-50 text-red-700 hover:bg-red-600 hover:text-white border border-red-200 rounded-lg transition-all cursor-pointer min-h-[44px]">
                         {{ __('Tolak Semua') }}
                     </button>
@@ -158,6 +154,33 @@
         </div>
     </div>
 
+    {{-- MODAL SETUJUI BULK --}}
+    <div id="approveBulkModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="approveBulkModalTitle">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeBulkApproveModal()"></div>
+        <div class="relative bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md flex flex-col overflow-hidden max-h-[90vh] z-[101]">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                <div>
+                    <h3 id="approveBulkModalTitle" class="text-sm font-bold text-slate-900">{{ __('Konfirmasi Persetujuan') }}</h3>
+                    <p id="approveBulkModalTarget" class="text-xs text-emerald-600 mt-0.5 font-semibold"></p>
+                </div>
+                <button onclick="closeBulkApproveModal()" type="button" class="text-slate-400 hover:text-slate-600 p-2 text-2xl font-light leading-none cursor-pointer transition-colors" aria-label="{{ __('Tutup') }}">&times;</button>
+            </div>
+            <form id="approveBulkForm" method="POST">
+                @csrf
+                <div class="p-5 space-y-4 bg-white flex-1 overflow-y-auto">
+                    <div>
+                        <label for="approveBulkNoteText" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Catatan Persetujuan') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional') }})</span></label>
+                        <textarea id="approveBulkNoteText" name="note" rows="3" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900 resize-none" placeholder="{{ __('Tambahkan catatan jika perlu...') }}"></textarea>
+                    </div>
+                </div>
+                <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-end space-x-2 shrink-0">
+                    <button onclick="closeBulkApproveModal()" type="button" class="btn btn--secondary">{{ __('Batal') }}</button>
+                    <button type="submit" class="btn btn--success">{{ __('Setujui') }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     {{-- MODAL TOLAK --}}
     <div id="rejectModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="rejectModalTitle">
         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeRejectModal()"></div>
@@ -232,6 +255,52 @@
                 input.setAttribute('data-bulk-request-id', 'true');
                 form.appendChild(input);
             });
+        }
+
+        function openBulkApproveModal(button) {
+            var form = document.getElementById('approveBulkForm');
+            if (form) {
+                form.action = button.getAttribute('data-action') || form.action;
+                form.querySelectorAll('[data-bulk-request-id]').forEach(function (input) { input.remove(); });
+                var ids = JSON.parse(button.getAttribute('data-request-ids') || '[]');
+                ids.forEach(function (id) {
+                    var input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'request_ids[]';
+                    input.value = id;
+                    input.setAttribute('data-bulk-request-id', 'true');
+                    form.appendChild(input);
+                });
+            }
+            var target = document.getElementById('approveBulkModalTarget');
+            if (target) target.innerText = '{{ __('Menyetujui') }}: ' + modalLabel(button);
+            var noteInput = document.getElementById('approveBulkNoteText');
+            if (noteInput) noteInput.value = '';
+            var modal = document.getElementById('approveBulkModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.setAttribute('aria-hidden', 'false');
+            }
+            if (typeof openModal === 'function') {
+                try { openModal('approveBulkModal'); } catch(e) {}
+            }
+            if (noteInput) {
+                try { noteInput.focus(); } catch(e) {}
+            }
+            return false;
+        }
+
+        function closeBulkApproveModal() {
+            if (typeof closeModal === 'function') {
+                closeModal('approveBulkModal');
+            } else {
+                const modal = document.getElementById('approveBulkModal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }
+            }
         }
 
         function openApproveModal(button) {
@@ -316,6 +385,7 @@
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 closeApproveModal();
+                closeBulkApproveModal();
                 closeRejectModal();
                 closeDelayModal();
             }
