@@ -1,3 +1,7 @@
+<style>
+#approveQuantityInput::-webkit-outer-spin-button,
+#approveQuantityInput::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+</style>
 <div id="approveModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="approveModalTitle">
     <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" onclick="closeApproveModal()"></div>
     <div class="relative bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md flex flex-col overflow-hidden max-h-[90vh] z-[101]">
@@ -19,7 +23,7 @@
                 </div>
                 <div>
                     <label for="approveQuantityInput" class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">{{ __('Jumlah Disetujui') }} <span class="text-slate-400 font-normal normal-case">({{ __('opsional, bisa dikurangi') }})</span></label>
-                    <input type="number" id="approveQuantityInput" name="approved_quantity" step="any" min="0.01" inputmode="decimal" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
+                    <input type="number" id="approveQuantityInput" name="approved_quantity" step="any" min="0.01" inputmode="decimal" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-emerald-600 focus:bg-white transition-all text-slate-900" style="-moz-appearance:textfield;appearance:textfield;" placeholder="{{ __('Kosongkan jika sesuai permintaan') }}">
                     <p class="mt-1 text-[11px] text-slate-500">{{ __('Kosongkan jika menyetujui sesuai jumlah permintaan. Isi jika hanya menyetujui sebagian.') }}</p>
                 </div>
                 <div>
@@ -61,12 +65,14 @@
                             e.preventDefault();
                             var current = parseFloat(this.value);
                             var max = parseFloat(this.max);
-                            var min = parseFloat(this.min || '0.01');
-                            if (isNaN(current)) current = e.key === 'ArrowUp' ? 0 : (isNaN(max) ? 1 : max);
-                            var next = e.key === 'ArrowUp' ? current + 1 : current - 1;
-                            if (!isNaN(max)) next = Math.min(next, max);
-                            if (!isNaN(min)) next = Math.max(next, min);
-                            if (Math.abs(next - Math.round(next)) < 1e-9) next = Math.round(next);
+                            var min = 1;
+                            if (isNaN(current)) {
+                                if (e.key === 'ArrowUp') current = 0;
+                                else current = (!isNaN(max) ? Math.floor(max) : 1) + 1;
+                            }
+                            var next = e.key === 'ArrowUp' ? Math.floor(current) + 1 : Math.ceil(current) - 1;
+                            if (!isNaN(max)) next = Math.min(next, Math.floor(max));
+                            if (next < min) next = min;
                             this.value = next;
                         }
                     });
