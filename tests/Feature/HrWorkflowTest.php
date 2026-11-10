@@ -196,7 +196,7 @@ class HrWorkflowTest extends TestCase
         $this->assertSame(15, $item->stock);
     }
 
-    public function test_cannot_receive_more_than_remaining(): void
+    public function test_over_receive_requires_note(): void
     {
         $hr = $this->makeUser('hr');
         $gudang = $this->makeUser('gudang');
@@ -208,11 +208,85 @@ class HrWorkflowTest extends TestCase
         $this->actingAs($gudang)->post('/gudang/penerimaan', [
             'stock_request_id' => $request->id,
             'received_quantity' => 5,
-        ])->assertRedirect();
+        ])->assertSessionHasErrors('note');
 
         $request->refresh();
         $this->assertSame(0, $request->received_quantity);
         $this->assertSame('Disetujui', $request->status);
+
+        $item->refresh();
+        $this->assertSame(10, $item->stock);
+        $this->assertSame(0, StockMovement::where('type', StockMovement::TYPE_IN)->count());
+    }
+
+    public function test_over_receive_with_note_stores_actual_received_quantity(): void
+    {
+        $hr = $this->makeUser('hr');
+        $gudang = $this->makeUser('gudang');
+        $item = $this->makeItem(10);
+        $request = $this->makeRequest($gudang, $item, ['quantity' => 3]);
+
+        $this->actingAs($hr)->post('/hr/requests/' . $request->id . '/approve');
+
+        $this->actingAs($gudang)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 5,
+            'note' => 'Supplier mengirim lebih',
+        ])->assertRedirect();
+
+        $request->refresh();
+        $this->assertSame('Diterima Penuh', $request->status);
+        $this->assertSame(5, $request->received_quantity);
+        $this->assertSame(0.0, $request->remainingQuantity());
+        $this->assertSame(2.0, $request->overReceivedQuantity());
+
+        $item->refresh();
+        $this->assertSame(15, $item->stock);
+
+        $this->assertDatabaseHas('stock_movements', [
+            'item_id' => $item->id,
+            'type' => StockMovement::TYPE_IN,
+            'quantity' => 5,
+            'note' => 'Supplier mengirim lebih',
+        ]);
+
+        $history = $request->requestHistories()->latest('id')->first();
+        $this->assertNotNull($history);
+        $this->assertStringContainsString('kelebihan 2 Pcs dari permintaan', $history->note);
+        $this->assertStringContainsString('Supplier mengirim lebih', $history->note);
+
+        $audit = \App\Models\AuditLog::where('action', 'stock_in')->latest('id')->first();
+        $this->assertNotNull($audit);
+        $this->assertStringContainsString('Kelebihan 2 Pcs', $audit->details);
+        $this->assertStringContainsString('Supplier mengirim lebih', $audit->details);
+    }
+
+    public function test_cannot_receive_again_after_full_receipt(): void
+    {
+        $hr = $this->makeUser('hr');
+        $gudang = $this->makeUser('gudang');
+        $item = $this->makeItem(10);
+        $request = $this->makeRequest($gudang, $item, ['quantity' => 2]);
+
+        $this->actingAs($hr)->post('/hr/requests/' . $request->id . '/approve');
+
+        $this->actingAs($gudang)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 2,
+        ])->assertRedirect();
+
+        $this->actingAs($gudang)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 1,
+            'note' => 'Tambahan terlambat',
+        ])->assertSessionHas('error');
+
+        $request->refresh();
+        $this->assertSame('Diterima Penuh', $request->status);
+        $this->assertSame(2, $request->received_quantity);
+
+        $this->assertSame(12, $item->fresh()->stock);
+        $this->assertSame(1, StockMovement::where('type', StockMovement::TYPE_IN)->count());
     }
 
     public function test_hr_history_page_loads(): void

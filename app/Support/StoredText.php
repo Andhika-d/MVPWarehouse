@@ -14,6 +14,8 @@ class StoredText
      */
     private const PATTERNS = [
         ['/^Penyesuaian stok dari (?<from>.+) ke (?<to>.+)$/u', 'Penyesuaian stok dari :from ke :to'],
+        ['/^Diterima (?<quantity>\S+) (?<unit>.+?) (?:-|–|—) kelebihan (?<over>\S+) (?<over_unit>.+?) dari permintaan (?:-|–|—) (?<note>.+)$/u', 'Diterima :quantity :unit - kelebihan :over :over_unit dari permintaan - :note'],
+        ['/^Diterima (?<quantity>\S+) (?<unit>.+?) (?:-|–|—) kelebihan (?<over>\S+) (?<over_unit>.+?) dari permintaan$/u', 'Diterima :quantity :unit - kelebihan :over :over_unit dari permintaan'],
         ['/^Diterima (?<quantity>\S+) (?<unit>.+?) (?:-|–|—) (?<note>.+)$/u', 'Diterima :quantity :unit - :note'],
         ['/^Diterima (?<quantity>\S+) (?<unit>.+)$/u', 'Diterima :quantity :unit'],
         ['/^Sisa (?<quantity>\S+) (?<unit>.+?) ditutup (?:-|–|—) (?<note>.+)$/u', 'Sisa :quantity :unit ditutup - :note'],

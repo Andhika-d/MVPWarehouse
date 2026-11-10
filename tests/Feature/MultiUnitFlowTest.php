@@ -293,6 +293,7 @@ class MultiUnitFlowTest extends TestCase
             'item_id' => $item->id,
             'quantity' => 1,
             'unit' => 'Galon',
+            'conversion_to_primary' => 5,
             'priority' => 'Biasa',
             'reason' => 'Tes unit tidak valid',
         ])->assertSessionHasErrors('unit');
@@ -303,11 +304,141 @@ class MultiUnitFlowTest extends TestCase
             'item_id' => $item->id,
             'quantity' => 1,
             'unit' => 'Galon',
+            'conversion_to_primary' => 5,
             'reason' => 'Tes unit tidak valid',
         ])->assertSessionHas('error');
 
         $this->assertSame(100, $item->fresh()->stock);
         $this->assertSame(0, StockMovement::where('type', StockMovement::TYPE_OUT)->count());
+        $this->assertDatabaseMissing('item_units', [
+            'item_id' => $item->id,
+            'unit_name' => 'Galon',
+        ]);
+    }
+
+    public function test_request_form_offers_missing_standard_units(): void
+    {
+        $gudang = $this->user('gudang');
+        $this->item();
+
+        $this->actingAs($gudang)
+            ->get('/gudang/request-barang')
+            ->assertOk()
+            ->assertSee('missing_units', false)
+            ->assertSee('Roll', false);
+    }
+
+    public function test_request_can_add_missing_standard_unit_inline(): void
+    {
+        $gudang = $this->user('gudang');
+        $hr = $this->user('hr');
+        $item = $this->item(100);
+
+        $this->actingAs($gudang)->post('/gudang/request-barang', [
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Roll',
+            'conversion_to_primary' => 10,
+            'priority' => 'Biasa',
+            'reason' => 'Persediaan produksi',
+        ])->assertRedirect('/gudang/history');
+
+        $request = StockRequest::firstOrFail();
+        $this->assertSame('Roll', $request->unit);
+        $this->assertSame(20, $request->quantity_in_primary);
+
+        $this->assertDatabaseHas('item_units', [
+            'item_id' => $item->id,
+            'unit_name' => 'Roll',
+            'conversion_to_primary' => 10,
+            'is_primary' => false,
+            'context' => 'both',
+        ]);
+
+        $this->assertDatabaseHas('audit_logs', [
+            'action' => 'created_item_unit',
+            'target_type' => \App\Models\ItemUnit::class,
+        ]);
+
+        $this->actingAs($hr)
+            ->post("/hr/requests/{$request->id}/approve", ['note' => 'Disetujui'])
+            ->assertRedirect();
+
+        $this->actingAs($gudang)->post('/gudang/penerimaan', [
+            'stock_request_id' => $request->id,
+            'received_quantity' => 2,
+        ])->assertRedirect();
+
+        $this->assertSame(120, $item->fresh()->stock);
+    }
+
+    public function test_missing_standard_unit_requires_conversion_from_request_form(): void
+    {
+        $gudang = $this->user('gudang');
+        $item = $this->item(100);
+
+        $this->actingAs($gudang)->post('/gudang/request-barang', [
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Roll',
+            'priority' => 'Biasa',
+            'reason' => 'Persediaan produksi',
+        ])->assertSessionHasErrors('unit');
+
+        $this->assertSame(0, StockRequest::count());
+        $this->assertDatabaseMissing('item_units', [
+            'item_id' => $item->id,
+            'unit_name' => 'Roll',
+        ]);
+    }
+
+    public function test_outgoing_can_add_missing_standard_unit_inline(): void
+    {
+        $gudang = $this->user('gudang');
+        $item = $this->item(100);
+
+        $this->actingAs($gudang)->post('/gudang/barang-keluar', [
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Roll',
+            'conversion_to_primary' => 10,
+            'reason' => 'Pemakaian produksi',
+        ])->assertRedirect();
+
+        $this->assertSame(80, $item->fresh()->stock);
+
+        $movement = StockMovement::where('type', StockMovement::TYPE_OUT)->latest('id')->firstOrFail();
+        $this->assertSame(2, $movement->quantity);
+        $this->assertSame('Roll', $movement->unit);
+        $this->assertSame(20, $movement->quantity_in_primary);
+
+        $this->assertDatabaseHas('item_units', [
+            'item_id' => $item->id,
+            'unit_name' => 'Roll',
+            'conversion_to_primary' => 10,
+            'context' => 'both',
+        ]);
+    }
+
+    public function test_inline_unit_does_not_overwrite_existing_conversion(): void
+    {
+        $gudang = $this->user('gudang');
+        $item = $this->item(100);
+
+        $this->actingAs($gudang)->post('/gudang/request-barang', [
+            'item_id' => $item->id,
+            'quantity' => 2,
+            'unit' => 'Pack',
+            'conversion_to_primary' => 9,
+            'priority' => 'Biasa',
+            'reason' => 'Persediaan produksi',
+        ])->assertRedirect('/gudang/history');
+
+        $request = StockRequest::firstOrFail();
+        $this->assertSame(400, $request->quantity_in_primary);
+
+        $pack = $item->itemUnits()->where('unit_name', 'Pack')->firstOrFail();
+        $this->assertSame(200, $pack->conversion_to_primary);
     }
 
     public function test_unit_controls_are_rendered_on_admin_and_gudang_pages(): void

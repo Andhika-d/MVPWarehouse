@@ -102,7 +102,12 @@ class StockRequest extends Model
 
     public function remainingQuantity(): float
     {
-        return $this->quantity - $this->received_quantity;
+        return max(0, (float) $this->quantity - (float) $this->received_quantity);
+    }
+
+    public function overReceivedQuantity(): float
+    {
+        return max(0, (float) $this->received_quantity - (float) $this->quantity);
     }
 
     /**

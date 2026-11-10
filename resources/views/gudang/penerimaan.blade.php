@@ -106,10 +106,19 @@
                             <input type="number" name="received_quantity" id="receive_input" min="0.01" step="any" required class="flex-1 px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             <span id="receive_unit" class="text-xs font-semibold text-slate-500"></span>
                         </div>
+                        <p id="receive_over_warning" class="hidden mt-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5"></p>
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-0.5">{{ __('Catatan') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
-                        <input type="text" name="note" placeholder="{{ __('Contoh: supplier hanya menyediakan sebagian') }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                        <label class="block text-xs font-medium text-slate-500 mb-0.5">
+                            {{ __('Catatan') }}
+                            <span id="receive_note_optional" class="text-slate-400 font-normal">({{ __('opsional') }})</span>
+                            <span id="receive_note_required" class="hidden text-red-500">*</span>
+                        </label>
+                        <input type="text" name="note" id="receive_note" maxlength="255" placeholder="{{ __('Contoh: supplier hanya menyediakan sebagian') }}" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                        <p id="receive_note_help" class="hidden mt-1 text-xs text-amber-700">{{ __('Wajib diisi karena jumlah melebihi permintaan.') }}</p>
+                        @error('note')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                        @enderror
                     </div>
                 </div>
                 <div class="flex gap-3 mt-5">
@@ -162,17 +171,57 @@
             var remain = parseFloat(button.getAttribute('data-remain'));
             var unit   = button.getAttribute('data-unit');
 
+            var input = document.getElementById('receive_input');
+            var note = document.getElementById('receive_note');
+
             document.getElementById('receive_request_id').value   = id;
             document.getElementById('receive_item_name').textContent = name;
             document.getElementById('receive_qty').textContent      = qty + ' ' + unit;
             document.getElementById('receive_already').textContent  = recv + ' ' + unit;
             document.getElementById('receive_remain').textContent   = remain + ' ' + unit;
-            document.getElementById('receive_input').max            = remain;
-            document.getElementById('receive_input').value          = remain;
             document.getElementById('receive_unit').textContent     = unit;
+
+            input.removeAttribute('max');
+            input.dataset.requested = qty;
+            input.dataset.received = recv;
+            input.value = remain;
+
+            note.value = '';
+            updateReceiveState();
 
             openModal('receiveModal');
         }
+        function updateReceiveState() {
+            var input = document.getElementById('receive_input');
+            var note = document.getElementById('receive_note');
+            var requested = parseFloat(input.dataset.requested || '0');
+            var received = parseFloat(input.dataset.received || '0');
+            var current = parseFloat(input.value || '0');
+            var unit = document.getElementById('receive_unit').textContent;
+            var over = Math.max(0, received + current - requested);
+
+            var warning = document.getElementById('receive_over_warning');
+            var optional = document.getElementById('receive_note_optional');
+            var required = document.getElementById('receive_note_required');
+            var help = document.getElementById('receive_note_help');
+
+            if (over > 0) {
+                warning.textContent = '{{ __('Jumlah melebihi permintaan sebanyak :over :unit. Catatan wajib diisi.') }}'
+                    .replace(':over', over).replace(':unit', unit);
+                warning.classList.remove('hidden');
+                optional.classList.add('hidden');
+                required.classList.remove('hidden');
+                help.classList.remove('hidden');
+                note.required = true;
+            } else {
+                warning.classList.add('hidden');
+                optional.classList.remove('hidden');
+                required.classList.add('hidden');
+                help.classList.add('hidden');
+                note.required = false;
+            }
+        }
+        document.getElementById('receive_input').addEventListener('input', updateReceiveState);
         function closeReceiveModal() {
             closeModal('receiveModal');
         }

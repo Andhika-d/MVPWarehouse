@@ -21,6 +21,11 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <h2 class="text-lg font-bold text-slate-900">{{ $itemName }}</h2>
                     <x-status-badge domain="request" :status="$request->status" />
+                    @if($request->overReceivedQuantity() > 0)
+                    <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                        {{ __('Kelebihan') }}: {{ $request->overReceivedQuantity() }} {{ $request->unit }}
+                    </span>
+                    @endif
                 </div>
                 @if(auth()->user()->role === 'hr')
                 <div class="flex flex-wrap items-center gap-2 shrink-0">

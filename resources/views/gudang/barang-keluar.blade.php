@@ -88,6 +88,14 @@
                         </div>
                     </div>
 
+                    <div id="newUnitConversion" class="hidden flex flex-wrap items-center gap-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                        <span class="font-medium">{{ __('Satuan baru') }}:</span>
+                        <span>1 <strong id="newUnitName" class="text-slate-900"></strong> =</span>
+                        <input type="number" name="conversion_to_primary" id="conversionInput" min="0.0001" step="any" disabled placeholder="0" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-md text-xs focus:outline-none focus:border-corpblue-500">
+                        <span id="newUnitPrimary" class="font-semibold text-slate-700"></span>
+                        <span class="text-slate-500">{{ __('Satuan baru akan disimpan untuk barang ini.') }}</span>
+                    </div>
+
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Catatan') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
                         <textarea name="note" rows="2" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all placeholder:text-slate-400 resize-none" placeholder="{{ __('Catatan tambahan...') }}"></textarea>
@@ -250,23 +258,42 @@
             // Populate unit dropdown (usage units)
             unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
             const units = item.units || [];
-            if (units.length === 0) {
+            const primaryUnit = item.primary_unit || item.unit || '';
+            const renderedUnits = new Set();
+
+            unitField.dataset.primaryUnit = primaryUnit;
+
+            units.forEach(u => {
                 const opt = document.createElement('option');
-                opt.value = item.primary_unit || item.unit || '';
-                opt.textContent = item.primary_unit || item.unit || '';
-                opt.selected = true;
+                opt.value = u.name;
+                opt.textContent = u.conversion_text ? `${u.name} (${u.conversion_text})` : u.name;
+                opt.dataset.conversion = u.conversion;
+                opt.dataset.conversionText = u.conversion_text || '';
+                if (u.is_primary) opt.selected = true;
                 unitField.appendChild(opt);
-            } else {
-                units.forEach(u => {
-                    const opt = document.createElement('option');
-                    opt.value = u.name;
-                    opt.textContent = u.conversion_text ? `${u.name} (${u.conversion_text})` : u.name;
-                    opt.dataset.conversion = u.conversion;
-                    opt.dataset.conversionText = u.conversion_text || '';
-                    if (u.is_primary) opt.selected = true;
-                    unitField.appendChild(opt);
-                });
+                renderedUnits.add(u.name);
+            });
+
+            if (primaryUnit && !renderedUnits.has(primaryUnit)) {
+                const opt = document.createElement('option');
+                opt.value = primaryUnit;
+                opt.textContent = primaryUnit;
+                opt.dataset.conversion = '1';
+                if (!units.some(u => u.is_primary)) opt.selected = true;
+                unitField.appendChild(opt);
+                renderedUnits.add(primaryUnit);
             }
+
+            (item.missing_units || []).forEach(name => {
+                if (renderedUnits.has(name)) return;
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = `${name} ({{ __('satuan baru') }})`;
+                opt.dataset.missing = '1';
+                unitField.appendChild(opt);
+                renderedUnits.add(name);
+            });
+
             updateConversionHint();
 
             document.getElementById('infoItemName').textContent = item.label;
@@ -299,10 +326,30 @@
 
         function updateConversionHint() {
             const opt = unitField.options[unitField.selectedIndex];
+            const wrap = document.getElementById('newUnitConversion');
+            const conversionInput = document.getElementById('conversionInput');
+
             if (!opt || !opt.value) {
                 conversionHint.classList.add('hidden');
+                wrap.classList.add('hidden');
+                conversionInput.disabled = true;
+                conversionInput.value = '';
                 return;
             }
+
+            if (opt.dataset && opt.dataset.missing === '1') {
+                conversionHint.classList.add('hidden');
+                wrap.classList.remove('hidden');
+                document.getElementById('newUnitName').textContent = opt.value;
+                document.getElementById('newUnitPrimary').textContent = unitField.dataset.primaryUnit || '';
+                conversionInput.disabled = false;
+                return;
+            }
+
+            wrap.classList.add('hidden');
+            conversionInput.disabled = true;
+            conversionInput.value = '';
+
             const text = opt.dataset ? opt.dataset.conversionText : '';
             if (text) {
                 conversionHint.textContent = 'ℹ️ ' + text;
@@ -315,7 +362,22 @@
         function updateQtyMax() {
             if (!selectedItem) return;
             const opt = unitField.options[unitField.selectedIndex];
-            const conversion = opt && opt.dataset && opt.dataset.conversion ? parseFloat(opt.dataset.conversion) : 1;
+            const isMissing = !!(opt && opt.dataset && opt.dataset.missing === '1');
+            const conversionInput = document.getElementById('conversionInput');
+            let conversion = 1;
+
+            if (isMissing) {
+                conversion = parseFloat(conversionInput.value) || 0;
+            } else if (opt && opt.dataset && opt.dataset.conversion) {
+                conversion = parseFloat(opt.dataset.conversion);
+            }
+
+            if (isMissing && conversion <= 0) {
+                qtyInput.removeAttribute('max');
+                qtyMax.textContent = '—';
+                return;
+            }
+
             const maxInUnit = conversion > 0 ? (selectedItem.stock / conversion) : selectedItem.stock;
             qtyInput.max = maxInUnit;
             qtyMax.textContent = maxInUnit + ' ' + (opt ? opt.value : (selectedItem.primary_unit || selectedItem.unit));
@@ -328,6 +390,11 @@
             });
         }
 
+        const conversionInputField = document.getElementById('conversionInput');
+        if (conversionInputField) {
+            conversionInputField.addEventListener('input', updateQtyMax);
+        }
+
         function clearItemSelection() {
             itemIdInput.value = '';
             searchInput.value = '';
@@ -335,7 +402,12 @@
             infoBox.classList.add('hidden');
             qtyHelper.classList.add('hidden');
             unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+            unitField.removeAttribute('data-primary-unit');
             conversionHint.classList.add('hidden');
+            document.getElementById('newUnitConversion').classList.add('hidden');
+            const conversionInput = document.getElementById('conversionInput');
+            conversionInput.value = '';
+            conversionInput.disabled = true;
             syncClearButton();
             if (listBox) {
                 buildItemList('');
@@ -393,6 +465,17 @@
                 e.preventDefault();
                 unitField.focus();
                 alert('{{ __('Silakan pilih satuan.') }}');
+                return;
+            }
+            const selectedOption = unitField.options[unitField.selectedIndex];
+            if (selectedOption && selectedOption.dataset && selectedOption.dataset.missing === '1') {
+                const conversionInput = document.getElementById('conversionInput');
+                const conversion = parseFloat(conversionInput.value);
+                if (!conversion || conversion <= 0) {
+                    e.preventDefault();
+                    conversionInput.focus();
+                    alert('{{ __('Konversi satuan baru wajib diisi.') }}');
+                }
             }
         });
     </script>

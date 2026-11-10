@@ -150,9 +150,12 @@ class ProcurementNoteTest extends TestCase
             ->assertSee('Note Details')
             ->assertSee('Print Note')
             ->assertSee('Automatic request summary for')
-            ->assertSee('Requested / Received / Remaining')
+            ->assertSee('Requested')
+            ->assertSee('Size')
+            ->assertSee('Remaining Stock')
             ->assertSee('History Details')
             ->assertDontSee('Cetak Nota')
+            ->assertDontSee('Sisa Stock')
             ->assertDontSee('Diminta / Diterima / Sisa');
 
         $this->actingAs($hr)
@@ -501,17 +504,19 @@ class ProcurementNoteTest extends TestCase
             ->assertSee('Cetak A4 Landscape')
             ->assertSee('Landscape')
             ->assertSee('Portrait')
-            ->assertDontSee('<th>Jumlah</th>', false);
+            ->assertSee('<th class="number">Diminta</th>', false)
+            ->assertSee('<table class="data">', false)
+            ->assertDontSee('<table class="data procurement-table--portrait">', false);
 
         $this->actingAs($hr)
             ->get(route('procurement-notes.print', [$note, 'orientation' => 'portrait']))
             ->assertOk()
             ->assertSee('size: A4 portrait', false)
             ->assertSee('Cetak A4 Portrait')
-            ->assertSee('<th>Jumlah</th>', false)
-            ->assertSee('Diminta')
-            ->assertSee('Diterima')
-            ->assertSee('Sisa');
+            ->assertSee('<table class="data procurement-table--portrait">', false)
+            ->assertSee('<th>Diminta</th>', false)
+            ->assertSee('Ukuran')
+            ->assertSee('Sisa Stock');
     }
 
     public function test_note_print_rejects_invalid_orientation(): void
@@ -603,7 +608,7 @@ class ProcurementNoteTest extends TestCase
         }
     }
 
-    public function test_note_print_shows_remaining_quantity_when_closed_partially(): void
+    public function test_note_print_shows_requested_quantity_when_closed_partially(): void
     {
         $hr = User::factory()->create(['role' => 'hr']);
         $warehouse = User::factory()->create(['role' => 'gudang']);
@@ -614,14 +619,16 @@ class ProcurementNoteTest extends TestCase
         $this->actingAs($hr)
             ->get(route('procurement-notes.print', [$note, 'orientation' => 'portrait']))
             ->assertOk()
-            ->assertSee('Diminta 4 Pcs')
-            ->assertSee('Diterima 3 Pcs')
-            ->assertSee('Sisa 1 Pcs');
+            ->assertSee('Ditutup Sebagian')
+            ->assertSee('Diminta')
+            ->assertSee('Ukuran')
+            ->assertSee('Sisa Stock')
+            ->assertSee('4 Pcs');
 
         $landscape = $this->actingAs($hr)
             ->get(route('procurement-notes.print', [$note, 'orientation' => 'landscape']))
             ->assertOk();
-        $this->assertStringContainsString('>1 Pcs</td>', $landscape->getContent());
+        $this->assertStringContainsString('>4 Pcs</td>', $landscape->getContent());
     }
 
     private function submitRequest(User $warehouse, Item $item, int $quantity): void

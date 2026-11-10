@@ -13,6 +13,7 @@ use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
 use App\Support\ItemLocationSorter;
+use App\Support\ItemUnitResolver;
 use App\Support\PdfFonts;
 use App\Support\PdfFooter;
 use App\Support\PeriodRange;
@@ -82,6 +83,7 @@ class RequestController extends Controller
                         ? null
                         : "1 {$u->unit_name} = {$u->conversion_to_primary} {$item->primary_unit}",
                 ])->values(),
+            'missing_units' => ItemUnitResolver::missingStandardUnits($item),
         ])->values();
 
         return view('gudang.requestbarang', compact('items', 'itemOptions'));
@@ -94,6 +96,7 @@ class RequestController extends Controller
             'item_name' => ['required_without:item_id', 'nullable', 'string', 'max:255'],
             'quantity' => ['required', 'numeric', 'min:0.01'],
             'unit' => ['nullable', 'string', 'max:50'],
+            'conversion_to_primary' => ['nullable', 'numeric', 'min:0.0001'],
             'priority' => ['required', 'in:Biasa,Mendesak'],
             'reason' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls', 'max:2048'],
@@ -103,12 +106,16 @@ class RequestController extends Controller
         $unit = $data['unit'] ?? $item?->primary_unit ?? $item?->unit ?? 'Pcs';
 
         if ($item) {
-            $primaryUnit = $item->primary_unit ?? $item->unit;
-            $unitExists = $unit === $primaryUnit || $item->itemUnits->firstWhere('unit_name', $unit);
+            $resolution = ItemUnitResolver::ensure(
+                $item,
+                $unit,
+                isset($data['conversion_to_primary']) ? (float) $data['conversion_to_primary'] : null,
+                __('permintaan'),
+            );
 
-            if (! $unitExists) {
+            if (! $resolution['ok']) {
                 return back()->withErrors([
-                    'unit' => __('Satuan tidak valid untuk barang ini.'),
+                    'unit' => $resolution['message'],
                 ])->withInput();
             }
         }

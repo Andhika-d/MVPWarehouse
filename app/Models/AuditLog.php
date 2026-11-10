@@ -53,6 +53,7 @@ class AuditLog extends Model
             'user_logout' => 'Logout pengguna',
             'changed_password' => 'Mengubah password',
             'created_item' => 'Menambah barang',
+            'created_item_unit' => 'Menambah satuan barang',
             'updated_item' => 'Memperbarui barang',
             'adjusted_stock' => 'Menyesuaikan stok',
             'stock_in' => 'Barang masuk',
@@ -94,6 +95,7 @@ class AuditLog extends Model
         return [
             StockRequest::class => 'Request',
             Item::class => 'Barang',
+            ItemUnit::class => 'Satuan Barang',
             StockMovement::class => 'Transaksi Stok',
             User::class => 'Pengguna',
             LocationChangeRequest::class => 'Perubahan Lokasi',

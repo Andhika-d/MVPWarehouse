@@ -17,7 +17,14 @@
                     <h2 class="text-lg font-bold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</h2>
                     <p class="text-sm text-slate-500 mt-0.5">{{ $request->user?->name ?? __('Gudang') }} &middot; {{ $request->created_at->translatedFormat('d M Y, H:i') }}</p>
                 </div>
-                <x-status-badge domain="request" :status="$request->status" class="shrink-0" />
+                <div class="flex flex-wrap items-center gap-2 shrink-0">
+                    <x-status-badge domain="request" :status="$request->status" />
+                    @if($request->overReceivedQuantity() > 0)
+                    <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+                        {{ __('Kelebihan') }}: {{ $request->overReceivedQuantity() }} {{ $request->unit }}
+                    </span>
+                    @endif
+                </div>
             </div>
 
             {{-- Info row --}}

@@ -54,6 +54,12 @@
                             <span class="text-xs text-slate-500">{{ __('Diterima') }}</span>
                             <span class="text-sm font-medium {{ $request->received_quantity >= $request->quantity ? 'text-emerald-600' : 'text-amber-600' }}">{{ $request->received_quantity }} {{ $request->unit }}</span>
                         </div>
+                        @if($request->overReceivedQuantity() > 0)
+                        <div class="flex items-center justify-between py-2 border-b border-slate-50">
+                            <span class="text-xs text-slate-500">{{ __('Kelebihan') }}</span>
+                            <span class="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-xs font-semibold text-amber-700">+{{ $request->overReceivedQuantity() }} {{ $request->unit }}</span>
+                        </div>
+                        @endif
                         @if($request->received_quantity < $request->quantity)
                         <div class="flex items-center justify-between py-2 border-b border-slate-50">
                             <span class="text-xs text-slate-500">{{ $request->isClosed() ? __('Sisa (ditutup)') : __('Sisa') }}</span>

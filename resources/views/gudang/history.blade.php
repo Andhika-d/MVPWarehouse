@@ -57,6 +57,11 @@
                             </td>
                             <td class="py-3 px-5">
                                 <x-status-badge domain="request" :status="$request->status" dot />
+                                @if($request->overReceivedQuantity() > 0)
+                                <span class="mt-1 block w-fit rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                                    {{ __('Kelebihan') }}: {{ $request->overReceivedQuantity() }} {{ $request->unit }}
+                                </span>
+                                @endif
                             </td>
                             <td class="py-3 px-5 text-right">
                                 <a href="/gudang/history/{{ $request->id }}" class="text-corpblue-500 hover:text-corpblue-700 font-medium text-xs bg-corpblue-50 hover:bg-corpblue-100 px-3 py-2 rounded-lg transition-all">{{ __('Detail') }}</a>
@@ -91,6 +96,11 @@
                 <div class="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
                     <x-status-badge domain="priority" :status="$request->priority" />
                     <span class="text-xs text-slate-500">{{ $request->created_at->translatedFormat('d M Y') }}</span>
+                    @if($request->overReceivedQuantity() > 0)
+                    <span class="ml-auto rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                        {{ __('Kelebihan') }}: {{ $request->overReceivedQuantity() }} {{ $request->unit }}
+                    </span>
+                    @endif
                 </div>
             </a>
             @empty
