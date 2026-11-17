@@ -106,8 +106,19 @@ class AdminController extends Controller
         $totalStock = Item::sum('stock');
         $lowStockCount = Item::where('stock', '<=', 5)->whereNotNull('storage_location_id')->count();
         $racks = ['A', 'B', 'C', 'D', 'E'];
+        $emptyLocations = StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
+            ->orderBy('rack')
+            ->orderBy('number')
+            ->get(['id', 'code', 'sub_location', 'rack']);
 
-        return view('admin.items', compact('locations', 'totalItems', 'totalStock', 'lowStockCount', 'racks'));
+        return view('admin.items', compact(
+            'locations',
+            'totalItems',
+            'totalStock',
+            'lowStockCount',
+            'racks',
+            'emptyLocations'
+        ));
     }
 
     public function storeItem(Request $request)
@@ -120,11 +131,15 @@ class AdminController extends Controller
             'unit' => ['required', 'in:'.implode(',', Item::UNITS)],
         ]);
 
-        DB::transaction(function () use ($data) {
-            $location = StorageLocation::lockForUpdate()->find($data['storage_location_id']);
+        $error = null;
+
+        DB::transaction(function () use ($data, &$error) {
+            $location = StorageLocation::lockForUpdate()->findOrFail($data['storage_location_id']);
 
             if ($location->isOccupied()) {
-                return back()->with('error', __('Lokasi :code sudah terisi.', ['code' => $location->code]));
+                $error = __('Lokasi :code sudah terisi.', ['code' => $location->code]);
+
+                return;
             }
 
             $item = Item::create([
@@ -145,6 +160,23 @@ class AdminController extends Controller
                 'context' => 'both',
             ]);
 
+            if ($data['stock'] > 0) {
+                StockMovement::create([
+                    'item_id' => $item->id,
+                    'type' => StockMovement::TYPE_ADJUSTMENT,
+                    'quantity' => $data['stock'],
+                    'quantity_in_primary' => $data['stock'],
+                    'unit' => $item->primary_unit,
+                    'reason' => 'Saldo awal barang baru',
+                    'stock_request_id' => null,
+                    'user_id' => Auth::id(),
+                    'balance_before' => 0,
+                    'balance_after' => $data['stock'],
+                    'note' => 'Dibuat otomatis saat barang ditambahkan',
+                    'occurred_at' => now(),
+                ]);
+            }
+
             AuditLog::create([
                 'user_id' => Auth::id(),
                 'action' => 'created_item',
@@ -153,6 +185,10 @@ class AdminController extends Controller
                 'details' => 'Menambahkan barang '.$item->name.' di '.$location->code,
             ]);
         });
+
+        if ($error !== null) {
+            return back()->with('error', $error);
+        }
 
         return redirect()->route('admin.items.index')->with('success', __('Barang berhasil ditambahkan.'));
     }

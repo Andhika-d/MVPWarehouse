@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Item;
+use App\Models\StockMovement;
 use App\Models\StorageLocation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -232,6 +233,56 @@ class ItemImportTest extends TestCase
                 'stock' => 1,
                 'unit' => 'Biji',
             ])->assertSessionHasErrors('unit');
+    }
+
+    public function test_store_item_creates_primary_unit_and_initial_stock_movement(): void
+    {
+        $this->makeLocations('C', 2);
+        $loc = StorageLocation::where('rack', 'C')->where('number', 1)->first();
+
+        $this->actingAs($this->makeUser('admin'))
+            ->post('/admin/items', [
+                'name' => 'Helm',
+                'storage_location_id' => $loc->id,
+                'stock' => 11,
+                'unit' => 'Pcs',
+            ])->assertRedirect(route('admin.items.index'));
+
+        $item = Item::where('name', 'Helm')->firstOrFail();
+        $this->assertSame('Pcs', $item->primary_unit);
+        $this->assertTrue($item->itemUnits()->where('unit_name', 'Pcs')->where('is_primary', true)->exists());
+
+        $movement = StockMovement::where('item_id', $item->id)->firstOrFail();
+        $this->assertSame(StockMovement::TYPE_ADJUSTMENT, $movement->type);
+        $this->assertSame(11, $movement->balance_after);
+    }
+
+    public function test_store_item_rejects_occupied_location_without_creating_item(): void
+    {
+        $this->makeLocations('C', 2);
+        $loc = StorageLocation::where('rack', 'C')->where('number', 1)->first();
+        $loc->update(['status' => StorageLocation::STATUS_OCCUPIED]);
+
+        $this->actingAs($this->makeUser('admin'))
+            ->post('/admin/items', [
+                'name' => 'Barang Duplikat',
+                'storage_location_id' => $loc->id,
+                'stock' => 1,
+                'unit' => 'Pcs',
+            ])->assertSessionHas('error');
+
+        $this->assertDatabaseMissing('items', ['name' => 'Barang Duplikat']);
+    }
+
+    public function test_admin_items_index_shows_single_item_create_form(): void
+    {
+        $this->makeLocations('C', 2);
+
+        $this->actingAs($this->makeUser('admin'))
+            ->get('/admin/items')
+            ->assertOk()
+            ->assertSee('Tambah Barang')
+            ->assertSee('RC-001');
     }
 
     public function test_request_barang_dropdown_shows_combined_name_and_size(): void

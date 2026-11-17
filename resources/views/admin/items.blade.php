@@ -34,35 +34,38 @@
 
         {{-- Toolbar --}}
         <div class="bg-white rounded-xl border border-slate-200 p-4">
-            <form method="GET" action="{{ route('admin.items.index') }}" data-auto-filter class="flex flex-col sm:flex-row gap-3">
-                <div class="flex-1">
-                    <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari nama, ukuran, atau sub lokasi...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                </div>
-                <select name="rack" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">{{ __('Semua Rak') }}</option>
-                    @foreach($racks as $rack)
-                    <option value="{{ $rack }}" {{ request('rack') === $rack ? 'selected' : '' }}>{{ __('Rak') }} {{ $rack }}</option>
-                    @endforeach
-                </select>
-                <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">{{ __('Semua Status') }}</option>
-                    <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>{{ __('Terisi') }}</option>
-                    <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>{{ __('Kosong') }}</option>
-                </select>
-                <select name="unit" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
-                    <option value="all">{{ __('Semua Satuan') }}</option>
-                    @foreach(\App\Models\Item::UNITS as $unit)
-                    <option value="{{ $unit }}" {{ request('unit') === $unit ? 'selected' : '' }}>{{ $unit }}</option>
-                    @endforeach
-                </select>
-                <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer">
-                    <input type="checkbox" name="low_stock" value="1" {{ request('low_stock') ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
-                    <span class="text-slate-600">{{ __('Stok') }} &le; 5</span>
-                </label>
-                @if(request()->hasAny(['search', 'rack', 'status', 'unit', 'low_stock']))
-                <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
-                @endif
-            </form>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3">
+                <form method="GET" action="{{ route('admin.items.index') }}" data-auto-filter class="flex-1 flex flex-col sm:flex-row gap-3">
+                    <div class="flex-1">
+                        <input type="text" name="search" value="{{ request('search') }}" placeholder="{{ __('Cari nama, ukuran, atau sub lokasi...') }}" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    </div>
+                    <select name="rack" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        <option value="all">{{ __('Semua Rak') }}</option>
+                        @foreach($racks as $rack)
+                        <option value="{{ $rack }}" {{ request('rack') === $rack ? 'selected' : '' }}>{{ __('Rak') }} {{ $rack }}</option>
+                        @endforeach
+                    </select>
+                    <select name="status" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        <option value="all">{{ __('Semua Status') }}</option>
+                        <option value="Terisi" {{ request('status') === 'Terisi' ? 'selected' : '' }}>{{ __('Terisi') }}</option>
+                        <option value="Kosong" {{ request('status') === 'Kosong' ? 'selected' : '' }}>{{ __('Kosong') }}</option>
+                    </select>
+                    <select name="unit" class="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        <option value="all">{{ __('Semua Satuan') }}</option>
+                        @foreach(\App\Models\Item::UNITS as $unit)
+                        <option value="{{ $unit }}" {{ request('unit') === $unit ? 'selected' : '' }}>{{ $unit }}</option>
+                        @endforeach
+                    </select>
+                    <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer">
+                        <input type="checkbox" name="low_stock" value="1" {{ request('low_stock') ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
+                        <span class="text-slate-600">{{ __('Stok') }} &le; 5</span>
+                    </label>
+                    @if(request()->hasAny(['search', 'rack', 'status', 'unit', 'low_stock']))
+                    <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
+                    @endif
+                </form>
+                <button type="button" onclick="openModal('createItemModal')" class="btn btn--primary whitespace-nowrap">{{ __('Tambah Barang') }}</button>
+            </div>
         </div>
 
         {{-- Table --}}
@@ -176,6 +179,61 @@
 
     {{-- Edit Modal --}}
     <x-slot:modals>
+        {{-- Create Item Modal --}}
+        <div id="createItemModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="createItemModalTitle">
+            <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
+                <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                    <h3 id="createItemModalTitle" class="text-base font-semibold text-slate-900">{{ __('Tambah Barang') }}</h3>
+                    <button onclick="closeModal('createItemModal')" aria-label="{{ __('Tutup') }}" class="text-slate-400 hover:text-slate-600 cursor-pointer">
+                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <form method="POST" action="{{ route('admin.items.store') }}" class="p-5 space-y-4">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="name" required maxlength="255" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Ukuran') }}</label>
+                            <input type="text" name="size" maxlength="255" class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Satuan') }} <span class="text-red-500">*</span></label>
+                            <select name="unit" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                                @foreach(\App\Models\Item::UNITS as $u)
+                                <option value="{{ $u }}" {{ $u === 'Pcs' ? 'selected' : '' }}>{{ $u }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Stok') }} <span class="text-red-500">*</span></label>
+                            <input type="number" name="stock" min="0" step="any" value="0" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">{{ __('Lokasi') }} <span class="text-red-500">*</span></label>
+                            <select name="storage_location_id" required class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-corpblue-500 focus:border-corpblue-500 outline-none">
+                                <option value="">{{ __('Pilih slot kosong') }}</option>
+                                @forelse($emptyLocations as $emptyLocation)
+                                <option value="{{ $emptyLocation->id }}">{{ $emptyLocation->code }} — {{ $emptyLocation->sub_location ?? '—' }}</option>
+                                @empty
+                                <option value="" disabled>{{ __('Tidak ada slot kosong') }}</option>
+                                @endforelse
+                            </select>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400">{{ __('Hanya slot kosong yang dapat dipilih. Buat lokasi baru lewat import bila perlu.') }}</p>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" onclick="closeModal('createItemModal')" class="btn btn--secondary">{{ __('Batal') }}</button>
+                        <button type="submit" class="btn btn--primary" @if($emptyLocations->isEmpty()) disabled @endif>{{ __('Simpan') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         {{-- Edit Modal --}}
         <div id="editItemModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true" aria-labelledby="editItemModalTitle">
             <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden" onclick="event.stopPropagation()">
