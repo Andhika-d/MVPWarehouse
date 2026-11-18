@@ -1,6 +1,6 @@
 <!-- Manage Units Modal -->
 <div id="manageUnitsModal" class="hidden fixed inset-0 z-[100] items-center justify-center bg-slate-900/50 backdrop-blur-sm" role="dialog" aria-modal="true">
-    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-2xl mx-4 overflow-hidden max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
+    <div class="bg-white rounded-xl shadow-2xl border border-slate-200 w-full max-w-xl mx-4 overflow-hidden max-h-[90vh] flex flex-col" onclick="event.stopPropagation()">
         <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
             <h3 class="text-base font-semibold text-slate-900">{{ __('Kelola Unit Konversi') }}</h3>
             <button onclick="closeModal('manageUnitsModal')" aria-label="{{ __('Tutup') }}" class="text-slate-400 hover:text-slate-600 cursor-pointer">
