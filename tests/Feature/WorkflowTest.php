@@ -273,6 +273,69 @@ class WorkflowTest extends TestCase
         $this->assertSoftDeleted('items', ['id' => $item->id]);
     }
 
+    public function test_gudang_can_manage_master_items_without_admin_only_actions(): void
+    {
+        $gudang = User::create([
+            'name' => 'Gudang Master',
+            'email' => 'gudang-master@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'gudang',
+        ]);
+
+        $this->actingAs($gudang)
+            ->get('/admin/items')
+            ->assertOk()
+            ->assertSee('Master Barang')
+            ->assertSee('Tambah Barang')
+            ->assertDontSee('Import dari Excel');
+
+        $location = $this->makeLocation('C', 1);
+        $this->post('/admin/items', [
+            'name' => 'Kabel Gudang',
+            'storage_location_id' => $location->id,
+            'stock' => 10,
+            'unit' => 'Pcs',
+        ])->assertRedirect(route('admin.items.index'));
+
+        $item = Item::where('name', 'Kabel Gudang')->firstOrFail();
+        $this->put('/admin/items/' . $item->id, [
+            'name' => 'Kabel Gudang Baru',
+            'size' => '2 Meter',
+            'unit' => 'Rim',
+        ])->assertRedirect(route('admin.items.index'));
+
+        $this->post('/admin/items/' . $item->id . '/adjust-stock', [
+            'new_stock' => 14,
+            'reason' => 'Koreksi stok fisik',
+        ])->assertRedirect(route('admin.items.index'));
+
+        $this->postJson('/admin/items/' . $item->id . '/units', [
+            'unit_name' => 'Pack',
+            'conversion_to_primary' => 12,
+            'context' => 'both',
+        ])->assertOk();
+
+        $this->deleteJson('/admin/items/' . $item->id . '/units/Pack')->assertOk();
+
+        $this->get('/admin/items')
+            ->assertOk()
+            ->assertSee('Kabel Gudang Baru')
+            ->assertDontSee('Hapus barang');
+
+        $this->delete('/admin/items/' . $item->id)->assertForbidden();
+        $this->get('/admin/import')->assertForbidden();
+        $this->get('/admin/dashboard')->assertForbidden();
+
+        $hr = User::create([
+            'name' => 'HR Master',
+            'email' => 'hr-master@example.com',
+            'password' => Hash::make('password'),
+            'role' => 'hr',
+        ]);
+
+        $this->actingAs($hr)->get('/admin/items')->assertForbidden();
+    }
+
     public function test_hr_can_approve_request_and_history_is_updated(): void
     {
         $hr = User::create([

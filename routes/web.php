@@ -147,6 +147,15 @@ Route::middleware('auth')->group(function () {
         Route::delete('/lokasi/{coilLocation}', [CoilLocationController::class, 'destroy'])->whereNumber('coilLocation')->name('locations.destroy');
     });
 
+    Route::middleware('role:admin,gudang')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/items', [AdminController::class, 'itemsIndex'])->name('items.index');
+        Route::post('/items', [AdminController::class, 'storeItem'])->name('items.store');
+        Route::put('/items/{item}', [AdminController::class, 'updateItem'])->name('items.update');
+        Route::post('/items/{item}/adjust-stock', [AdminController::class, 'adjustStock'])->name('items.adjust-stock');
+        Route::post('/items/{item}/units', [AdminItemUnitController::class, 'store'])->name('items.units.store');
+        Route::delete('/items/{item}/units/{unitName}', [AdminItemUnitController::class, 'destroy'])->name('items.units.destroy');
+    });
+
     Route::middleware('admin')->prefix('admin')->name('admin.')->group(function () {
         Route::get('/help-guides', [AdminHelpGuideController::class, 'index'])->name('help-guides.index');
         Route::get('/help-guides/create', [AdminHelpGuideController::class, 'create'])->name('help-guides.create');
@@ -160,15 +169,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/dashboard', [AdminController::class, 'dashboard'])->name('dashboard');
 
         // Master Items
-        Route::get('/items', [AdminController::class, 'itemsIndex'])->name('items.index');
-        Route::post('/items', [AdminController::class, 'storeItem'])->name('items.store');
-        Route::put('/items/{item}', [AdminController::class, 'updateItem'])->name('items.update');
-        Route::post('/items/{item}/adjust-stock', [AdminController::class, 'adjustStock'])->name('items.adjust-stock');
         Route::delete('/items/{item}', [AdminController::class, 'destroyItem'])->name('items.destroy');
-        
-        // Item Units
-        Route::post('/items/{item}/units', [AdminItemUnitController::class, 'store'])->name('items.units.store');
-        Route::delete('/items/{item}/units/{unitName}', [AdminItemUnitController::class, 'destroy'])->name('items.units.destroy');
 
         // Import
         Route::get('/import', [AdminController::class, 'importIndex'])->name('import.index');

@@ -122,10 +122,12 @@
                                     <button onclick="openEditModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ addslashes($item->size ?? '') }}', '{{ $item->unit }}')" class="action-link action-link--primary">{{ __('Edit') }}</button>
                                     <button onclick="openManageUnitsModal({{ $item->id }}, '{{ addslashes($item->name) }}', '{{ $item->primary_unit }}')" class="action-link" title="{{ __('Kelola Unit Konversi') }}">{{ __('Unit') }}</button>
                                     <button onclick="openAdjustModal({{ $item->id }}, '{{ addslashes($item->name) }}', {{ $item->stock }}, '{{ $item->primary_unit }}')" class="action-link action-link--warning">{{ __('Sesuaikan') }}</button>
+                                    @if(auth()->user()->role === 'admin')
                                     <form method="POST" action="{{ route('admin.items.destroy', $item) }}" data-confirm="{{ __('Hapus barang :name? Tindakan ini tidak dapat dibatalkan.', ['name' => $item->name]) }}" data-confirm-title="{{ __('Hapus Barang') }}" data-confirm-tone="danger" class="inline">
                                         @csrf @method('DELETE')
                                         <button type="submit" class="action-link action-link--danger">{{ __('Hapus') }}</button>
                                     </form>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -160,7 +162,9 @@
                                 <div class="flex flex-col items-center gap-2">
                                     <svg class="text-slate-300" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
                                     <p class="text-sm text-slate-400">{{ __('Belum ada data lokasi') }}</p>
+                                    @if(auth()->user()->role === 'admin')
                                     <a href="{{ route('admin.import.index') }}" class="text-xs text-corpblue-600 hover:text-corpblue-700 font-semibold">{{ __('Import dari Excel') }}</a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
