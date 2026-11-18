@@ -56,9 +56,6 @@
             </div>
         </div>
 
-        <div class="px-5 py-4 border-t border-slate-100 flex justify-end">
-            <button onclick="closeModal('manageUnitsModal')" class="btn btn--secondary">{{ __('Tutup') }}</button>
-        </div>
     </div>
 </div>
 
