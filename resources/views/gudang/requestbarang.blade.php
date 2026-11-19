@@ -63,13 +63,15 @@
                         </div>
                     </div>
 
-                    {{-- Ukuran hanya dipakai barang Lainnya --}}
-                    <div id="otherSizeWrap" class="collapsible" inert>
-                        <div>
-                            <div class="pt-3">
+                    {{-- Ukuran hanya dipakai barang Lainnya. Spacer kanan menyamakan
+                         ujung input dengan mode Rak A–E. --}}
+                    <div id="otherSizeWrap" class="hidden pt-3" inert>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
                                 <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Ukuran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
                                 <input type="text" name="item_size" id="item_size_manual" maxlength="255" placeholder="{{ __('Contoh: 5 cm') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             </div>
+                            <div class="rack-spacer" aria-hidden="true"></div>
                         </div>
                     </div>
 
@@ -197,6 +199,20 @@
 
     <x-slot:scripts>
     <style>
+        :root {
+            --rack-control-width: 144px;
+        }
+
+        #rackDropdownBtn {
+            width: var(--rack-control-width);
+            min-width: var(--rack-control-width);
+        }
+
+        .rack-spacer {
+            width: var(--rack-control-width);
+            flex: 0 0 var(--rack-control-width);
+        }
+
         .mode-stage { display: grid; }
         .mode-stage > .mode-panel { grid-area: 1 / 1; }
 
@@ -301,7 +317,8 @@
         setModePanelActive(masterFields, !isOther);
         setModePanelActive(otherSection, isOther);
         manualRequiredMark.classList.toggle('hidden', !isOther);
-        setCollapsibleOpen(otherSizeWrap, isOther);
+        otherSizeWrap.classList.toggle('hidden', !isOther);
+        otherSizeWrap.inert = !isOther;
         rackDropdownMenu.classList.add('hidden');
 
         const conversionInput = document.getElementById('conversionInput');
