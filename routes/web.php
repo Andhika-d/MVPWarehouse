@@ -171,6 +171,12 @@ Route::middleware('auth')->group(function () {
         // Master Items
         Route::delete('/items/{item}', [AdminController::class, 'destroyItem'])->name('items.destroy');
 
+        // Barang Lainnya (di luar rak A–E)
+        Route::get('/other-requests', [AdminController::class, 'otherRequestsIndex'])->name('other-requests.index');
+        Route::post('/other-requests/{stockRequest}/promote', [AdminController::class, 'promoteOtherRequest'])
+            ->middleware('throttle:20,1')
+            ->name('other-requests.promote');
+
         // Import
         Route::get('/import', [AdminController::class, 'importIndex'])->name('import.index');
         Route::post('/import/preview', [AdminController::class, 'importPreview'])->name('import.preview');

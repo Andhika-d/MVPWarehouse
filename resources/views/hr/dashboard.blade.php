@@ -156,6 +156,7 @@
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-4 px-6">
                                 <span class="font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</span>
+                                @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
                                 <span class="mt-0.5 block text-xs text-slate-500">{{ __('Stok:') }} {{ $request->item?->stock_display ?? '-' }}</span>
                             </td>
                             <td class="py-4 px-6 text-sm font-medium text-slate-600">{{ $request->user?->name ?? '-' }}</td>
@@ -194,7 +195,10 @@
                 <div class="p-4 flex flex-col gap-2">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
-                            <p class="text-sm font-bold text-slate-900 truncate">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</p>
+                            <p class="text-sm font-bold text-slate-900 truncate">
+                                {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                                @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                            </p>
                             <p class="mt-0.5 text-xs text-slate-500">{{ $request->user?->name ?? '-' }} &middot; {{ __('Stok') }} {{ $request->item?->stock_display ?? '-' }}</p>
                         </div>
                         @if($request->priority === 'Mendesak')

@@ -50,7 +50,12 @@
                         @forelse($requests as $request)
                         <tr class="hover:bg-slate-50/70 transition-all">
                             <td class="py-3 px-5 text-slate-500 font-medium whitespace-nowrap">{{ $request->created_at->translatedFormat('d M Y, H:i') }}</td>
-                            <td class="py-3 px-5 font-semibold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</td>
+                            <td class="py-3 px-5 font-semibold text-slate-900">
+                                {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                                @if($request->isOther())
+                                <span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>
+                                @endif
+                            </td>
                             <td class="py-3 px-5">{{ $request->quantity }} <span class="text-xs text-slate-500">{{ $request->unit }}</span></td>
                             <td class="py-3 px-5">
                                 <x-status-badge domain="priority" :status="$request->priority" />
@@ -88,7 +93,10 @@
             <a href="/gudang/history/{{ $request->id }}" class="block bg-white rounded-xl border border-slate-200 shadow-sm p-4 hover:bg-slate-50 transition-all">
                 <div class="flex items-start justify-between">
                     <div class="min-w-0">
-                        <p class="font-semibold text-slate-900 text-sm truncate">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</p>
+                        <p class="font-semibold text-slate-900 text-sm truncate">
+                            {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                            @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                        </p>
                         <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
                     </div>
                     <x-status-badge domain="request" :status="$request->status" class="ml-3 shrink-0" />

@@ -8,6 +8,7 @@ use App\Models\AuditLog;
 use App\Models\Item;
 use App\Models\LocationChangeRequest;
 use App\Models\ProcurementNote;
+use App\Models\RequestHistory;
 use App\Models\Setting;
 use App\Models\StockMovement;
 use App\Models\StockRequest;
@@ -37,6 +38,7 @@ class AdminController extends Controller
         $totalLocations = StorageLocation::count();
         $occupiedLocations = StorageLocation::where('status', StorageLocation::STATUS_OCCUPIED)->count();
         $pendingLocationChanges = LocationChangeRequest::where('status', LocationChangeRequest::STATUS_PENDING)->count();
+        $pendingOtherCount = StockRequest::other()->whereNull('item_id')->count();
         $totalUsers = User::count();
         $auditLogs = AuditLog::with('user')->latest()->take(10)->get();
 
@@ -54,6 +56,7 @@ class AdminController extends Controller
             'totalLocations',
             'occupiedLocations',
             'pendingLocationChanges',
+            'pendingOtherCount',
             'totalUsers',
             'auditLogs',
             'backups'
@@ -191,6 +194,164 @@ class AdminController extends Controller
         }
 
         return redirect()->route('admin.items.index')->with('success', __('Barang berhasil ditambahkan.'));
+    }
+
+    /**
+     * Daftar permintaan barang di luar rak (Lainnya) yang belum/punya item master.
+     */
+    public function otherRequestsIndex()
+    {
+        $otherRequests = StockRequest::other()
+            ->with(['user', 'item', 'requestHistories'])
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        $racks = ['A', 'B', 'C', 'D', 'E'];
+        $emptyLocations = StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
+            ->orderBy('rack')
+            ->orderBy('number')
+            ->get(['id', 'code', 'sub_location', 'rack']);
+
+        return view('admin.other-requests', compact('otherRequests', 'racks', 'emptyLocations'));
+    }
+
+    /**
+     * Promosikan permintaan Lainnya menjadi Item master di rak A–E.
+     */
+    public function promoteOtherRequest(Request $request, StockRequest $stockRequest)
+    {
+        $data = $request->validate([
+            'storage_location_id' => ['nullable', 'exists:storage_locations,id'],
+            'rack' => ['nullable', 'in:A,B,C,D,E'],
+            'sub_location' => ['nullable', 'string', 'max:255'],
+            'note' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        $useExisting = ! empty($data['storage_location_id']);
+
+        if (! $useExisting && (empty($data['rack']) || empty($data['sub_location']))) {
+            return back()->with('error', __('Pilih slot kosong atau isi rak dan sub lokasi baru.'));
+        }
+
+        $error = null;
+        $item = null;
+
+        DB::transaction(function () use ($data, $stockRequest, $useExisting, &$error, &$item) {
+            $locked = StockRequest::lockForUpdate()->findOrFail($stockRequest->id);
+
+            if (! $locked->isOther()) {
+                $error = __('Hanya permintaan Lainnya yang dapat didaftarkan ke rak.');
+
+                return;
+            }
+
+            if ($locked->item_id !== null) {
+                $error = __('Permintaan ini sudah didaftarkan ke rak.');
+
+                return;
+            }
+
+            if ($useExisting) {
+                $location = StorageLocation::lockForUpdate()->findOrFail($data['storage_location_id']);
+
+                if ($location->isOccupied()) {
+                    $error = __('Lokasi :code sudah terisi.', ['code' => $location->code]);
+
+                    return;
+                }
+            } else {
+                $subLocation = trim($data['sub_location']);
+
+                if (StorageLocation::where('sub_location', $subLocation)->exists()) {
+                    $error = __('Sub lokasi :code sudah digunakan.', ['code' => $subLocation]);
+
+                    return;
+                }
+
+                $number = (StorageLocation::where('rack', $data['rack'])->max('number') ?? 0) + 1;
+                $location = StorageLocation::create([
+                    'code' => StorageLocation::getPrefixForRack($data['rack']).'-'.str_pad((string) $number, 3, '0', STR_PAD_LEFT),
+                    'rack' => $data['rack'],
+                    'number' => $number,
+                    'sub_location' => $subLocation,
+                    'status' => StorageLocation::STATUS_EMPTY,
+                ]);
+            }
+
+            $unit = $locked->unit ?: 'Pcs';
+            $initialStock = (float) $locked->received_quantity;
+
+            $item = Item::create([
+                'name' => $locked->item_name,
+                'size' => $locked->item_size,
+                'storage_location_id' => $location->id,
+                'stock' => $initialStock,
+                'unit' => $unit,
+                'primary_unit' => $unit,
+            ]);
+
+            $location->update(['status' => StorageLocation::STATUS_OCCUPIED]);
+
+            $item->itemUnits()->create([
+                'unit_name' => $unit,
+                'conversion_to_primary' => 1,
+                'is_primary' => true,
+                'context' => 'both',
+            ]);
+
+            if ($initialStock > 0) {
+                StockMovement::create([
+                    'item_id' => $item->id,
+                    'type' => StockMovement::TYPE_ADJUSTMENT,
+                    'quantity' => $initialStock,
+                    'quantity_in_primary' => $initialStock,
+                    'unit' => $unit,
+                    'reason' => 'Saldo awal dari permintaan Lainnya',
+                    'stock_request_id' => $locked->id,
+                    'user_id' => Auth::id(),
+                    'balance_before' => 0,
+                    'balance_after' => $initialStock,
+                    'note' => 'Didaftarkan ke rak '. $location->code,
+                    'occurred_at' => now(),
+                ]);
+            }
+
+            $locked->update([
+                'item_id' => $item->id,
+                'promoted_at' => now(),
+                'promoted_by' => Auth::id(),
+            ]);
+
+            RequestHistory::create([
+                'stock_request_id' => $locked->id,
+                'user_id' => Auth::id(),
+                'status' => $locked->status,
+                'note' => 'Barang Lainnya didaftarkan ke rak '.$location->code
+                    .' ('.$location->sub_location.') sebagai item #'.$item->id
+                    .(($data['note'] ?? null) ? ' — '.$data['note'] : ''),
+            ]);
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'action' => 'promoted_other_request',
+                'target_type' => StockRequest::class,
+                'target_id' => $locked->id,
+                'details' => 'Mendaftarkan '.$locked->displayName().' ke '.$location->code
+                    .' ('.$location->sub_location.') dengan stok awal '.$initialStock.' '.$unit,
+            ]);
+        });
+
+        if ($error !== null) {
+            return back()->with('error', $error);
+        }
+
+        return redirect()->route('admin.other-requests.index')
+            ->with('success', __(':name berhasil didaftarkan ke rak dengan stok awal :stock :unit.', [
+                'name' => $item?->name ?? '',
+                'stock' => $item?->stock ?? 0,
+                'unit' => $item?->primary_unit ?? 'Pcs',
+            ]));
     }
 
     public function updateItem(Request $request, Item $item)

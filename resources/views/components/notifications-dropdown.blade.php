@@ -22,6 +22,7 @@
                     $type = $data['type'] ?? 'info';
                     $styles = [
                         'new_request' => ['dot' => 'bg-blue-500', 'badge' => 'bg-blue-50 text-blue-700'],
+                        'other_request' => ['dot' => 'bg-amber-500', 'badge' => 'bg-amber-50 text-amber-700'],
                         'approved' => ['dot' => 'bg-emerald-500', 'badge' => 'bg-emerald-50 text-emerald-700'],
                         'rejected' => ['dot' => 'bg-red-500', 'badge' => 'bg-red-50 text-red-700'],
                         'delayed' => ['dot' => 'bg-amber-500', 'badge' => 'bg-amber-50 text-amber-700'],
@@ -56,6 +57,7 @@
     const CSRF_TOKEN = '{{ csrf_token() }}';
     const TYPE_STYLES = {
         new_request: { dot: 'bg-blue-500', badge: 'bg-blue-50 text-blue-700' },
+        other_request: { dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700' },
         approved:    { dot: 'bg-emerald-500', badge: 'bg-emerald-50 text-emerald-700' },
         rejected:    { dot: 'bg-red-500', badge: 'bg-red-50 text-red-700' },
         delayed:     { dot: 'bg-amber-500', badge: 'bg-amber-50 text-amber-700' },

@@ -63,7 +63,7 @@
                         @foreach($procurementNote->requests as $stockRequest)
                         <tr id="request-{{ $stockRequest->id }}" class="align-top hover:bg-slate-50/60">
                             <td class="whitespace-nowrap px-4 py-4 text-xs text-slate-500"><b class="block font-semibold text-slate-700">#{{ $stockRequest->id }}</b>{{ $stockRequest->created_at->translatedFormat('H:i') }}</td>
-                            <td class="px-4 py-4"><b class="font-semibold text-slate-900">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? __('Barang') }}</b><span class="mt-1 block text-xs text-slate-500">{{ __($stockRequest->priority) }}</span></td>
+                            <td class="px-4 py-4"><b class="font-semibold text-slate-900">{{ $stockRequest->item?->name ?? $stockRequest->item_name ?? __('Barang') }}</b>@if($stockRequest->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif<span class="mt-1 block text-xs text-slate-500">{{ __($stockRequest->priority) }}</span></td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-600">{{ $stockRequest->user?->name ?? '—' }}</td>
                             <td class="whitespace-nowrap px-4 py-4 text-slate-900">{{ $stockRequest->quantity }} {{ $stockRequest->unit }}</td>
                             <td class="px-4 py-4 text-slate-600">{{ $stockRequest->item?->size ?? '—' }}</td>

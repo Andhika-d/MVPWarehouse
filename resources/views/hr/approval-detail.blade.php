@@ -10,7 +10,10 @@
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
                     </a>
                     <div>
-                        <h2 class="text-lg font-bold text-slate-900 break-words">{{ $request->item?->display_name ?? $request->item_name ?? __('Barang') }}</h2>
+                        <h2 class="text-lg font-bold text-slate-900 break-words">
+                            {{ $request->item?->display_name ?? $request->item_name ?? __('Barang') }}
+                            @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                        </h2>
                         <p class="text-sm text-slate-500">
                             #NOTA-{{ $request->created_at->format('Ymd') }} • {{ __('Permintaan') }} #{{ $request->id }} • {{ __('Diajukan') }} {{ $request->created_at->translatedFormat('d M Y, H:i') }}
                         </p>

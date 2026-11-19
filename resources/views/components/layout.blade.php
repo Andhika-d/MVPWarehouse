@@ -216,6 +216,12 @@
                             <span>{{ __('Master Barang') }}</span>
                         </a>
 
+                        <a href="{{ route('admin.other-requests.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.other-requests.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
+                            @if(request()->routeIs('admin.other-requests.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
+                            <svg class="shrink-0 {{ request()->routeIs('admin.other-requests.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></svg>
+                            <span>{{ __('Barang Lainnya') }}</span>
+                        </a>
+
                         <a href="{{ route('admin.import.index') }}" class="group flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all relative {{ request()->routeIs('admin.import.*') ? 'bg-corpblue-50 text-corpblue-600 font-semibold' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}">
                             @if(request()->routeIs('admin.import.*'))<span class="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full bg-corpblue-500"></span>@endif
                             <svg class="shrink-0 {{ request()->routeIs('admin.import.*') ? 'text-corpblue-500' : 'text-slate-400 group-hover:text-slate-600' }}" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>

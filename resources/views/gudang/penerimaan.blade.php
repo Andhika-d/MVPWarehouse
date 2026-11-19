@@ -27,7 +27,10 @@
                         @forelse($requests as $req)
                         <tr class="hover:bg-slate-50/50 transition-all">
                             <td class="py-3 px-5">
-                                <p class="font-semibold text-slate-900">{{ $req->item?->name ?? $req->item_name ?? __('Barang') }}</p>
+                                <p class="font-semibold text-slate-900">
+                                    {{ $req->item?->name ?? $req->item_name ?? __('Barang') }}
+                                    @if($req->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                                </p>
                                 <p class="mt-0.5 whitespace-nowrap text-xs text-slate-500">{{ $req->item?->storageLocation?->rack ?? '—' }} · {{ $req->item?->storageLocation?->code ?? '' }} · {{ $req->unit }}</p>
                             </td>
                             <td class="py-3 px-5 whitespace-nowrap">

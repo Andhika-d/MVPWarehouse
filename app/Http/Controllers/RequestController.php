@@ -9,6 +9,7 @@ use App\Models\ProcurementNote;
 use App\Models\StockRequest;
 use App\Models\User;
 use App\Notifications\NewRequestNotification;
+use App\Notifications\OtherRequestNotification;
 use App\Notifications\RequestApprovedNotification;
 use App\Notifications\RequestDelayedNotification;
 use App\Notifications\RequestRejectedNotification;
@@ -91,19 +92,43 @@ class RequestController extends Controller
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $requestKind = $request->input('request_kind', StockRequest::KIND_MASTER);
+        $isOther = $requestKind === StockRequest::KIND_OTHER;
+
+        $rules = [
+            'request_kind' => ['nullable', 'in:'.StockRequest::KIND_MASTER.','.StockRequest::KIND_OTHER],
             'item_id' => ['nullable', Rule::exists('items', 'id')->whereNull('deleted_at')],
             'item_name' => ['required_without:item_id', 'nullable', 'string', 'max:255'],
+            'item_size' => ['nullable', 'string', 'max:255'],
             'quantity' => ['required', 'numeric', 'min:0.01'],
             'unit' => ['nullable', 'string', 'max:50'],
             'conversion_to_primary' => ['nullable', 'numeric', 'min:0.0001'],
             'priority' => ['required', 'in:Biasa,Mendesak'],
             'reason' => ['nullable', 'string'],
             'attachment' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png,doc,docx,xlsx,xls', 'max:2048'],
-        ]);
+        ];
 
-        $item = ! empty($data['item_id']) ? Item::with('itemUnits')->find($data['item_id']) : null;
-        $unit = $data['unit'] ?? $item?->primary_unit ?? $item?->unit ?? 'Pcs';
+        if ($isOther) {
+            $rules['item_id'] = ['nullable'];
+            $rules['item_name'] = ['required', 'string', 'max:255'];
+            $rules['unit'] = ['required', 'in:'.implode(',', Item::UNITS)];
+        }
+
+        $data = $request->validate($rules);
+
+        if ($isOther && ! empty($data['item_id'])) {
+            return back()->withErrors([
+                'item_name' => __('Barang Lainnya tidak boleh terikat ke item master.'),
+            ])->withInput();
+        }
+
+        $item = (! $isOther && ! empty($data['item_id']))
+            ? Item::with('itemUnits')->find($data['item_id'])
+            : null;
+
+        $unit = $isOther
+            ? $data['unit']
+            : ($data['unit'] ?? $item?->primary_unit ?? $item?->unit ?? 'Pcs');
 
         if ($item) {
             $resolution = ItemUnitResolver::ensure(
@@ -119,8 +144,9 @@ class RequestController extends Controller
                 ])->withInput();
             }
         }
-        
-        // Calculate quantity in primary unit
+
+        // Manual "Lainnya" requests use the entered unit as-is because they
+        // do not yet have a master item or conversion table.
         $quantityInPrimary = $item ? $item->convertToPrimary($data['quantity'], $unit) : $data['quantity'];
 
         $attachmentPath = null;
@@ -128,12 +154,14 @@ class RequestController extends Controller
             $attachmentPath = $request->file('attachment')->store('attachments', 'public');
         }
 
-        $stockRequest = DB::transaction(function () use ($data, $item, $unit, $quantityInPrimary, $attachmentPath) {
+        $stockRequest = DB::transaction(function () use ($data, $item, $unit, $quantityInPrimary, $attachmentPath, $isOther) {
             $note = ProcurementNote::findOrCreateForDate(now());
             $stockRequest = StockRequest::create([
                 'user_id' => Auth::id(),
                 'item_id' => $item?->id,
                 'item_name' => $item?->name ?? $data['item_name'],
+                'request_kind' => $isOther ? StockRequest::KIND_OTHER : StockRequest::KIND_MASTER,
+                'item_size' => $isOther ? ($data['item_size'] ?? null) : null,
                 'quantity' => $data['quantity'],
                 'quantity_in_primary' => $quantityInPrimary,
                 'unit' => $unit,
@@ -147,7 +175,9 @@ class RequestController extends Controller
             $stockRequest->requestHistories()->create([
                 'user_id' => Auth::id(),
                 'status' => 'Menunggu Review',
-                'note' => 'Permintaan dibuat oleh gudang',
+                'note' => $isOther
+                    ? 'Permintaan barang Lainnya dibuat oleh gudang'
+                    : 'Permintaan dibuat oleh gudang',
             ]);
 
             AuditLog::create([
@@ -155,7 +185,8 @@ class RequestController extends Controller
                 'action' => 'created_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $stockRequest->id,
-                'details' => 'Gudang membuat permintaan '.$stockRequest->quantity.' '.$stockRequest->unit.' '.($item?->name ?? $data['item_name']),
+                'details' => 'Gudang membuat permintaan '.$stockRequest->quantity.' '.$stockRequest->unit.' '.$stockRequest->displayName()
+                    .($isOther ? ' (Lainnya)' : ''),
             ]);
 
             return $stockRequest;
@@ -164,6 +195,13 @@ class RequestController extends Controller
         $hrUsers = User::where('role', 'hr')->where('is_active', true)->get();
         if ($hrUsers->isNotEmpty()) {
             Notification::send($hrUsers, new NewRequestNotification($stockRequest));
+        }
+
+        if ($isOther) {
+            $admins = User::where('role', 'admin')->where('is_active', true)->get();
+            if ($admins->isNotEmpty()) {
+                Notification::send($admins, new OtherRequestNotification($stockRequest));
+            }
         }
 
         return redirect('/gudang/history')->with('success', __('Permintaan berhasil dibuat.'));
@@ -728,7 +766,7 @@ class RequestController extends Controller
                 'action' => 'rejected_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $request->id,
-                'details' => 'HR menolak permintaan '.($request->item?->name ?? 'Barang').': '.$note,
+                'details' => 'HR menolak permintaan '.$request->displayName().': '.$note,
             ]);
 
             if ($request->user) {
@@ -768,7 +806,7 @@ class RequestController extends Controller
                 'action' => 'delayed_request',
                 'target_type' => StockRequest::class,
                 'target_id' => $request->id,
-                'details' => 'HR menunda permintaan '.($request->item?->name ?? 'Barang'),
+                'details' => 'HR menunda permintaan '.$request->displayName(),
             ]);
 
             if ($request->user) {

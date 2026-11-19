@@ -79,6 +79,18 @@
                 </div>
             </a>
 
+            <a href="{{ route('admin.other-requests.index') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-amber-300 hover:shadow-sm transition-all group">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
+                        <svg class="text-amber-500" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-slate-900">{{ __('Barang Lainnya') }} <span class="ml-1 text-xs font-bold text-amber-600">({{ $pendingOtherCount }})</span></p>
+                        <p class="text-xs text-slate-500">{{ __('Daftarkan ke rak jika perlu') }}</p>
+                    </div>
+                </div>
+            </a>
+
             <a href="{{ route('admin.import.index') }}" class="bg-white rounded-xl border border-slate-200 p-5 hover:border-corpblue-300 hover:shadow-sm transition-all group">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition-colors">

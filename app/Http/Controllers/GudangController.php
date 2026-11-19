@@ -49,7 +49,9 @@ class GudangController extends Controller
                 return back()->with('error', __('Permintaan ini tidak dapat diterima.'));
             }
 
-            if (! $stockRequest->item) {
+            $isOther = $stockRequest->isOther();
+
+            if (! $isOther && ! $stockRequest->item) {
                 return back()->with('error', __('Item terkait permintaan ini tidak ditemukan di master item.'));
             }
 
@@ -63,6 +65,48 @@ class GudangController extends Controller
                 ])->withInput();
             }
 
+            $stockRequest->increment('received_quantity', $receiveQty);
+
+            $stockRequest->refresh();
+
+            if ($stockRequest->received_quantity >= $stockRequest->quantity) {
+                $stockRequest->update(['status' => 'Diterima Penuh', 'completed_at' => now()]);
+            } else {
+                $stockRequest->update(['status' => 'Sebagian Diterima']);
+            }
+
+            if ($isOther) {
+                // Barang Lainnya belum punya Item master, jadi belum boleh masuk
+                // stock_movements. Jumlah diterima disimpan di request dan dipakai
+                // sebagai saldo awal saat admin mempromosikannya ke rak.
+                $historyNote = 'Diterima '.$receiveQty.' '.$stockRequest->unit
+                    .' — barang Lainnya, belum masuk rak'
+                    .($overQty > 0 ? ' — kelebihan '.$overQty.' '.$stockRequest->unit.' dari permintaan' : '')
+                    .($note ? ' — '.$note : '');
+
+                $stockRequest->requestHistories()->create([
+                    'user_id' => Auth::id(),
+                    'status' => $stockRequest->status,
+                    'note' => $historyNote,
+                ]);
+
+                AuditLog::create([
+                    'user_id' => Auth::id(),
+                    'action' => 'received_other_request',
+                    'target_type' => StockRequest::class,
+                    'target_id' => $stockRequest->id,
+                    'details' => 'Barang Lainnya diterima: '.$receiveQty.' '.$stockRequest->unit.' '.$stockRequest->displayName()
+                        .($overQty > 0 ? ' - Kelebihan '.$overQty.' '.$stockRequest->unit.' dari permintaan' : '')
+                        .($note ? ' - Catatan: '.$note : ''),
+                ]);
+
+                return back()->with('success', __(':quantity :unit :item berhasil diterima sebagai barang Lainnya. Admin dapat mendaftarkannya ke rak.', [
+                    'quantity' => $receiveQty,
+                    'unit' => $stockRequest->unit,
+                    'item' => $stockRequest->displayName(),
+                ]));
+            }
+
             $item = Item::with('itemUnits')->lockForUpdate()->find($stockRequest->item_id);
 
             // Use the conversion recorded when the request was made so that
@@ -73,16 +117,6 @@ class GudangController extends Controller
                 : (float) $item->getConversionFactor($stockRequest->unit);
 
             $receiveQtyInPrimary = $receiveQty * $conversionFactor;
-
-            $stockRequest->increment('received_quantity', $receiveQty);
-
-            $stockRequest->refresh();
-
-            if ($stockRequest->received_quantity >= $stockRequest->quantity) {
-                $stockRequest->update(['status' => 'Diterima Penuh', 'completed_at' => now()]);
-            } else {
-                $stockRequest->update(['status' => 'Sebagian Diterima']);
-            }
 
             $balanceBefore = $item->stock;
             $item->increment('stock', $receiveQtyInPrimary);

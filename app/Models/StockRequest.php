@@ -12,10 +12,15 @@ class StockRequest extends Model
     public const RECEIVABLE_STATUSES = ['Disetujui', 'Sebagian Diterima'];
     public const CLOSED_STATUSES = ['Ditutup Sebagian', 'Dibatalkan'];
 
+    public const KIND_MASTER = 'master';
+    public const KIND_OTHER = 'other';
+
     protected $fillable = [
         'user_id',
         'item_id',
         'item_name',
+        'request_kind',
+        'item_size',
         'quantity',
         'quantity_in_primary',
         'received_quantity',
@@ -32,12 +37,15 @@ class StockRequest extends Model
         'closed_by',
         'close_note',
         'procurement_note_id',
+        'promoted_at',
+        'promoted_by',
     ];
 
     protected $casts = [
         'approved_at' => 'datetime',
         'completed_at' => 'datetime',
         'closed_at' => 'datetime',
+        'promoted_at' => 'datetime',
         'quantity' => NumericValue::class,
         'received_quantity' => NumericValue::class,
         'quantity_in_primary' => NumericValue::class,
@@ -58,6 +66,11 @@ class StockRequest extends Model
         return $this->belongsTo(User::class, 'closed_by');
     }
 
+    public function promotedBy()
+    {
+        return $this->belongsTo(User::class, 'promoted_by');
+    }
+
     public function item()
     {
         return $this->belongsTo(Item::class);
@@ -76,6 +89,28 @@ class StockRequest extends Model
     public function procurementNote()
     {
         return $this->belongsTo(ProcurementNote::class);
+    }
+
+    public function scopeOther($query)
+    {
+        return $query->where('request_kind', self::KIND_OTHER);
+    }
+
+    public function isOther(): bool
+    {
+        return $this->request_kind === self::KIND_OTHER;
+    }
+
+    public function isMaster(): bool
+    {
+        return ! $this->isOther();
+    }
+
+    public function displayName(): string
+    {
+        $name = $this->item?->name ?? $this->item_name ?? __('Barang');
+
+        return $this->item_size ? $name.' ('.$this->item_size.')' : $name;
     }
 
     public function isActionable(): bool

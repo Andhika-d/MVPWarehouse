@@ -92,7 +92,10 @@
                     @foreach($requests as $request)
                     <div class="px-5 py-3 flex items-center justify-between hover:bg-slate-50/50 transition-all">
                         <div class="min-w-0">
-                            <p class="text-sm font-medium text-slate-900 truncate">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</p>
+                            <p class="text-sm font-medium text-slate-900 truncate">
+                                {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                                @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                            </p>
                             <p class="text-xs text-slate-500 mt-0.5">{{ $request->quantity }} {{ $request->unit }} &middot; {{ $request->created_at->diffForHumans() }}</p>
                         </div>
                         <x-status-badge domain="request" :status="$request->status" class="ml-3 shrink-0" />

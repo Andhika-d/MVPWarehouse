@@ -80,7 +80,11 @@
                     <tbody class="divide-y divide-slate-100 text-slate-700 font-medium">
                         @foreach($notaItems as $request)
                         <tr class="hover:bg-slate-50/30 transition-colors duration-200">
-                            <td class="py-4 px-6 font-bold text-slate-900 text-sm">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }} @if($request->attachment_path)<span title="{{ __('Ada lampiran/foto') }}" class="ml-1">📎</span>@endif</td>
+                            <td class="py-4 px-6 font-bold text-slate-900 text-sm">
+                                {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                                @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                                @if($request->attachment_path)<span title="{{ __('Ada lampiran/foto') }}" class="ml-1">📎</span>@endif
+                            </td>
                             <td class="py-4 px-6"><span class="text-slate-600 font-bold block font-mono text-xs whitespace-nowrap">{{ $request->item?->storageLocation?->code ?? '-' }}</span></td>
                             <td class="py-4 px-6 text-sm font-bold text-slate-900">{{ $request->quantity }} <span class="text-xs font-medium text-slate-500">{{ $request->unit }}</span></td>
                             <td class="py-4 px-6 text-slate-500 max-w-xs leading-relaxed">{{ \App\Support\StoredText::translate($request->reason) ?? '-' }}</td>

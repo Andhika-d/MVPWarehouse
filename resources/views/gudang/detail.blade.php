@@ -14,7 +14,10 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                    <h2 class="text-lg font-bold text-slate-900">{{ $request->item?->name ?? $request->item_name ?? __('Barang') }}</h2>
+                    <h2 class="text-lg font-bold text-slate-900">
+                        {{ $request->item?->name ?? $request->item_name ?? __('Barang') }}
+                        @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                    </h2>
                     <p class="text-sm text-slate-500 mt-0.5">{{ $request->user?->name ?? __('Gudang') }} &middot; {{ $request->created_at->translatedFormat('d M Y, H:i') }}</p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2 shrink-0">
@@ -32,6 +35,10 @@
                 <div>
                     <p class="text-xs text-slate-500">{{ __('Jumlah') }}</p>
                     <p class="font-semibold text-slate-900 mt-0.5">{{ $request->quantity }} {{ $request->unit }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-500">{{ __('Ukuran') }}</p>
+                    <p class="font-semibold text-slate-900 mt-0.5">{{ $request->item?->size ?? $request->item_size ?? '—' }}</p>
                 </div>
                 <div>
                     <p class="text-xs text-slate-500">{{ __('Prioritas') }}</p>

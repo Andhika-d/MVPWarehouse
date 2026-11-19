@@ -52,6 +52,8 @@ class AuditLog extends Model
             'user_login' => 'Login pengguna',
             'user_logout' => 'Logout pengguna',
             'changed_password' => 'Mengubah password',
+            'received_other_request' => 'Menerima barang Lainnya',
+            'promoted_other_request' => 'Mendaftarkan barang Lainnya ke rak',
             'created_item' => 'Menambah barang',
             'created_item_unit' => 'Menambah satuan barang',
             'updated_item' => 'Memperbarui barang',

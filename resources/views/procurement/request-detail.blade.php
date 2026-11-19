@@ -19,7 +19,10 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div class="flex flex-wrap items-center gap-3">
-                    <h2 class="text-lg font-bold text-slate-900">{{ $itemName }}</h2>
+                    <h2 class="text-lg font-bold text-slate-900">
+                        {{ $itemName }}
+                        @if($request->isOther())<span class="ml-1 text-[10px] font-semibold uppercase tracking-wide text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">{{ __('Lainnya') }}</span>@endif
+                    </h2>
                     <x-status-badge domain="request" :status="$request->status" />
                     @if($request->overReceivedQuantity() > 0)
                     <span class="inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">

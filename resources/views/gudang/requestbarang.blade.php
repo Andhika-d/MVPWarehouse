@@ -8,9 +8,26 @@
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <form id="requestForm" action="/gudang/request-barang" method="POST" enctype="multipart/form-data" class="p-5 md:p-6 space-y-5">
                 @csrf
+                <input type="hidden" name="request_kind" id="request_kind" value="master">
+
+                {{-- Mode barang --}}
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Kategori Barang') }}</label>
+                    <div class="flex gap-3">
+                        <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-corpblue-500 has-[:checked]:bg-corpblue-50 transition-all">
+                            <input type="radio" name="request_kind_option" value="master" checked class="sr-only" onchange="setRequestMode()">
+                            <span class="text-sm text-slate-700 font-medium">{{ __('Barang di Rak A–E') }}</span>
+                        </label>
+                        <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 transition-all">
+                            <input type="radio" name="request_kind_option" value="other" class="sr-only" onchange="setRequestMode()">
+                            <span class="text-sm text-slate-700 font-medium">{{ __('Lainnya (di luar rak)') }}</span>
+                        </label>
+                    </div>
+                    <p id="otherModeHint" class="hidden mt-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">{{ __('Barang tidak ada di rak. Isi nama dan ukuran secara manual; admin dapat mendaftarkannya ke rak nanti.') }}</p>
+                </div>
 
                 {{-- 1. Nama Barang --}}
-                <div>
+                <div id="masterItemSection">
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
                     <input type="hidden" name="item_id" id="item_id" value="">
                     <input type="hidden" name="item_name" id="item_name_hidden" value="">
@@ -70,6 +87,18 @@
                                 <span id="infoSubLocWrap" class="hidden">{{ __('Sub:') }} <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
                                 <span id="infoTagWrap" class="hidden">{{ __('Tag:') }} <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
                             </div>
+                    </div>
+                </div>
+
+                {{-- 1b. Barang Lainnya (manual) --}}
+                <div id="otherItemSection" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
+                        <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Ukuran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
+                        <input type="text" name="item_size" id="item_size_manual" maxlength="255" placeholder="{{ __('Contoh: 5 cm') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                     </div>
                 </div>
 
@@ -164,6 +193,14 @@
 
     <x-slot:scripts><script>
     const itemsData = @json($itemOptions);
+    const standardUnits = @json(\App\Models\Item::UNITS);
+
+    const kindInput = document.getElementById('request_kind');
+    const masterSection = document.getElementById('masterItemSection');
+    const otherSection = document.getElementById('otherItemSection');
+    const manualNameInput = document.getElementById('item_name_manual');
+    const manualSizeInput = document.getElementById('item_size_manual');
+    const otherHint = document.getElementById('otherModeHint');
 
     const searchInput = document.getElementById('itemSearch');
     const listBox = document.getElementById('itemList');
@@ -175,6 +212,55 @@
     let activeIndex = -1;
     let activeButtons = [];
     let selectedRack = '';
+
+    function setRequestMode() {
+        const selected = document.querySelector('input[name="request_kind_option"]:checked');
+        const mode = selected ? selected.value : 'master';
+        const isOther = mode === 'other';
+        kindInput.value = mode;
+
+        masterSection.classList.toggle('hidden', isOther);
+        otherSection.classList.toggle('hidden', !isOther);
+        otherHint.classList.toggle('hidden', !isOther);
+
+        const conversionInput = document.getElementById('conversionInput');
+
+        if (isOther) {
+            itemIdInput.value = '';
+            itemNameHidden.value = manualNameInput.value.trim();
+            searchInput.value = '';
+            infoBox.classList.add('hidden');
+            if (listBox) listBox.classList.add('hidden');
+
+            unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+            standardUnits.forEach(function (unit) {
+                const opt = document.createElement('option');
+                opt.value = unit;
+                opt.textContent = unit;
+                if (unit === 'Pcs') opt.selected = true;
+                unitField.appendChild(opt);
+            });
+            unitField.removeAttribute('data-primary-unit');
+            document.getElementById('conversionHint').classList.add('hidden');
+            document.getElementById('newUnitConversion').classList.add('hidden');
+            conversionInput.value = '';
+            conversionInput.disabled = true;
+        } else {
+            manualNameInput.value = '';
+            manualSizeInput.value = '';
+            itemNameHidden.value = '';
+            unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
+            unitField.removeAttribute('data-primary-unit');
+            document.getElementById('conversionHint').classList.add('hidden');
+            document.getElementById('newUnitConversion').classList.add('hidden');
+            conversionInput.value = '';
+            conversionInput.disabled = true;
+        }
+    }
+
+    manualNameInput.addEventListener('input', function () {
+        if (kindInput.value === 'other') itemNameHidden.value = this.value.trim();
+    });
 
     function toggleRackDropdown() {
         document.getElementById('rackDropdownMenu').classList.toggle('hidden');
@@ -438,7 +524,15 @@
     });
 
     document.getElementById('requestForm').addEventListener('submit', (e) => {
-        if (!itemIdInput.value) {
+        if (kindInput.value === 'other') {
+            itemNameHidden.value = manualNameInput.value.trim();
+            if (!itemNameHidden.value) {
+                e.preventDefault();
+                manualNameInput.focus();
+                alert('{{ __('Nama barang wajib diisi.') }}');
+                return;
+            }
+        } else if (!itemIdInput.value) {
             e.preventDefault();
             searchInput.focus();
             openItemList();
