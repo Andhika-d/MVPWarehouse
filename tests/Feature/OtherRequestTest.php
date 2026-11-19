@@ -318,6 +318,22 @@ class OtherRequestTest extends TestCase
             ->assertSee('Lainnya');
     }
 
+    public function test_request_form_puts_lainnya_in_rack_dropdown_without_category_toggle(): void
+    {
+        $gudang = $this->makeUser('gudang');
+
+        $this->actingAs($gudang)->get('/gudang/request-barang')
+            ->assertOk()
+            ->assertSee('Lainnya (di luar rak)')
+            ->assertSee("selectRack('other')", false)
+            ->assertSee('id="rackDropdownWrap"', false)
+            ->assertSee('id="masterItemFields"', false)
+            ->assertSee('id="otherItemSection"', false)
+            ->assertDontSee('Kategori Barang')
+            ->assertDontSee('request_kind_option')
+            ->assertDontSee('id="masterItemSection"', false);
+    }
+
     public function test_other_request_labels_and_notification_translate_to_english(): void
     {
         app()->setLocale('en');
@@ -336,7 +352,8 @@ class OtherRequestTest extends TestCase
         $this->actingAs($gudang)->get('/gudang/request-barang')
             ->assertOk()
             ->assertSee('Other (outside racks)')
-            ->assertSee('Items in Racks A–E');
+            ->assertDontSee('Item Category')
+            ->assertDontSee('Items in Racks A–E');
 
         $notification = (new OtherRequestNotification($request))->toArray($admin);
         $text = NotificationText::resolve($notification);

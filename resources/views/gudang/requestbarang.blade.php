@@ -10,63 +10,49 @@
                 @csrf
                 <input type="hidden" name="request_kind" id="request_kind" value="master">
 
-                {{-- Mode barang --}}
+                {{-- 1. Nama Barang / Rak --}}
                 <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Kategori Barang') }}</label>
-                    <div class="flex gap-3">
-                        <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-corpblue-500 has-[:checked]:bg-corpblue-50 transition-all">
-                            <input type="radio" name="request_kind_option" value="master" checked class="sr-only" onchange="setRequestMode()">
-                            <span class="text-sm text-slate-700 font-medium">{{ __('Barang di Rak A–E') }}</span>
-                        </label>
-                        <label class="flex-1 flex items-center justify-center p-3 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:border-amber-400 has-[:checked]:bg-amber-50 transition-all">
-                            <input type="radio" name="request_kind_option" value="other" class="sr-only" onchange="setRequestMode()">
-                            <span class="text-sm text-slate-700 font-medium">{{ __('Lainnya (di luar rak)') }}</span>
-                        </label>
-                    </div>
-                    <p id="otherModeHint" class="hidden mt-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">{{ __('Barang tidak ada di rak. Isi nama dan ukuran secara manual; admin dapat mendaftarkannya ke rak nanti.') }}</p>
-                </div>
-
-                {{-- 1. Nama Barang --}}
-                <div id="masterItemSection">
-                    <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
+                    <label id="masterItemLabel" class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
                     <input type="hidden" name="item_id" id="item_id" value="">
                     <input type="hidden" name="item_name" id="item_name_hidden" value="">
 
-                    <div class="relative">
-                        <div class="flex gap-2">
-                            <div class="relative flex-1">
-                                <input
-                                    id="itemSearch"
-                                    type="text"
-                                    autocomplete="off"
-                                    placeholder="{{ __('Ketik untuk mencari barang...') }}"
-                                    oninput="filterItems()"
-                                    onfocus="openItemList()"
-                                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"
-                                >
-                                <button type="button" id="itemClear" onclick="clearItemSelection()" title="{{ __('Bersihkan') }}" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    <div class="flex gap-2">
+                        <div id="masterItemFields" class="relative flex-1">
+                            <input
+                                id="itemSearch"
+                                type="text"
+                                autocomplete="off"
+                                placeholder="{{ __('Ketik untuk mencari barang...') }}"
+                                oninput="filterItems()"
+                                onfocus="openItemList()"
+                                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"
+                            >
+                            <button type="button" id="itemClear" onclick="clearItemSelection()" title="{{ __('Bersihkan') }}" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                            <div id="itemList" class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-30"></div>
+                        </div>
+                        <div class="relative" id="rackDropdownWrap">
+                            <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
+                                <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
+                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
                                 </button>
-                            </div>
-                            <div class="relative" id="rackDropdownWrap">
-                                <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                                @foreach(['A','B','C','D','E'] as $rack)
+                                <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
+                                    <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
                                 </button>
-                                <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
-                                    <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
-                                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
-                                    </button>
-                                    @foreach(['A','B','C','D','E'] as $rack)
-                                    <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
-                                        <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
-                                    </button>
-                                    @endforeach
-                                </div>
+                                @endforeach
+                                <div class="border-t border-slate-100"></div>
+                                <button type="button" onclick="selectRack('other')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-2 text-slate-700" data-rack="other">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ __('Lainnya (di luar rak)') }}
+                                </button>
                             </div>
                         </div>
-                        <div id="itemList" class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-30"></div>
                     </div>
 
                     {{-- Item info box --}}
@@ -90,8 +76,9 @@
                     </div>
                 </div>
 
-                {{-- 1b. Barang Lainnya (manual) --}}
+                {{-- 1b. Barang Lainnya (manual, dipilih lewat dropdown rak) --}}
                 <div id="otherItemSection" class="hidden space-y-3">
+                    <p id="otherModeHint" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">{{ __('Barang tidak ada di rak. Isi nama dan ukuran secara manual; admin dapat mendaftarkannya ke rak nanti.') }}</p>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
                         <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
@@ -196,7 +183,8 @@
     const standardUnits = @json(\App\Models\Item::UNITS);
 
     const kindInput = document.getElementById('request_kind');
-    const masterSection = document.getElementById('masterItemSection');
+    const masterLabel = document.getElementById('masterItemLabel');
+    const masterFields = document.getElementById('masterItemFields');
     const otherSection = document.getElementById('otherItemSection');
     const manualNameInput = document.getElementById('item_name_manual');
     const manualSizeInput = document.getElementById('item_size_manual');
@@ -213,13 +201,14 @@
     let activeButtons = [];
     let selectedRack = '';
 
-    function setRequestMode() {
-        const selected = document.querySelector('input[name="request_kind_option"]:checked');
-        const mode = selected ? selected.value : 'master';
+    function setRequestMode(mode) {
         const isOther = mode === 'other';
-        kindInput.value = mode;
+        kindInput.value = isOther ? 'other' : 'master';
 
-        masterSection.classList.toggle('hidden', isOther);
+        // Dropdown rak tetap terlihat supaya pengguna bisa kembali dari
+        // "Lainnya" ke rak A–E tanpa me-reload halaman.
+        masterLabel.classList.toggle('hidden', isOther);
+        masterFields.classList.toggle('hidden', isOther);
         otherSection.classList.toggle('hidden', !isOther);
         otherHint.classList.toggle('hidden', !isOther);
 
@@ -267,20 +256,36 @@
     }
 
     function selectRack(rack) {
-        selectedRack = rack;
-        document.getElementById('rackDropdownLabel').textContent = rack ? '{{ __('Rak') }} ' + rack : '{{ __('Semua Rak') }}';
+        const isOther = rack === 'other';
+        const nextMode = isOther ? 'other' : 'master';
+        selectedRack = isOther ? '' : rack;
+
+        document.getElementById('rackDropdownLabel').textContent = isOther
+            ? '{{ __('Lainnya') }}'
+            : (rack ? '{{ __('Rak') }} ' + rack : '{{ __('Semua Rak') }}');
         document.getElementById('rackDropdownMenu').classList.add('hidden');
+
+        // Ganti mode hanya saat benar-benar berpindah kategori supaya pilihan
+        // barang/master tidak hilang ketika pengguna hanya mengganti rak.
+        if (kindInput.value !== nextMode) {
+            setRequestMode(nextMode);
+        }
 
         document.querySelectorAll('.rack-option').forEach((btn) => {
             const r = btn.getAttribute('data-rack');
-            if (r === rack) {
-                btn.classList.add('bg-corpblue-50', 'text-corpblue-700');
-                btn.classList.remove('text-slate-700');
+            const isActive = r === rack;
+            btn.classList.remove('bg-corpblue-50', 'text-corpblue-700', 'bg-amber-50', 'text-amber-700', 'text-slate-700');
+            if (isActive) {
+                btn.classList.add(r === 'other' ? 'bg-amber-50' : 'bg-corpblue-50', r === 'other' ? 'text-amber-700' : 'text-corpblue-700');
             } else {
-                btn.classList.remove('bg-corpblue-50', 'text-corpblue-700');
                 btn.classList.add('text-slate-700');
             }
         });
+
+        if (isOther) {
+            if (listBox) listBox.classList.add('hidden');
+            return;
+        }
 
         filterItems();
         if (listBox && !listBox.classList.contains('hidden')) {
