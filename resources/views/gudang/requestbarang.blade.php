@@ -78,7 +78,6 @@
 
                 {{-- 1b. Barang Lainnya (manual, dipilih lewat dropdown rak) --}}
                 <div id="otherItemSection" class="hidden space-y-3">
-                    <p id="otherModeHint" class="text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">{{ __('Barang tidak ada di rak. Isi nama dan ukuran secara manual; admin dapat mendaftarkannya ke rak nanti.') }}</p>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
                         <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
@@ -188,7 +187,6 @@
     const otherSection = document.getElementById('otherItemSection');
     const manualNameInput = document.getElementById('item_name_manual');
     const manualSizeInput = document.getElementById('item_size_manual');
-    const otherHint = document.getElementById('otherModeHint');
 
     const searchInput = document.getElementById('itemSearch');
     const listBox = document.getElementById('itemList');
@@ -210,7 +208,6 @@
         masterLabel.classList.toggle('hidden', isOther);
         masterFields.classList.toggle('hidden', isOther);
         otherSection.classList.toggle('hidden', !isOther);
-        otherHint.classList.toggle('hidden', !isOther);
 
         const conversionInput = document.getElementById('conversionInput');
 

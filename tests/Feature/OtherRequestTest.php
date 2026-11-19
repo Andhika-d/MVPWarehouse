@@ -331,7 +331,8 @@ class OtherRequestTest extends TestCase
             ->assertSee('id="otherItemSection"', false)
             ->assertDontSee('Kategori Barang')
             ->assertDontSee('request_kind_option')
-            ->assertDontSee('id="masterItemSection"', false);
+            ->assertDontSee('id="masterItemSection"', false)
+            ->assertDontSee('Barang tidak ada di rak.');
     }
 
     public function test_other_request_labels_and_notification_translate_to_english(): void
