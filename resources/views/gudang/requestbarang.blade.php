@@ -12,86 +12,89 @@
 
                 {{-- 1. Nama Barang / Rak --}}
                 <div>
-                    <label id="masterItemLabel" class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }}</label>
+                    <label class="block text-sm font-medium text-slate-700 mb-1.5">
+                        {{ __('Nama Barang') }}
+                        <span id="manualRequiredMark" class="hidden text-red-500">*</span>
+                    </label>
                     <input type="hidden" name="item_id" id="item_id" value="">
                     <input type="hidden" name="item_name" id="item_name_hidden" value="">
 
                     <div class="flex gap-2">
-                        <div id="masterItemFields" class="relative flex-1">
-                            <input
-                                id="itemSearch"
-                                type="text"
-                                autocomplete="off"
-                                placeholder="{{ __('Ketik untuk mencari barang...') }}"
-                                oninput="filterItems()"
-                                onfocus="openItemList()"
-                                class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"
-                            >
-                            <button type="button" id="itemClear" onclick="clearItemSelection()" title="{{ __('Bersihkan') }}" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                            </button>
-                            <div id="itemList" class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-30"></div>
-                        </div>
-                        <div id="masterRackSlot" class="shrink-0">
-                            <div class="relative" id="rackDropdownWrap">
-                                <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
-                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                    <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
-                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                        <div id="itemInputStage" class="mode-stage relative flex-1">
+                            <div id="masterItemFields" class="mode-panel is-active relative" aria-hidden="false">
+                                <input
+                                    id="itemSearch"
+                                    type="text"
+                                    autocomplete="off"
+                                    placeholder="{{ __('Ketik untuk mencari barang...') }}"
+                                    oninput="filterItems()"
+                                    onfocus="openItemList()"
+                                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all"
+                                >
+                                <button type="button" id="itemClear" onclick="clearItemSelection()" title="{{ __('Bersihkan') }}" style="display:none" class="absolute right-2 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all cursor-pointer">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                                 </button>
-                                <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
-                                    <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
-                                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
-                                    </button>
-                                    @foreach(['A','B','C','D','E'] as $rack)
-                                    <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
-                                        <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
-                                    </button>
-                                    @endforeach
-                                    <div class="border-t border-slate-100"></div>
-                                    <button type="button" onclick="selectRack('other')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-2 text-slate-700" data-rack="other">
-                                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ __('Lainnya (di luar rak)') }}
-                                    </button>
-                                </div>
+                                <div id="itemList" class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-30"></div>
+                            </div>
+                            <div id="otherItemSection" class="mode-panel relative" aria-hidden="true" inert>
+                                <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                            </div>
+                        </div>
+                        <div class="relative shrink-0" id="rackDropdownWrap">
+                            <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                            </button>
+                            <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
+                                <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
+                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
+                                </button>
+                                @foreach(['A','B','C','D','E'] as $rack)
+                                <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
+                                    <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
+                                </button>
+                                @endforeach
+                                <div class="border-t border-slate-100"></div>
+                                <button type="button" onclick="selectRack('other')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-2 text-slate-700" data-rack="other">
+                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ __('Lainnya (di luar rak)') }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Ukuran hanya dipakai barang Lainnya --}}
+                    <div id="otherSizeWrap" class="collapsible" inert>
+                        <div>
+                            <div class="pt-3">
+                                <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Ukuran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
+                                <input type="text" name="item_size" id="item_size_manual" maxlength="255" placeholder="{{ __('Contoh: 5 cm') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                             </div>
                         </div>
                     </div>
 
                     {{-- Item info box --}}
-                    <div id="itemInfoBox" class="hidden mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <p id="infoItemName" class="text-sm font-semibold text-slate-900"></p>
-                                <p id="infoItemDetail" class="text-xs text-slate-500 mt-0.5"></p>
-                            </div>
-                            <div class="text-right">
-                                <p class="text-xs text-slate-500">{{ __('Stok') }}</p>
-                                <p id="infoItemStock" class="text-base font-bold text-slate-900"></p>
+                    <div id="itemInfoWrap" class="collapsible" inert>
+                        <div>
+                            <div id="itemInfoBox" class="mt-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p id="infoItemName" class="text-sm font-semibold text-slate-900"></p>
+                                        <p id="infoItemDetail" class="text-xs text-slate-500 mt-0.5"></p>
+                                    </div>
+                                    <div class="text-right">
+                                        <p class="text-xs text-slate-500">{{ __('Stok') }}</p>
+                                        <p id="infoItemStock" class="text-base font-bold text-slate-900"></p>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-t border-slate-200 flex items-center gap-4 text-xs text-slate-500">
+                                    <span>{{ __('Satuan:') }} <strong id="infoItemUnit" class="text-slate-700"></strong></span>
+                                    <span>{{ __('Rak:') }} <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
+                                    <span id="infoSubLocWrap" class="hidden">{{ __('Sub:') }} <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                    <span id="infoTagWrap" class="hidden">{{ __('Tag:') }} <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
+                                </div>
                             </div>
                         </div>
-                            <div class="mt-2 pt-2 border-t border-slate-200 flex items-center gap-4 text-xs text-slate-500">
-                                <span>{{ __('Satuan:') }} <strong id="infoItemUnit" class="text-slate-700"></strong></span>
-                                <span>{{ __('Rak:') }} <strong id="infoItemRack" class="text-corpblue-600 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold"></strong></span>
-                                <span id="infoSubLocWrap" class="hidden">{{ __('Sub:') }} <strong id="infoItemSubLoc" class="text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
-                                <span id="infoTagWrap" class="hidden">{{ __('Tag:') }} <strong id="infoItemTag" class="text-corpblue-700 bg-corpblue-50 px-1.5 py-0.5 rounded text-[11px] font-bold font-mono"></strong></span>
-                            </div>
-                    </div>
-                </div>
-
-                {{-- 1b. Barang Lainnya (manual, dipilih lewat dropdown rak) --}}
-                <div id="otherItemSection" class="hidden space-y-3">
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
-                        <div class="flex gap-2">
-                            <div class="relative flex-1">
-                                <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
-                            </div>
-                            <div id="otherRackSlot" class="shrink-0"></div>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Ukuran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
-                        <input type="text" name="item_size" id="item_size_manual" maxlength="255" placeholder="{{ __('Contoh: 5 cm') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
                     </div>
                 </div>
 
@@ -104,12 +107,20 @@
                             <option value="">{{ __('Pilih satuan') }}</option>
                         </select>
                     </div>
-                    <p id="conversionHint" class="hidden mt-1.5 text-xs text-corpblue-600 bg-corpblue-50 border border-corpblue-100 rounded-lg px-2.5 py-1.5"></p>
-                    <div id="newUnitConversion" class="hidden mt-1.5 flex flex-wrap items-center gap-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
-                        <span class="font-medium">{{ __('Satuan baru') }}:</span>
-                        <span>1 <strong id="newUnitName" class="text-slate-900"></strong> =</span>
-                        <input type="number" name="conversion_to_primary" id="conversionInput" min="0.0001" step="any" disabled placeholder="0" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-md text-xs focus:outline-none focus:border-corpblue-500">
-                        <span id="newUnitPrimary" class="font-semibold text-slate-700"></span>
+                    <div id="conversionHintWrap" class="collapsible" inert>
+                        <div>
+                            <p id="conversionHint" class="mt-1.5 text-xs text-corpblue-600 bg-corpblue-50 border border-corpblue-100 rounded-lg px-2.5 py-1.5"></p>
+                        </div>
+                    </div>
+                    <div id="newUnitConversionWrap" class="collapsible" inert>
+                        <div>
+                            <div id="newUnitConversion" class="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5">
+                                <span class="font-medium">{{ __('Satuan baru') }}:</span>
+                                <span>1 <strong id="newUnitName" class="text-slate-900"></strong> =</span>
+                                <input type="number" name="conversion_to_primary" id="conversionInput" min="0.0001" step="any" disabled placeholder="0" class="w-24 px-2 py-1 bg-white border border-slate-200 rounded-md text-xs focus:outline-none focus:border-corpblue-500">
+                                <span id="newUnitPrimary" class="font-semibold text-slate-700"></span>
+                            </div>
+                        </div>
                     </div>
                     <p class="mt-1 text-[11px] text-slate-400">{{ __('Satuan baru akan disimpan untuk barang ini dan dapat diubah administrator di Kelola Unit.') }}</p>
                 </div>
@@ -184,19 +195,62 @@
 
     </div>
 
-    <x-slot:scripts><script>
+    <x-slot:scripts>
+    <style>
+        .mode-stage { display: grid; }
+        .mode-stage > .mode-panel { grid-area: 1 / 1; }
+
+        .mode-panel {
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(4px);
+            pointer-events: none;
+            transition: opacity .22s ease, transform .22s ease, visibility 0s linear .22s;
+        }
+
+        .mode-panel.is-active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+            transition-delay: 0s;
+        }
+
+        .collapsible {
+            display: grid;
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows .28s ease, opacity .2s ease;
+        }
+
+        .collapsible.is-open {
+            grid-template-rows: 1fr;
+            opacity: 1;
+        }
+
+        .collapsible > * {
+            min-height: 0;
+            overflow: hidden;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .mode-panel,
+            .collapsible {
+                transition: none !important;
+            }
+        }
+    </style>
+    <script>
     const itemsData = @json($itemOptions);
     const standardUnits = @json(\App\Models\Item::UNITS);
 
     const kindInput = document.getElementById('request_kind');
-    const masterLabel = document.getElementById('masterItemLabel');
     const masterFields = document.getElementById('masterItemFields');
     const otherSection = document.getElementById('otherItemSection');
+    const manualRequiredMark = document.getElementById('manualRequiredMark');
     const manualNameInput = document.getElementById('item_name_manual');
     const manualSizeInput = document.getElementById('item_size_manual');
 
-    const masterRackSlot = document.getElementById('masterRackSlot');
-    const otherRackSlot = document.getElementById('otherRackSlot');
     const rackDropdownWrap = document.getElementById('rackDropdownWrap');
     const rackDropdownMenu = document.getElementById('rackDropdownMenu');
 
@@ -206,30 +260,49 @@
     const itemIdInput = document.getElementById('item_id');
     const itemNameHidden = document.getElementById('item_name_hidden');
     const unitField = document.getElementById('unit-field');
-    const infoBox = document.getElementById('itemInfoBox');
+    const itemInfoWrap = document.getElementById('itemInfoWrap');
+    const otherSizeWrap = document.getElementById('otherSizeWrap');
+    const conversionHintWrap = document.getElementById('conversionHintWrap');
+    const conversionHint = document.getElementById('conversionHint');
+    const newUnitConversionWrap = document.getElementById('newUnitConversionWrap');
     let activeIndex = -1;
     let activeButtons = [];
     let selectedRack = '';
 
-    function placeRackDropdown(mode) {
-        const targetSlot = mode === 'other' ? otherRackSlot : masterRackSlot;
-        if (rackDropdownWrap.parentElement !== targetSlot) {
-            targetSlot.appendChild(rackDropdownWrap);
-        }
-        rackDropdownMenu.classList.add('hidden');
+    function setModePanelActive(panel, active) {
+        panel.classList.toggle('is-active', active);
+        panel.inert = !active;
+        panel.setAttribute('aria-hidden', String(!active));
+    }
+
+    function setCollapsibleOpen(element, open) {
+        element.classList.toggle('is-open', open);
+        element.inert = !open;
+    }
+
+    function setItemInfoOpen(open) {
+        setCollapsibleOpen(itemInfoWrap, open);
+    }
+
+    function setConversionHintOpen(open) {
+        setCollapsibleOpen(conversionHintWrap, open);
+    }
+
+    function setNewUnitConversionOpen(open) {
+        setCollapsibleOpen(newUnitConversionWrap, open);
     }
 
     function setRequestMode(mode) {
         const isOther = mode === 'other';
         kindInput.value = isOther ? 'other' : 'master';
 
-        masterLabel.classList.toggle('hidden', isOther);
-        masterFields.classList.toggle('hidden', isOther);
-        otherSection.classList.toggle('hidden', !isOther);
-
-        // Pindahkan dropdown rak ke samping input yang aktif supaya posisinya
-        // tetap sama seperti saat memilih Rak A–E.
-        placeRackDropdown(mode);
+        // Input master/manual bertukar di area yang sama; dropdown rak tidak
+        // pernah dipindah supaya posisinya benar-benar tidak berubah.
+        setModePanelActive(masterFields, !isOther);
+        setModePanelActive(otherSection, isOther);
+        manualRequiredMark.classList.toggle('hidden', !isOther);
+        setCollapsibleOpen(otherSizeWrap, isOther);
+        rackDropdownMenu.classList.add('hidden');
 
         const conversionInput = document.getElementById('conversionInput');
 
@@ -237,7 +310,7 @@
             itemIdInput.value = '';
             itemNameHidden.value = manualNameInput.value.trim();
             searchInput.value = '';
-            infoBox.classList.add('hidden');
+            setItemInfoOpen(false);
             if (listBox) listBox.classList.add('hidden');
 
             unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
@@ -249,18 +322,19 @@
                 unitField.appendChild(opt);
             });
             unitField.removeAttribute('data-primary-unit');
-            document.getElementById('conversionHint').classList.add('hidden');
-            document.getElementById('newUnitConversion').classList.add('hidden');
+            setConversionHintOpen(false);
+            setNewUnitConversionOpen(false);
             conversionInput.value = '';
             conversionInput.disabled = true;
         } else {
             manualNameInput.value = '';
             manualSizeInput.value = '';
             itemNameHidden.value = '';
+            setItemInfoOpen(false);
             unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
             unitField.removeAttribute('data-primary-unit');
-            document.getElementById('conversionHint').classList.add('hidden');
-            document.getElementById('newUnitConversion').classList.add('hidden');
+            setConversionHintOpen(false);
+            setNewUnitConversionOpen(false);
             conversionInput.value = '';
             conversionInput.disabled = true;
         }
@@ -313,10 +387,8 @@
     }
 
     document.addEventListener('click', (e) => {
-        const wrap = document.getElementById('rackDropdownWrap');
-        const menu = document.getElementById('rackDropdownMenu');
-        if (wrap && menu && !wrap.contains(e.target)) {
-            menu.classList.add('hidden');
+        if (rackDropdownWrap && rackDropdownMenu && !rackDropdownWrap.contains(e.target)) {
+            rackDropdownMenu.classList.add('hidden');
         }
     });
 
@@ -447,42 +519,40 @@
         } else {
             tagWrap.classList.add('hidden');
         }
-        infoBox.classList.remove('hidden');
+        setItemInfoOpen(true);
     }
 
     function updateConversionHint() {
-        const hint = document.getElementById('conversionHint');
-        const wrap = document.getElementById('newUnitConversion');
         const conversionInput = document.getElementById('conversionInput');
         const opt = unitField.options[unitField.selectedIndex];
 
         if (!opt || !opt.value) {
-            hint.classList.add('hidden');
-            wrap.classList.add('hidden');
+            setConversionHintOpen(false);
+            setNewUnitConversionOpen(false);
             conversionInput.disabled = true;
             conversionInput.value = '';
             return;
         }
 
         if (opt.dataset && opt.dataset.missing === '1') {
-            hint.classList.add('hidden');
-            wrap.classList.remove('hidden');
+            setConversionHintOpen(false);
+            setNewUnitConversionOpen(true);
             document.getElementById('newUnitName').textContent = opt.value;
             document.getElementById('newUnitPrimary').textContent = unitField.dataset.primaryUnit || '';
             conversionInput.disabled = false;
             return;
         }
 
-        wrap.classList.add('hidden');
+        setNewUnitConversionOpen(false);
         conversionInput.disabled = true;
         conversionInput.value = '';
 
         const conversionText = opt.dataset ? opt.dataset.conversionText : '';
         if (conversionText) {
-            hint.textContent = 'ℹ️ ' + conversionText;
-            hint.classList.remove('hidden');
+            conversionHint.textContent = 'ℹ️ ' + conversionText;
+            setConversionHintOpen(true);
         } else {
-            hint.classList.add('hidden');
+            setConversionHintOpen(false);
         }
     }
 
@@ -496,12 +566,12 @@
         searchInput.value = '';
         unitField.innerHTML = '<option value="">{{ __('Pilih satuan') }}</option>';
         unitField.removeAttribute('data-primary-unit');
-        document.getElementById('conversionHint').classList.add('hidden');
-        document.getElementById('newUnitConversion').classList.add('hidden');
+        setConversionHintOpen(false);
+        setNewUnitConversionOpen(false);
         const conversionInput = document.getElementById('conversionInput');
         conversionInput.value = '';
         conversionInput.disabled = true;
-        infoBox.classList.add('hidden');
+        setItemInfoOpen(false);
         syncClearButton();
         if (listBox) {
             buildItemList('');
