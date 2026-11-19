@@ -32,25 +32,27 @@
                             </button>
                             <div id="itemList" class="hidden absolute left-0 right-0 mt-1 max-h-56 overflow-y-auto bg-white border border-slate-200 rounded-lg shadow-xl z-30"></div>
                         </div>
-                        <div class="relative" id="rackDropdownWrap">
-                            <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
-                                <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
-                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
-                            </button>
-                            <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
-                                <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
-                                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
+                        <div id="masterRackSlot" class="shrink-0">
+                            <div class="relative" id="rackDropdownWrap">
+                                <button type="button" id="rackDropdownBtn" onclick="toggleRackDropdown()" class="flex items-center gap-1.5 px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-100 hover:border-slate-300 transition-all cursor-pointer whitespace-nowrap min-w-[100px] justify-center">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                                    <span id="rackDropdownLabel">{{ __('Semua Rak') }}</span>
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
-                                @foreach(['A','B','C','D','E'] as $rack)
-                                <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
-                                    <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
-                                </button>
-                                @endforeach
-                                <div class="border-t border-slate-100"></div>
-                                <button type="button" onclick="selectRack('other')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-2 text-slate-700" data-rack="other">
-                                    <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ __('Lainnya (di luar rak)') }}
-                                </button>
+                                <div id="rackDropdownMenu" class="hidden absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-lg shadow-xl z-40 overflow-hidden">
+                                    <button type="button" onclick="selectRack('')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 bg-corpblue-50 text-corpblue-700" data-rack="">
+                                        <span class="w-2 h-2 rounded-full bg-slate-400"></span> {{ __('Semua Rak') }}
+                                    </button>
+                                    @foreach(['A','B','C','D','E'] as $rack)
+                                    <button type="button" onclick="selectRack('{{ $rack }}')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-corpblue-50 hover:text-corpblue-700 transition-all flex items-center gap-2 text-slate-700" data-rack="{{ $rack }}">
+                                        <span class="w-2 h-2 rounded-full bg-corpblue-400"></span> {{ __('Rak') }} {{ $rack }}
+                                    </button>
+                                    @endforeach
+                                    <div class="border-t border-slate-100"></div>
+                                    <button type="button" onclick="selectRack('other')" class="rack-option w-full text-left px-3 py-2.5 text-sm font-medium hover:bg-amber-50 hover:text-amber-700 transition-all flex items-center gap-2 text-slate-700" data-rack="other">
+                                        <span class="w-2 h-2 rounded-full bg-amber-400"></span> {{ __('Lainnya (di luar rak)') }}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -80,7 +82,12 @@
                 <div id="otherItemSection" class="hidden space-y-3">
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Nama Barang') }} <span class="text-red-500">*</span></label>
-                        <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <input type="text" name="item_name_manual" id="item_name_manual" maxlength="255" placeholder="{{ __('Contoh: Tali Webbing') }}" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-corpblue-500 focus:bg-white transition-all">
+                            </div>
+                            <div id="otherRackSlot" class="shrink-0"></div>
+                        </div>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-slate-700 mb-1.5">{{ __('Ukuran') }} <span class="text-slate-400 font-normal">({{ __('opsional') }})</span></label>
@@ -188,6 +195,11 @@
     const manualNameInput = document.getElementById('item_name_manual');
     const manualSizeInput = document.getElementById('item_size_manual');
 
+    const masterRackSlot = document.getElementById('masterRackSlot');
+    const otherRackSlot = document.getElementById('otherRackSlot');
+    const rackDropdownWrap = document.getElementById('rackDropdownWrap');
+    const rackDropdownMenu = document.getElementById('rackDropdownMenu');
+
     const searchInput = document.getElementById('itemSearch');
     const listBox = document.getElementById('itemList');
     const itemClearBtn = document.getElementById('itemClear');
@@ -199,15 +211,25 @@
     let activeButtons = [];
     let selectedRack = '';
 
+    function placeRackDropdown(mode) {
+        const targetSlot = mode === 'other' ? otherRackSlot : masterRackSlot;
+        if (rackDropdownWrap.parentElement !== targetSlot) {
+            targetSlot.appendChild(rackDropdownWrap);
+        }
+        rackDropdownMenu.classList.add('hidden');
+    }
+
     function setRequestMode(mode) {
         const isOther = mode === 'other';
         kindInput.value = isOther ? 'other' : 'master';
 
-        // Dropdown rak tetap terlihat supaya pengguna bisa kembali dari
-        // "Lainnya" ke rak A–E tanpa me-reload halaman.
         masterLabel.classList.toggle('hidden', isOther);
         masterFields.classList.toggle('hidden', isOther);
         otherSection.classList.toggle('hidden', !isOther);
+
+        // Pindahkan dropdown rak ke samping input yang aktif supaya posisinya
+        // tetap sama seperti saat memilih Rak A–E.
+        placeRackDropdown(mode);
 
         const conversionInput = document.getElementById('conversionInput');
 
