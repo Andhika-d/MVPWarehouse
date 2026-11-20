@@ -645,6 +645,7 @@ class DirectorController extends Controller
         $search = request('search');
         $rack = request('rack');
         $status = request('status');
+        $lowStock = request()->boolean('low_stock');
 
         $query = StorageLocation::with('items');
 
@@ -671,6 +672,13 @@ class DirectorController extends Controller
             });
         }
 
+        if ($lowStock) {
+            $query->whereHas('items', function ($itemQuery) {
+                $itemQuery->where('stock', '>', 0)
+                    ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD);
+            });
+        }
+
         $locations = $query->orderBy('sub_location', 'asc')
             ->orderBy('number', 'asc')
             ->paginate(50)
@@ -683,7 +691,7 @@ class DirectorController extends Controller
             $q->where('stock', 0);
         })->count();
         $lowStockCount = StorageLocation::whereHas('items', function ($q) {
-            $q->where('stock', '>', 0)->where('stock', '<=', 5);
+            $q->where('stock', '>', 0)->where('stock', '<=', Item::LOW_STOCK_THRESHOLD);
         })->count();
 
         $summary = [
@@ -708,7 +716,7 @@ class DirectorController extends Controller
             ];
         });
 
-        return view('director.stock', compact('locations', 'summary', 'racks', 'rackStats', 'rack', 'search', 'status'));
+        return view('director.stock', compact('locations', 'summary', 'racks', 'rackStats', 'rack', 'search', 'status', 'lowStock'));
     }
 
     public function issues()

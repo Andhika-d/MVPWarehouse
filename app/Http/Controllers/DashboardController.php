@@ -93,6 +93,13 @@ class DashboardController extends Controller
             });
         }
 
+        if (request()->boolean('low_stock')) {
+            $query->whereHas('items', function ($itemQuery) {
+                $itemQuery->where('stock', '>', 0)
+                    ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD);
+            });
+        }
+
         $locations = $query->orderBy('sub_location', 'asc')
             ->orderBy('number', 'asc')
             ->paginate(20)
@@ -158,6 +165,13 @@ class DashboardController extends Controller
             });
         }
 
+        if (request()->boolean('low_stock')) {
+            $query->whereHas('items', function ($itemQuery) {
+                $itemQuery->where('stock', '>', 0)
+                    ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD);
+            });
+        }
+
         $locations = $query->orderBy('sub_location', 'asc')
             ->orderBy('number', 'asc')
             ->paginate(20)
@@ -175,7 +189,7 @@ class DashboardController extends Controller
         return [
             'total_items' => StorageLocation::count(),
             'total_stock' => (int) Item::sum('stock'),
-            'low_stock' => Item::where('stock', '>', 0)->where('stock', '<=', 5)->count(),
+            'low_stock' => Item::where('stock', '>', 0)->where('stock', '<=', Item::LOW_STOCK_THRESHOLD)->count(),
             'out_of_stock' => Item::where('stock', 0)->count(),
         ];
     }

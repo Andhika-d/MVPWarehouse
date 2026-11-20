@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Item;
 use App\Support\PrintOrientation;
 use App\Support\RoleLabel;
 use App\Support\StockLocationQuery;
@@ -24,7 +25,7 @@ class StockPrintController extends Controller
             'locations' => $locations->count(),
             'items' => $items->count(),
             'stock' => round((float) $items->sum('stock'), 2),
-            'low_stock' => $items->where('stock', '>', 0)->where('stock', '<=', 5)->count(),
+            'low_stock' => $items->where('stock', '>', 0)->where('stock', '<=', Item::LOW_STOCK_THRESHOLD)->count(),
             'out_of_stock' => $items->where('stock', 0)->count(),
         ];
         $filters = [
@@ -32,6 +33,9 @@ class StockPrintController extends Controller
             'Rak' => $request->query('rack') ?: 'Semua',
             'Status' => $statusLabels[$request->query('status')] ?? 'Semua',
         ];
+        if ($request->boolean('low_stock')) {
+            $filters['Stok Menipis'] = 'Ya';
+        }
         $backUrl = match ($request->user()->role) {
             'hr' => '/hr/stock',
             'director' => '/director/stock',

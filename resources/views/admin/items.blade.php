@@ -58,7 +58,7 @@
                     </select>
                     <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer">
                         <input type="checkbox" name="low_stock" value="1" {{ request('low_stock') ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
-                        <span class="text-slate-600">{{ __('Stok') }} &le; 5</span>
+                        <span class="text-slate-600">{{ __('Stok Menipis (1-5)') }}</span>
                     </label>
                     @if(request()->hasAny(['search', 'rack', 'status', 'unit', 'low_stock']))
                     <a href="{{ route('admin.items.index') }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>

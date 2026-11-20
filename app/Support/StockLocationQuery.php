@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\Item;
 use App\Models\StorageLocation;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -36,6 +37,12 @@ class StockLocationQuery
             $query->where('status', StorageLocation::STATUS_EMPTY);
         } elseif ($status === 'item_empty') {
             $query->whereHas('items', fn ($items) => $items->where('stock', 0));
+        }
+
+        if ($request->boolean('low_stock')) {
+            $query->whereHas('items', fn ($items) => $items
+                ->where('stock', '>', 0)
+                ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD));
         }
 
         return $query->orderBy('sub_location')->orderBy('number');

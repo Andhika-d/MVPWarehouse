@@ -1,5 +1,14 @@
 <x-layout :title="__('Stok Barang — THI2-WAREHOUSE')" :headerTitle="__('Monitoring Stok Barang')">
     <div class="space-y-6">
+        @php
+            $lowStock = request()->boolean('low_stock');
+            $stockFilters = array_filter([
+                'search' => $search ?? '',
+                'status' => $status ?? '',
+                'low_stock' => $lowStock ? 1 : null,
+            ], fn ($value) => $value !== null && $value !== '');
+        @endphp
+
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
                 <div class="w-10 h-10 rounded-lg bg-corpblue-50 flex items-center justify-center shrink-0">
@@ -28,9 +37,9 @@
         </div>
 
         <div class="flex gap-2 overflow-x-auto pb-1">
-            <a href="{{ $basePath }}{{ $search || $status ? '?' . http_build_query(array_filter(['search' => $search, 'status' => $status])) : '' }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ !$activeRack ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">{{ __('Semua') }}</a>
+            <a href="{{ $basePath }}{{ $stockFilters ? '?' . http_build_query($stockFilters) : '' }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ !$activeRack ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">{{ __('Semua') }}</a>
             @foreach($rackData as $rack)
-            <a href="{{ $basePath }}?rack={{ $rack['rack'] }}{{ $search || $status ? '&' . http_build_query(array_filter(['search' => $search, 'status' => $status])) : '' }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $activeRack === $rack['rack'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold">{{ $rack['rack'] }}</span><span class="text-xs {{ $activeRack === $rack['rack'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $rack['totalItems'] }}/{{ $rack['total'] }}</span></a>
+            <a href="{{ $basePath }}?rack={{ $rack['rack'] }}{{ $stockFilters ? '&' . http_build_query($stockFilters) : '' }}" class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $activeRack === $rack['rack'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}"><span class="font-bold">{{ $rack['rack'] }}</span><span class="text-xs {{ $activeRack === $rack['rack'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $rack['totalItems'] }}/{{ $rack['total'] }}</span></a>
             @endforeach
         </div>
 
@@ -44,10 +53,14 @@
                     <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>{{ __('Lokasi Kosong') }}</option>
                     <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>{{ __('Barang Kosong') }}</option>
                 </select>
-                @if(($search ?? '') !== '' || ($status ?? '') !== '')
+                <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer whitespace-nowrap">
+                    <input type="checkbox" name="low_stock" value="1" {{ $lowStock ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
+                    <span class="text-slate-600">{{ __('Stok Menipis (1-5)') }}</span>
+                </label>
+                @if(($search ?? '') !== '' || ($status ?? '') !== '' || $lowStock)
                 <a href="{{ $activeRack ? $basePath.'?rack='.urlencode($activeRack) : $basePath }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
-                <a href="{{ $basePath }}/print?{{ http_build_query(array_filter(['rack' => $activeRack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '')) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
+                <a href="{{ $basePath }}/print?{{ http_build_query(array_filter(['rack' => $activeRack, 'search' => $search, 'status' => $status, 'low_stock' => $lowStock ? 1 : null], fn ($value) => $value !== null && $value !== '')) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
             </form>
         </div>
 

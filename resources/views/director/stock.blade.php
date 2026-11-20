@@ -1,5 +1,13 @@
 <x-layout :title="__('Monitoring Stok — THI2-WAREHOUSE')" :headerTitle="__('Monitoring Stok Barang')">
     <div class="space-y-6">
+        @php
+            $directorStockFilters = array_filter([
+                'rack' => $rack,
+                'search' => $search,
+                'status' => $status,
+                'low_stock' => $lowStock ? 1 : null,
+            ], fn ($value) => $value !== null && $value !== '' && $value !== 'all');
+        @endphp
 
         {{-- Summary Stats --}}
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -27,7 +35,7 @@
                 </div>
                 <div>
                     <p class="text-xl font-bold text-amber-600">{{ number_format($summary['low_stock']) }}</p>
-                    <p class="text-xs text-slate-500">{{ __('Stok Menipis (≤5)') }}</p>
+                    <p class="text-xs text-slate-500">{{ __('Stok Menipis (1-5)') }}</p>
                 </div>
             </div>
             <div class="bg-white rounded-xl border border-slate-200 p-4 flex items-center gap-3">
@@ -43,12 +51,12 @@
 
         {{-- Rack Tabs --}}
         <div class="flex gap-2 overflow-x-auto pb-1">
-            <a href="{{ route('director.stock', ['status' => $status] + ($search ? ['search' => $search] : [])) }}"
+            <a href="{{ route('director.stock', array_diff_key($directorStockFilters, ['rack' => true])) }}"
                class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ !$rack ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">
                 <span class="font-bold">{{ __('Semua') }}</span>
             </a>
             @foreach($rackStats as $rs)
-            <a href="{{ route('director.stock', ['rack' => $rs['rack'], 'status' => $status] + ($search ? ['search' => $search] : [])) }}"
+            <a href="{{ route('director.stock', array_merge($directorStockFilters, ['rack' => $rs['rack']])) }}"
                class="flex items-center gap-2 px-4 py-2.5 rounded-lg border text-sm font-medium whitespace-nowrap transition-all {{ $rack === $rs['rack'] ? 'bg-corpblue-50 border-corpblue-300 text-corpblue-700' : 'bg-white border-slate-200 text-slate-600 hover:border-slate-300' }}">
                 <span class="font-bold">{{ $rs['prefix'] }}</span>
                 <span class="text-xs {{ $rack === $rs['rack'] ? 'text-corpblue-500' : 'text-slate-400' }}">{{ $rs['occupied'] }}/{{ $rs['total'] }}</span>
@@ -69,10 +77,14 @@
                     <option value="empty" {{ ($status ?? '') === 'empty' ? 'selected' : '' }}>{{ __('Lokasi Kosong') }}</option>
                     <option value="item_empty" {{ ($status ?? '') === 'item_empty' ? 'selected' : '' }}>{{ __('Barang Kosong') }}</option>
                 </select>
-                @if(($search ?? '') !== '' || (($status ?? 'all') !== 'all'))
-                <a href="{{ $rack ? '/director/stock?rack='.urlencode($rack) : '/director/stock' }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
+                <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-sm cursor-pointer whitespace-nowrap">
+                    <input type="checkbox" name="low_stock" value="1" {{ $lowStock ? 'checked' : '' }} class="rounded text-corpblue-500 focus:ring-corpblue-500">
+                    <span class="text-slate-600">{{ __('Stok Menipis (1-5)') }}</span>
+                </label>
+                @if(($search ?? '') !== '' || (($status ?? 'all') !== 'all') || $lowStock)
+                <a href="{{ route('director.stock', $rack ? ['rack' => $rack] : []) }}" class="px-4 py-2 text-slate-500 hover:text-slate-700 text-sm font-medium">{{ __('Reset') }}</a>
                 @endif
-                <a href="{{ route('director.stock.print', array_filter(['rack' => $rack, 'search' => $search, 'status' => $status], fn ($value) => $value !== null && $value !== '' && $value !== 'all')) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
+                <a href="{{ route('director.stock.print', $directorStockFilters) }}" class="btn btn--secondary whitespace-nowrap">{{ __('Cetak') }}</a>
             </form>
         </div>
 

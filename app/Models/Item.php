@@ -12,6 +12,8 @@ class Item extends Model
 
     public const UNITS = ['Pcs', 'Pck', 'Box', 'Kg', 'Roll', 'Rim', 'Set'];
 
+    public const LOW_STOCK_THRESHOLD = 5;
+
     protected $fillable = [
         'name',
         'size',

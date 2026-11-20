@@ -95,9 +95,10 @@ class AdminController extends Controller
             });
         }
 
-        if ($request->filled('low_stock')) {
+        if ($request->boolean('low_stock')) {
             $query->whereHas('items', function ($q) {
-                $q->where('stock', '<=', 5);
+                $q->where('stock', '>', 0)
+                    ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD);
             });
         }
 
@@ -107,7 +108,10 @@ class AdminController extends Controller
 
         $totalItems = Item::count();
         $totalStock = Item::sum('stock');
-        $lowStockCount = Item::where('stock', '<=', 5)->whereNotNull('storage_location_id')->count();
+        $lowStockCount = Item::where('stock', '>', 0)
+            ->where('stock', '<=', Item::LOW_STOCK_THRESHOLD)
+            ->whereNotNull('storage_location_id')
+            ->count();
         $racks = ['A', 'B', 'C', 'D', 'E'];
         $emptyLocations = StorageLocation::where('status', StorageLocation::STATUS_EMPTY)
             ->orderBy('rack')
